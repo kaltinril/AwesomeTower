@@ -19,7 +19,7 @@
 		<link>
 			<name>assets</name>
 			<type>2</type>
-			<locationURI>PARENT-1-PROJECT_LOC/android/assets</locationURI>
+			<location>D:/Thisisme1/Documents/GitHub/AwesomeTower/android/assets</location>
 		</link>
 	</linkedResources>
 </projectDescription>
