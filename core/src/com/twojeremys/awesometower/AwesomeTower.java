@@ -7,6 +7,6 @@ public class AwesomeTower extends Game {
 	
 	@Override
 	public void create () {
-		setScreen(new MainMenuScreen(this));
+		setScreen(new MainMenuScreen(this)); 
 	}
 }
