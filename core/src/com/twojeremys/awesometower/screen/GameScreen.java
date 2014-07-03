@@ -6,10 +6,12 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.twojeremys.awesometower.TileEngine.TileMap;
 
 public class GameScreen extends BaseScreen {
 	
@@ -30,6 +32,11 @@ public class GameScreen extends BaseScreen {
 	//Font
 	private BitmapFont loadingFont;			//import com.badlogic.gdx.graphics.g2d.BitmapFont;
 	
+	//Tile engine and map
+	TileMap tileMap;
+	
+	//Camera, and fixing the origin of the screen
+	private OrthographicCamera camera;	//import com.badlogic.gdx.graphics.OrthographicCamera;
 	
 	public GameScreen (Game game) {
 		super(game);
@@ -41,6 +48,9 @@ public class GameScreen extends BaseScreen {
 		
 		//Get an instance of the SpriteBatch
 		batch = new SpriteBatch();
+		
+		//TODO: Doesn't affect the android screen resolution will need to use some sort of depth adjustment to camera view
+		batch.getProjectionMatrix().setToOrtho2D(0, 0, 480, 320);
 		
 		//Load the "loading screen" texture and sprite for rotation
 		loadingCircleTexture = new Texture("data/loadingCircle.png");
@@ -56,9 +66,21 @@ public class GameScreen extends BaseScreen {
         loadingFont = new BitmapFont();		//import com.badlogic.gdx.graphics.g2d.BitmapFont;
         loadingFont.setColor(Color.RED);		//import com.badlogic.gdx.graphics.Color;  --Color.RED from the GDX library instead of javas
 		
+    	// Then, in GameScreen.java, loop through the TileMap.tileMapping array
+    	// and load each asset into the Asset Manager
+        
 		//Load all other items needed for game asynchronously with the AssetManager
 		assets = new AssetManager();
-		assets.load("data/wrench.png", Texture.class);
+		
+		tileMap = new TileMap(30, 30, assets);
+		
+        //Camera
+		//http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
+		//It appears all this really does, is flip the screen upside down.
+		//Which screws up text and images as they look upside down.
+		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera.setToOrtho(false, 480, 320);
+		
 	}
 
 	@Override
@@ -70,20 +92,43 @@ public class GameScreen extends BaseScreen {
 
 		time += delta;							//Used only to create a delay for loading screen simulation
 		
+		if (Gdx.input.isTouched(0)){
+			int firstX = Gdx.input.getX();
+			int firstY = Gdx.input.getY();
+			
+			firstY = Gdx.graphics.getHeight() - firstY;
+			
+			System.out.println("Y Pos: " + firstY);
+			
+			firstX = firstX / 20;
+			firstY = firstY / 20;
+			
+			System.out.println(firstY);
+			
+			tileMap.SetTile(firstX, firstY, 0);
+		}
+		
+		//TODO: Write method for checking input to move camera
+		
+		camera.update();							//Make sure the camera is updated, not really needed in this example
+		batch.setProjectionMatrix(camera.combined);	//Tell the batch processing to use a specific camera
+		
 		if (assetsLoaded) {
 			if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
 				game.setScreen(new MainMenuScreen(game));
 			}
 			else {
+				
+				//This is where our actual drawing and updating code will go for the game
 				batch.begin();						//start - send data to the graphics pipeline for loading/processing
-				batch.draw(assets.get("data/wrench.png", Texture.class), 300, 100);	//Draw the wrench to show its done
+				tileMap.DrawMap(batch);
 				batch.end();						//end - Draw all items batched into the pipeline
 			}
 			
 		}
 		else {
 			//Simulate loading by waiting 5 seconds before setting "assetsLoaded".
-			if ((time > 5) && (assets.update())) {
+			if ((time > 1) && (assets.update())) {
 				assetsLoaded = true;			//Check the status of the assets loading
 			}
 			
@@ -101,7 +146,7 @@ public class GameScreen extends BaseScreen {
 
 	@Override
 	public void hide () {
-		Gdx.app.debug("Kaltinril", "dispose game screen");
+		Gdx.app.debug("twojeremys", "dispose game screen");
 		
 		//Get rid of the assets loaded
 		loadingCircleTexture.dispose();

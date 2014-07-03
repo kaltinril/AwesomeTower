@@ -1,0 +1,72 @@
+package com.twojeremys.awesometower.TileEngine;
+
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+public class TileMap {
+
+	private int[][] tiles;
+	
+	//Create a JSON file mapping of ID -> Texture Filename
+	private String[] tileMapping;
+	
+	private AssetManager assets;
+	
+	// Width and height of our tile map (entire screen)
+	private int maxX;
+	private int maxY;
+	
+	private int tileWidth;
+	private int tileHeight;
+
+	public TileMap(int inMaxX, int inMaxY, AssetManager inAssets) {
+		tileWidth = 20;
+		tileHeight = 20;
+		
+		maxX = inMaxX;
+		maxY = inMaxY;
+		tiles = new int[maxX][maxY];
+		assets = inAssets;
+		
+		CreateTileMapping();
+		
+		//Clear tiles
+		for (int x = 0; x < maxX - 1; x++){
+			for (int y = 0; y < maxY - 1; y++){
+				tiles[x][y] = -1;
+			}
+		}
+				
+		//TODO: REMOVE THIS AFTER DONE TESTING: create a yellow tile
+		for (int xy = 0; xy < maxX - 1; xy++)
+			tiles[xy][xy] = 1;
+		
+		//Load the tiles images via the Asset Manager passed in
+		for(int i=0; i< tileMapping.length; i++){
+			assets.load(tileMapping[i], Texture.class);
+		}
+	}
+	
+	public void SetTile(int tileX, int tileY, int tileID){
+		tiles[tileX][tileY] = tileID;
+	}
+	
+	private void CreateTileMapping(){
+		tileMapping = new String[2];
+		
+		tileMapping[0] = "tiles/redTile.png";
+		tileMapping[1] = "tiles/yellowTile.png";
+	}
+
+	public void DrawMap(SpriteBatch batch) {
+		
+		for (int x = 0; x < maxX - 1; x++){
+			for (int y = 0; y < maxY - 1; y++) {
+				if (tiles[x][y] != -1)
+					batch.draw(assets.get(tileMapping[tiles[x][y]], Texture.class), x*tileWidth, y*tileHeight);
+			}
+		}
+	}
+
+}
