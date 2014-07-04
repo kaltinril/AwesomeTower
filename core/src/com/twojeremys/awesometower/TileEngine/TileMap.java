@@ -49,7 +49,22 @@ public class TileMap {
 	}
 	
 	public void SetTile(int tileX, int tileY, int tileID){
-		tiles[tileX][tileY] = tileID;
+		
+		//Make sure the tile placement is on the screen, otherwise ignore it.
+		if (tileX >= 0 && tileX <= maxX &&	tileY >= 0 && tileY <= maxY)
+			tiles[tileX][tileY] = tileID;
+		else
+			System.out.println("Outside " + tileX + " " + tileY);
+	}
+	/*
+	 * Get and Set methods for variables
+	 */
+	public int getTileWidth(){
+		return this.tileWidth;
+	}
+	
+	public int getTileHeight(){
+		return this.tileHeight;
 	}
 	
 	private void CreateTileMapping(){
