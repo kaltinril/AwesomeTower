@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.twojeremys.awesometower.Constants;
 
 public class DefaultMenuActionListener extends InputListener {
 	
@@ -18,8 +19,11 @@ public class DefaultMenuActionListener extends InputListener {
 	//This only fires when the button is first pressed down
 	@Override
     public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-    	//TODO: Debug only line
-        System.out.println("down pressed on [" + whichButton + "]");
+        
+		if (Constants.DEBUG) {
+        	System.out.println("down pressed on [" + whichButton + "]");
+        }
+        
         return true;
     }
 
@@ -27,9 +31,10 @@ public class DefaultMenuActionListener extends InputListener {
 	@Override
     public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
     	
-    	//TODO: Debug only line
-    	System.out.println("up pressed on [" + whichButton + "]");
-    	
+		if (Constants.DEBUG) {
+			System.out.println("up pressed on [" + whichButton + "]");
+		}
+		
     	if (whichButton.equalsIgnoreCase("exitgame")){
     		Gdx.app.exit();
     	}

@@ -3,6 +3,7 @@ package com.twojeremys.awesometower.tileengine;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.twojeremys.awesometower.Constants;
 
 public class TileMap {
 
@@ -37,10 +38,12 @@ public class TileMap {
 				tiles[x][y] = -1;
 			}
 		}
-				
-		//TODO: REMOVE THIS AFTER DONE TESTING: create a yellow tile
-		for (int xy = 0; xy < maxX - 1; xy++)
-			tiles[xy][xy] = 1;
+		
+		//TODO: Remove when done testing screen fills
+		if (Constants.DEBUG) {
+			for (int xy = 0; xy < maxX - 1; xy++)
+				tiles[xy][xy] = 1;
+		}
 		
 		//Load the tiles images via the Asset Manager passed in
 		for(int i=0; i< tileMapping.length; i++){

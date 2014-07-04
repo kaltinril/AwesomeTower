@@ -7,6 +7,7 @@ public abstract class BaseScreen implements Screen {
 	Game game;
 
 	public BaseScreen (Game game) {
+		super();
 		this.game = game;
 	}
 
