@@ -12,9 +12,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector3;
+import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
 
 public class GameScreen extends BaseScreen {
@@ -35,6 +37,10 @@ public class GameScreen extends BaseScreen {
 
 	// Font
 	private BitmapFont loadingFont; // com.badlogic.gdx.graphics.g2d.BitmapFont;
+	
+	//TODO add comments :)
+	private float timeUntilDebugInfoUpdate;
+	private final StringBuilder debugInfo;
 
 	// Building
 	private enum BuildMode {
@@ -56,6 +62,8 @@ public class GameScreen extends BaseScreen {
 	public GameScreen(Game game) {
 		super(game);
 		assetsLoaded = false;
+		if (Constants.DEBUG)
+			debugInfo = new StringBuilder();
 	}
 
 	@Override
@@ -81,13 +89,17 @@ public class GameScreen extends BaseScreen {
 		// Font
 		loadingFont = new BitmapFont(); // com.badlogic.gdx.graphics.g2d.BitmapFont; 
 		
+		loadingFont.setUseIntegerPositions(false);
+		
 		// --Color.RED from the GDX library instead of java
 		loadingFont.setColor(Color.RED); // com.badlogic.gdx.graphics.Color;
 											
 		// Load all items needed for game asynchronously with the AssetManager
 		assets = new AssetManager();
+		assets.load("tiles.atlas", TextureAtlas.class); //load the tiles atlas
+		assets.finishLoading(); //TODO if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
 
-		tileMap = new TileMap(30, 30, assets);
+		tileMap = new TileMap(30, 30, (TextureAtlas) assets.get("tiles.atlas"));
 
 		// Camera
 		// http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
@@ -143,7 +155,7 @@ public class GameScreen extends BaseScreen {
 				touchPos.y = touchPos.y / tileMap.getTileHeight();
 
 				// Set the tile based on this position to tile 0
-				tileMap.setTile((int) touchPos.x, (int) touchPos.y, 0);
+				tileMap.setTile((int) touchPos.x, (int) touchPos.y, 2); //TODO remove hard code
 				break;
 			case manage:
 				
@@ -200,6 +212,35 @@ public class GameScreen extends BaseScreen {
 			loadingFont.draw(batch, "Loading...", loadingCircleSprite.getX(),
 					loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
 			batch.end(); // end - Draw all items batched into the pipeline
+		}
+		
+		if (Constants.DEBUG) {	
+			float deltaTime = Gdx.graphics.getDeltaTime();
+
+			float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
+			float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
+
+			timeUntilDebugInfoUpdate -= deltaTime;
+			if (timeUntilDebugInfoUpdate <= 0f) {
+				timeUntilDebugInfoUpdate = 3f;
+				debugInfo.setLength(0);
+				debugInfo.append("fps: ");
+				debugInfo.append(Gdx.graphics.getFramesPerSecond());
+				debugInfo.append("\nmem: (java ");
+				debugInfo.append((int) javaHeapInBytes);
+				debugInfo.append("Mb, heap: ");
+				debugInfo.append((int) nativeHeapInBytes);
+				debugInfo.append("Mb)");
+			}
+			
+			//TODO this should move with the camera and stay in the corner!!!!
+			batch.begin();
+			loadingFont.setColor(Color.WHITE);
+			loadingFont.drawMultiLine(batch, debugInfo, 6, 35);
+			loadingFont.setColor(Color.CYAN);
+			loadingFont.drawMultiLine(batch, debugInfo, 5, 36);
+			loadingFont.setColor(Color.WHITE);
+			batch.end();
 		}
 	}
 
