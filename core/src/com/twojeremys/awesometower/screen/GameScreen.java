@@ -156,8 +156,6 @@ public class GameScreen extends BaseScreen {
 			}
 		}
 
-		// TODO: Write method for checking input to move camera
-
 		camera.update(); // Make sure the camera is updated, not really needed in this example
 		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
 
