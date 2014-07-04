@@ -12,6 +12,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector3;
 import com.twojeremys.awesometower.TileEngine.TileMap;
 
@@ -44,6 +46,9 @@ public class GameScreen extends BaseScreen {
 	// Tile engine and map
 	TileMap tileMap;
 
+	//Grid Line
+	ShapeRenderer shapeRenderer;
+	
 	// Camera, and fixing the origin of the screen
 	private OrthographicCamera camera; // com.badlogic.gdx.graphics.OrthographicCamera;
 	private Vector3 moveStartPosition;
@@ -94,6 +99,9 @@ public class GameScreen extends BaseScreen {
 
 		// Setup build mode items:
 		buildMode = BuildMode.manage;
+		
+		//Grid lines
+		shapeRenderer = new ShapeRenderer();
 
 	}
 
@@ -168,6 +176,13 @@ public class GameScreen extends BaseScreen {
 				batch.begin(); // start - send data to the graphics pipeline for loading/processing
 				tileMap.DrawMap(batch);
 				batch.end(); // end - Draw all items batched into the pipeline
+				
+				
+				//Draw the gridline
+				
+				if (buildMode == BuildMode.build){
+					renderGridOverlay();
+				}
 			}
 
 		} else {
@@ -186,6 +201,36 @@ public class GameScreen extends BaseScreen {
 					loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
 			batch.end(); // end - Draw all items batched into the pipeline
 		}
+	}
+
+	//TODO: Maybe this should be moved into the tilemap draw, since it uses so much from thje tilemap.
+	private void renderGridOverlay() {
+		//Map the shape render to the camera, so the lines move with it
+		shapeRenderer.setProjectionMatrix(camera.combined);
+		 
+		//Setup the Shape Render to user LINE (Not fill) and white color
+		shapeRenderer.begin(ShapeType.Line);
+		shapeRenderer.setColor(1, 1, 1, 1);	
+		
+		//Get the actual full Pixel height for the combined tile space, minus 1
+		int screenTileMapHeight = (tileMap.getMapHeight()*tileMap.getTileHeight()) - tileMap.getTileHeight();
+		int screenTileMapWidth = (tileMap.getMapWidth()*tileMap.getTileWidth()) - tileMap.getTileWidth();
+		
+		//Draw vertical lines
+		//Start at the right side of the first tile, and end at the left side of the last tile.
+		for(int tileX = tileMap.getTileWidth(); tileX < screenTileMapWidth;tileX=tileX + tileMap.getTileWidth()){
+			shapeRenderer.line(tileX, 0, tileX, screenTileMapHeight);
+		}
+		
+		//Draw horizontal lines
+		//Start at the bottom side of the first tile, and end at the top side of the last tile.
+		for(int tileY = tileMap.getTileHeight(); tileY < screenTileMapHeight;tileY=tileY + tileMap.getTileHeight()){
+			shapeRenderer.line(0, tileY, screenTileMapWidth, tileY);
+		}
+		 
+		//draw square around outside
+		shapeRenderer.rect(0, 0, screenTileMapWidth, screenTileMapHeight);
+		shapeRenderer.end();
 	}
 
 	@Override
