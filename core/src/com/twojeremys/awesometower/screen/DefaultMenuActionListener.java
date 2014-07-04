@@ -10,12 +10,13 @@ public class DefaultMenuActionListener extends InputListener {
 	//TODO: Turn this into an ENUM maybe?
 	private String whichButton;
 
-	public DefaultMenuActionListener(String inWhichButton)
-	{
+	public DefaultMenuActionListener(String inWhichButton) {
+		super();
 		this.whichButton = inWhichButton;
 	}
 	
 	//This only fires when the button is first pressed down
+	@Override
     public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
     	//TODO: Debug only line
         System.out.println("down pressed on [" + whichButton + "]");
@@ -23,6 +24,7 @@ public class DefaultMenuActionListener extends InputListener {
     }
 
     //This only fires when the button is first let up
+	@Override
     public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
     	
     	//TODO: Debug only line

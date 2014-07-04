@@ -1,4 +1,4 @@
-package com.twojeremys.awesometower.TileEngine;
+package com.twojeremys.awesometower.tileengine;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
@@ -29,7 +29,7 @@ public class TileMap {
 		tiles = new int[maxX][maxY];
 		assets = inAssets;
 		
-		CreateTileMapping();
+		createTileMapping();
 		
 		//Clear tiles
 		for (int x = 0; x < maxX - 1; x++){
@@ -48,7 +48,7 @@ public class TileMap {
 		}
 	}
 	
-	public void SetTile(int tileX, int tileY, int tileID){
+	public void setTile(int tileX, int tileY, int tileID){
 		
 		//Make sure the tile placement is on the screen, otherwise ignore it.
 		if (tileX >= 0 && tileX <= (maxX-1) &&	tileY >= 0 && tileY <= (maxY-1))
@@ -75,14 +75,14 @@ public class TileMap {
 		return this.maxY;
 	}
 	
-	private void CreateTileMapping(){
+	private void createTileMapping(){
 		tileMapping = new String[2];
 		
 		tileMapping[0] = "tiles/redTile.png";
 		tileMapping[1] = "tiles/yellowTile.png";
 	}
 
-	public void DrawMap(SpriteBatch batch) {
+	public void drawMap(SpriteBatch batch) {
 		
 		for (int x = 0; x < maxX - 1; x++){
 			for (int y = 0; y < maxY - 1; y++) {

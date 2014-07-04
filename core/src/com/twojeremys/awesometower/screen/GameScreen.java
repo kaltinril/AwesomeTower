@@ -15,7 +15,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector3;
-import com.twojeremys.awesometower.TileEngine.TileMap;
+import com.twojeremys.awesometower.tileengine.TileMap;
 
 public class GameScreen extends BaseScreen {
 
@@ -143,7 +143,7 @@ public class GameScreen extends BaseScreen {
 				touchPos.y = touchPos.y / tileMap.getTileHeight();
 
 				// Set the tile based on this position to tile 0
-				tileMap.SetTile((int) touchPos.x, (int) touchPos.y, 0);
+				tileMap.setTile((int) touchPos.x, (int) touchPos.y, 0);
 				break;
 			case manage:
 				
@@ -174,7 +174,7 @@ public class GameScreen extends BaseScreen {
 
 				// This is where our actual drawing and updating code will go for the game
 				batch.begin(); // start - send data to the graphics pipeline for loading/processing
-				tileMap.DrawMap(batch);
+				tileMap.drawMap(batch);
 				batch.end(); // end - Draw all items batched into the pipeline
 				
 				
