@@ -31,6 +31,7 @@ public class GameScreen extends BaseScreen {
 
 	// Items used for drawing
 	private SpriteBatch batch;
+	private SpriteBatch overlayBatch;  //Allow items to be drawn to the screen, independant of the camera.
 
 	// SIMULATION = Used to simulate a loading time
 	float time = 0;
@@ -57,8 +58,15 @@ public class GameScreen extends BaseScreen {
 	
 	// Camera, and fixing the origin of the screen
 	private OrthographicCamera camera; // com.badlogic.gdx.graphics.OrthographicCamera;
-	private Vector3 moveStartPosition;
+	//private Vector3 moveStartPosition;
 
+	//Input related
+	//Vector3 touchPos;
+	
+	//Get the actual full Pixel height for the combined tile space, minus 1
+	int screenTileMapHeight;
+	int screenTileMapWidth;
+	
 	public GameScreen(Game game) {
 		super(game);
 		assetsLoaded = false;
@@ -71,10 +79,12 @@ public class GameScreen extends BaseScreen {
 
 		// Get an instance of the SpriteBatch
 		batch = new SpriteBatch();
+		overlayBatch = new SpriteBatch();
 
 		// TODO: Doesn't affect the android screen resolution will need to use
 		// some sort of depth adjustment to camera view
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, 480, 320);
+		overlayBatch.getProjectionMatrix().setToOrtho2D(0, 0, 480, 320);
 
 		// Load the "loading screen" texture and sprite for rotation
 		loadingCircleTexture = new Texture("data/loadingCircle.png");
@@ -100,13 +110,18 @@ public class GameScreen extends BaseScreen {
 		assets.finishLoading(); //TODO if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
 
 		tileMap = new TileMap(30, 30, (TextureAtlas) assets.get("tiles.atlas"));
+		
+		//Get the actual full Pixel height for the combined tile space, minus 1
+		screenTileMapHeight = (tileMap.getMapHeight()*tileMap.getTileHeight()) - tileMap.getTileHeight();
+		screenTileMapWidth = (tileMap.getMapWidth()*tileMap.getTileWidth()) - tileMap.getTileWidth();
 
 		// Camera
 		// http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
-		// It appears all this really does, is flip the screen upside down.
-		// Which screws up text and images as they look upside down.
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
+		
+		// It appears all setting TRUE does, is flip the screen upside down.
+		// Which screws up text and images as they look upside down.
 		camera.setToOrtho(false, 480, 320);
 
 		// Setup build mode items:
@@ -131,16 +146,18 @@ public class GameScreen extends BaseScreen {
 		if (Gdx.input.isKeyPressed(Input.Keys.B) && buildMode == BuildMode.manage){
 			buildMode = BuildMode.build;
 		}
+		//Change to MANAGE mode
 		if (Gdx.input.isKeyPressed(Input.Keys.M) && buildMode == BuildMode.build){
 			buildMode = BuildMode.manage;
 		}
 		
+		//Look for input from the FIRST (0) source (Mouse on PC, first finger contact on Android)
 		if (Gdx.input.isTouched(0)) {
 
 			// Convert screen input to camera position
 			Vector3 touchPos = new Vector3();
-			touchPos.x = Gdx.input.getX();
-			touchPos.y = Gdx.input.getY();
+			touchPos.x = Gdx.input.getX();	//only gets input from the first touch
+			touchPos.y = Gdx.input.getY();	//only gets input from the first touch
 			touchPos.z = 0;
 			
 			// This will convert the screen coordinates passed in to "camera" coordinate system.
@@ -162,7 +179,7 @@ public class GameScreen extends BaseScreen {
 				//Allow moving the camera
 				
 				//Get the change in input position
-				//Didn't work
+				//Didn't work, was trying to fix the slight overdrag that happens
 				//Vector3 cameraDelta = new Vector3(Gdx.input.getDeltaX(), Gdx.input.getDeltaY(), 0);
 				//camera.unproject(cameraDelta);
 				
@@ -200,9 +217,12 @@ public class GameScreen extends BaseScreen {
 		} else {
 			// Simulate loading by waiting 1 seconds before setting
 			// "assetsLoaded".
-			if ((time > 1) && (assets.update())) {
-				assetsLoaded = true; // Check the status of the assets loading
-			}
+			// Check the status of the assets loading
+			//if (assetsLoaded == false){
+				if ((time > 1) && (assets.update())) {
+					assetsLoaded = true; 
+				}
+			//}
 
 			// This is a temporary loading section, and will no longer be displayed once the assets are loaded
 			loadingCircleSprite.rotate(6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
@@ -233,18 +253,17 @@ public class GameScreen extends BaseScreen {
 				debugInfo.append("Mb)");
 			}
 			
-			//TODO this should move with the camera and stay in the corner!!!!
-			batch.begin();
+			overlayBatch.begin();
 			loadingFont.setColor(Color.WHITE);
-			loadingFont.drawMultiLine(batch, debugInfo, 6, 35);
+			loadingFont.drawMultiLine(overlayBatch, debugInfo, 6, 35);
 			loadingFont.setColor(Color.CYAN);
-			loadingFont.drawMultiLine(batch, debugInfo, 5, 36);
-			loadingFont.setColor(Color.WHITE);
-			batch.end();
+			loadingFont.drawMultiLine(overlayBatch, debugInfo, 5, 36);
+			loadingFont.setColor(Color.WHITE);	
+			overlayBatch.end();
 		}
 	}
 
-	//TODO: Maybe this should be moved into the tilemap draw, since it uses so much from thje tilemap.
+	//TODO: Maybe this should be moved into the tilemap draw, since it uses so many private variables from the tilemap.
 	private void renderGridOverlay() {
 		//Map the shape render to the camera, so the lines move with it
 		shapeRenderer.setProjectionMatrix(camera.combined);
@@ -253,10 +272,8 @@ public class GameScreen extends BaseScreen {
 		shapeRenderer.begin(ShapeType.Line);
 		shapeRenderer.setColor(1, 1, 1, 1);	
 		
-		//Get the actual full Pixel height for the combined tile space, minus 1
-		int screenTileMapHeight = (tileMap.getMapHeight()*tileMap.getTileHeight()) - tileMap.getTileHeight();
-		int screenTileMapWidth = (tileMap.getMapWidth()*tileMap.getTileWidth()) - tileMap.getTileWidth();
 		
+		//TODO: Figure out why these 2 FOR loops grow the native heap. (ShapeRenderer issue?)
 		//Draw vertical lines
 		//Start at the right side of the first tile, and end at the left side of the last tile.
 		for(int tileX = tileMap.getTileWidth(); tileX < screenTileMapWidth;tileX=tileX + tileMap.getTileWidth()){
@@ -269,6 +286,7 @@ public class GameScreen extends BaseScreen {
 			shapeRenderer.line(0, tileY, screenTileMapWidth, tileY);
 		}
 		 
+		//TODO: Figure out why this rect call grows the native heap (eventually by its self without the above for loops)
 		//draw square around outside
 		shapeRenderer.rect(0, 0, screenTileMapWidth, screenTileMapHeight);
 		shapeRenderer.end();
