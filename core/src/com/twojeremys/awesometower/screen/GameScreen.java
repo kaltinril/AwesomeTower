@@ -3,7 +3,8 @@ package com.twojeremys.awesometower.screen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -15,12 +16,15 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
 
-public class GameScreen extends BaseScreen {
+public class GameScreen extends BaseScreen implements GestureListener, InputProcessor {
 
 	//
 	private AssetManager assets;
@@ -35,13 +39,12 @@ public class GameScreen extends BaseScreen {
 	private SpriteBatch overlayBatch;  //Allow items to be drawn to the screen, independant of the camera.
 
 	// SIMULATION = Used to simulate a loading time
-	float time = 0;
+	float deltaTime = 0;
 
 	// Font
 	private BitmapFont loadingFont; // com.badlogic.gdx.graphics.g2d.BitmapFont;
 	
 	//TODO add comments :)
-	private float timeUntilDebugInfoUpdate;
 	private final StringBuilder debugInfo;
 
 	// Building
@@ -108,13 +111,13 @@ public class GameScreen extends BaseScreen {
 		tileMap = new TileMap(30, 30, (TextureAtlas) assets.get("tiles.atlas"));
 		
 		//Get the actual full Pixel height for the combined tile space, minus 1
-		screenTileMapHeight = (tileMap.getMapHeight()*tileMap.getTileHeight()) - tileMap.getTileHeight();
-		screenTileMapWidth = (tileMap.getMapWidth()*tileMap.getTileWidth()) - tileMap.getTileWidth();
+		screenTileMapHeight = tileMap.getMapPixelHeight();
+		screenTileMapWidth = tileMap.getMapPixelWidth();
 
 		if (Constants.DEBUG) {
 			System.out.println("Width: " + Gdx.graphics.getWidth());
 			System.out.println("Height: " + Gdx.graphics.getHeight());
-			}
+		}
 
 		
 		// Camera
@@ -132,129 +135,47 @@ public class GameScreen extends BaseScreen {
 		
 		//Grid lines
 		shapeRenderer = new ShapeRenderer();
-
+		
+		//Setup all the Input handling
+        InputMultiplexer im = new InputMultiplexer();
+        GestureDetector gd = new GestureDetector(this);
+        im.addProcessor(gd);
+        im.addProcessor(this);
+        
+        Gdx.input.setInputProcessor(im);
 	}
 
 	@Override
 	public void render(float delta) {
-		delta = Math.min(0.06f, Gdx.graphics.getDeltaTime());
+		delta = Gdx.graphics.getDeltaTime();
 
+		//Clear the screen black.
 		Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		time += delta; // Used only to create a delay for loading screen simulation
-		
-		//http://www.gamefromscratch.com/post/2013/10/24/LibGDX-Tutorial-5-Handling-Input-Touch-and-gestures.aspx
-		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
-		//TODO: Need to convert this to an icon to be clicked on
-		//Change to BUILD mode
-		if (Gdx.input.isKeyPressed(Input.Keys.B) && buildMode == BuildMode.manage){
-			buildMode = BuildMode.build;
-		}
-		
-		//TODO: Need to convert this to an icon to be clicked on
-		//Change to MANAGE mode
-		if (Gdx.input.isKeyPressed(Input.Keys.M) && buildMode == BuildMode.build){
-			buildMode = BuildMode.manage;
-		}
-		
-		//TODO: Turn this into multi-touch pinch to zoom feature
-		if (Gdx.input.isKeyPressed(Input.Keys.Z)){
-			camera.zoom+= 0.1f;
-		}
-		
-		//TODO: Turn this into multi-touch pinch to zoom feature
-		if (Gdx.input.isKeyPressed(Input.Keys.X)){
-			camera.zoom-= 0.1f;
-		}
-		
-		//Look for input from the FIRST (0) source (Mouse on PC, first finger contact on Android)
-		if (Gdx.input.isTouched(0)) {
-
-			// Convert screen input to camera position
-			Vector3 touchPos = new Vector3();
-			touchPos.x = Gdx.input.getX();	//only gets input from the first touch
-			touchPos.y = Gdx.input.getY();	//only gets input from the first touch
-			touchPos.z = 0;
-			
-			// This will convert the screen coordinates passed in to "camera" coordinate system.
-			camera.unproject(touchPos); 
-
-			//Do stuff depending on the Build Mode
-			switch (buildMode){
-			case build:
-				
-				//TODO: Need to allow a hover/sprite/temporary "shadow" copy of
-				//  the tile, it would be drawn separately from the tileMap.drawMap method.
-				//  This would allow tiles to be dragged around, and the screen to be moved
-				//  both in build mode without switching back and forth between modes
-				
-				//Convert to TileX and TileY coordinates by dividing by the width/height
-				// For a 20x20 tile, this converts 20 to 1, 40 to 2, 60 to 3.
-				touchPos.x = touchPos.x / tileMap.getTileWidth();
-				touchPos.y = touchPos.y / tileMap.getTileHeight();
-
-				// Set the tile based on this position to tile 0
-				tileMap.setTile((int) touchPos.x, (int) touchPos.y, 2); //TODO remove hard code
-				break;
-			case manage:
-				
-				//Allow moving the camera			
-				
-				//TODO: Need to allow moving in Build mode eventually as well
-				//Move the camera based on that difference.
-				
-				//Force the camera to stay within the bounds of the tile map (WARNING: Does not take into account zooming)
-				//Have to adjust for the fact that the camera's (0,0) is the center of the screen, not the bottom left.
-				camera.position.x = MathUtils.clamp(camera.position.x - Gdx.input.getDeltaX(), camera.viewportWidth/2, tileMap.getMapPixelWidth() - (camera.viewportWidth/2));
-				camera.position.y = MathUtils.clamp(camera.position.y + Gdx.input.getDeltaY(), camera.viewportHeight/2, tileMap.getMapPixelHeight()- (camera.viewportHeight/2));
-				
-				//http://stackoverflow.com/questions/12039465/keep-libgdx-camera-inside-boundaries-when-panning-and-zooming
-				/*float minCameraX = camera.zoom * (camera.viewportWidth / 2);
-				float maxCameraX = tileMap.getMapPixelWidth() - minCameraX;
-				float minCameraY = camera.zoom * (camera.viewportHeight / 2);
-				float maxCameraY = tileMap.getMapPixelHeight() - minCameraY;
-				camera.position.set(Math.min(maxCameraX, Math.max(camera.position.x - Gdx.input.getDeltaX(), minCameraX)),
-				        Math.min(maxCameraY, Math.max(camera.position.y + Gdx.input.getDeltaY(), minCameraY)),
-				        0);*/
-				
-				
-				break;
-			default:
-				break;
-			}
-		}
+		deltaTime += delta; // Used only to create a delay for loading screen simulation
 
 		camera.update(); // Make sure the camera is updated, not really needed in this example
 		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
 
 		if (assetsLoaded) {
-			if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
-				game.setScreen(new MainMenuScreen(game));
-			} else {
+			// This is where our actual drawing and updating code will go for the game
+			batch.begin(); // start - send data to the graphics pipeline for loading/processing
+			tileMap.drawMap(batch);
+			batch.end(); // end - Draw all items batched into the pipeline
 
-				// This is where our actual drawing and updating code will go for the game
-				batch.begin(); // start - send data to the graphics pipeline for loading/processing
-				tileMap.drawMap(batch);
-				batch.end(); // end - Draw all items batched into the pipeline
-
-				//Draw the gridline
-				if (buildMode == BuildMode.build){
-					renderGridOverlay();
-				}
+			//Draw the gridline
+			if (buildMode == BuildMode.build){
+				renderGridOverlay();
 			}
 		} else {
-			// Simulate loading by waiting 1 seconds before setting
-			// "assetsLoaded".
 			// Check the status of the assets loading
-			//if (assetsLoaded == false){
-				if ((time > 1) && (assets.update())) {
-					assetsLoaded = true; 
-				}
-			//}
+			if (assets.update()) {
+				assetsLoaded = true;
+			}
 
 			// This is a temporary loading section, and will no longer be displayed once the assets are loaded
-			loadingCircleSprite.rotate(6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
+			loadingCircleSprite.rotate(-6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
 
 			overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
 			loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
@@ -264,14 +185,12 @@ public class GameScreen extends BaseScreen {
 		}
 
 		if (Constants.DEBUG) {
-			float deltaTime = Gdx.graphics.getDeltaTime();
 
 			float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
 			float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
 
-			timeUntilDebugInfoUpdate -= deltaTime;
-			if (timeUntilDebugInfoUpdate <= 0f) {
-				timeUntilDebugInfoUpdate = 3f;
+			if (deltaTime >= 3f) {
+				deltaTime = 0f;
 				debugInfo.setLength(0);
 				debugInfo.append("fps: ");
 				debugInfo.append(Gdx.graphics.getFramesPerSecond());
@@ -298,6 +217,31 @@ public class GameScreen extends BaseScreen {
 		}
 	}
 
+	
+	/******************************************************************************
+	 * Methods used for Input from multiple sources below
+	 ******************************************************************************/
+	
+	/*
+	Placing a Object
+	 1. Select object from build menu (some mechanism) [Triggers BUILD mode]
+	 2. LongPress event (Show object in Hover mode)
+	 3. Touch Dragged event (Move object to location of finger/mouse)
+	 4. TouchUp event (Show object in non-hover mode)
+	 5. Tap (multiple) [Place the Object into the tilemap], charge MONEY!
+
+	Build Mode:
+	 - Zoom  methods(zoom/scrolled)
+	 - Pan - (Moving the camera)
+	 - Disabled [Object/UI selection] (Tap) - only interact with "Object to be placed".
+
+	Manage Mode:
+	 - Zoom  methods(zoom/scrolled)
+	 - Pan - (Moving the camera)
+	 - Object/UI Selection (Tap)
+	*/
+	
+	
 	//TODO: Maybe this should be moved into the tilemap draw, since it uses so many private variables from the tilemap.
 	private void renderGridOverlay() {
 		//Map the shape render to the camera, so the lines move with it
@@ -333,5 +277,221 @@ public class GameScreen extends BaseScreen {
 		// Get rid of the assets loaded
 		loadingCircleTexture.dispose();
 		assets.dispose();
+	}
+
+	
+
+    @Override
+    public boolean touchDown(float x, float y, int pointer, int button) {
+		if (Constants.DEBUG){
+			System.out.println("GD: Touch Down: " + button + " at x:" + x + " y:" + y);
+		}
+        return false;
+    }
+
+    @Override
+    public boolean tap(float x, float y, int count, int button) {
+    	if (Constants.DEBUG) {
+        	System.out.println("Tap performed, finger" + Integer.toString(button));
+    	}
+    	
+    	
+		switch (buildMode){
+		case build:
+			
+			//TODO: Need to allow a hover/sprite/temporary "shadow" copy of
+			//  the tile, it would be drawn separately from the tileMap.drawMap method.
+			//  This would allow tiles to be dragged around, and the screen to be moved
+			//  both in build mode without switching back and forth between modes
+			
+			// Convert screen input to camera position
+			Vector3 touchPos = new Vector3();
+			touchPos.x = x;	//only gets input from the first touch
+			touchPos.y = y;	//only gets input from the first touch
+			touchPos.z = 0;
+			
+			// This will convert the screen coordinates passed in to "camera" coordinate system.
+			camera.unproject(touchPos); 
+
+			
+			//Convert to TileX and TileY coordinates by dividing by the width/height
+			// For a 20x20 tile, this converts 20 to 1, 40 to 2, 60 to 3.
+			touchPos.x = touchPos.x / tileMap.getTileWidth();
+			touchPos.y = touchPos.y / tileMap.getTileHeight();
+
+			// Set the tile based on this position to tile 0
+			tileMap.setTile((int) touchPos.x, (int) touchPos.y, 2); //TODO remove hard code
+			break;
+		case manage:
+
+
+		default:
+			break;
+		}
+    	
+        return false;
+    }
+
+    @Override
+    public boolean longPress(float x, float y) {
+    	if (Constants.DEBUG) {
+    		System.out.println("Long press performed");
+    	}
+    	
+    	//TODO: Put code here to make SelectedObject look like it is "Hovering"
+    	// By adding a shadow and/or increasing the image size slightly
+    	
+        return true;
+    }
+
+    @Override
+    public boolean fling(float velocityX, float velocityY, int button) {
+    	if (Constants.DEBUG) {
+    		System.out.println("Fling performed, velocity:" + Float.toString(velocityX) +
+                "," + Float.toString(velocityY));
+    	}
+        return true;
+    }
+
+    @Override
+    public boolean pan(float x, float y, float deltaX, float deltaY) {
+    	if (Constants.DEBUG) {
+    		System.out.println("Pan performed, delta:" + Float.toString(deltaX) +
+                "," + Float.toString(deltaY));
+    	}
+    	
+    	//TODO: Check to see if we've clicked on any of the overlay items first.
+    	
+    	
+		//TODO: Need to allow moving in Build mode eventually as well
+		//Move the camera based on that difference.
+		
+		//Force the camera to stay within the bounds of the tile map (WARNING: Does not take into account zooming)
+		//Have to adjust for the fact that the camera's (0,0) is the center of the screen, not the bottom left.
+    	
+    	//If no overlay items have been clicked on, move the camera.
+		camera.position.x = MathUtils.clamp(camera.position.x - deltaX, camera.viewportWidth/2, tileMap.getMapPixelWidth() - (camera.viewportWidth/2));
+		camera.position.y = MathUtils.clamp(camera.position.y + deltaY, camera.viewportHeight/2, tileMap.getMapPixelHeight() - (camera.viewportHeight/2));
+   	
+        return true;
+    }
+
+    @Override
+    public boolean zoom(float initialDistance, float distance) {
+    	if (Constants.DEBUG) {
+    		System.out.println("Zoom performed, initial Distance:" + Float.toString(initialDistance) +
+                " Distance: " + Float.toString(distance));
+    	}
+    	
+    	camera.zoom += (0.1f*(initialDistance-distance));
+    	
+        return true;
+    }
+
+    @Override
+    public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2,
+            Vector2 pointer1, Vector2 pointer2) {
+    	if (Constants.DEBUG) {
+    		System.out.println("Pinch performed");
+    	}
+        return true;
+    }
+
+	@Override
+	public boolean panStop(float x, float y, int pointer, int button) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean keyDown(int keycode) {
+		if (Constants.DEBUG){
+			System.out.println("Key Down: " + Input.Keys.toString(keycode));
+		}
+		
+		//http://www.gamefromscratch.com/post/2013/10/24/LibGDX-Tutorial-5-Handling-Input-Touch-and-gestures.aspx
+		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
+		//TODO: Need to convert this to an icon to be clicked on
+		//Change to BUILD mode
+		if (keycode == Input.Keys.B && buildMode == BuildMode.manage){
+			buildMode = BuildMode.build;
+			return true;
+		}
+		
+		//TODO: Need to convert this to an icon to be clicked on
+		//Change to MANAGE mode
+		if (keycode == Input.Keys.M && buildMode == BuildMode.build){
+			buildMode = BuildMode.manage;
+			return true;
+		}
+		
+		//TODO: Pop up "Are you sure you want to deploy your airbag?"
+		if (keycode == Input.Keys.ESCAPE) {
+			game.setScreen(new MainMenuScreen(game));
+			return true;
+		}
+		
+		return false;
+	}
+
+	@Override
+	public boolean keyUp(int keycode) {
+		if (Constants.DEBUG){
+			System.out.println("Key Up: " + Input.Keys.toString(keycode));
+		}
+		return false;
+	}
+
+	@Override
+	public boolean keyTyped(char character) {
+		if (Constants.DEBUG){
+			System.out.println("Key Typed: " + character);
+		}
+		
+		return false;
+	}
+
+	@Override
+	//Doesn't appear to ever fire?
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		if (Constants.DEBUG){
+			System.out.println("IP: Touch Down: " + button + " at x:" + screenX + " y:" + screenY);
+		}
+		return false;
+	}
+
+	@Override
+	//Fires after a touchDragged event set ends, perhaps other situations as well
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		if (Constants.DEBUG){
+			System.out.println("Touch Up: " + button + " at x:" + screenX + " y:" + screenY);
+		}
+		
+		//TODO: Put code here to "place" SelectedObject (remove any shadow effects, etc)
+		
+		return true;
+	}
+
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		if (Constants.DEBUG){
+			System.out.println("Touch Dragged: at x:" + screenX + " y:" + screenY);
+		}
+		
+		//TODO: Put code here to move the SelectedObject
+		
+		return true;
+	}
+
+	@Override
+	//Not going to be handling this, ignore.
+	public boolean mouseMoved(int screenX, int screenY) {
+		return false;
+	}
+
+	@Override
+	public boolean scrolled(int amount) {
+		camera.zoom += (0.1f*amount);
+		return true;
 	}
 }
