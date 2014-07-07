@@ -320,7 +320,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			touchPos.y = touchPos.y / tileMap.getTileHeight();
 
 			// Set the tile based on this position to tile 0
-			tileMap.setTile((int) touchPos.x, (int) touchPos.y, 2); //TODO remove hard code
+			tileMap.setTile((int) touchPos.x, (int) touchPos.y, 3); //TODO remove hard code
 			break;
 		case manage:
 

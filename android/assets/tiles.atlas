@@ -1,19 +1,26 @@
 
 tiles.png
-size: 44,22
+size: 86,22
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 redTile
   rotate: false
-  xy: 2, 2
+  xy: 44, 2
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
   index: 1
+wideGreenTile
+  rotate: false
+  xy: 2, 2
+  size: 40, 20
+  orig: 40, 20
+  offset: 0, 0
+  index: 3
 yellowTile
   rotate: false
-  xy: 24, 2
+  xy: 66, 2
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
