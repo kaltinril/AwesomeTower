@@ -46,6 +46,9 @@ public class TileMap {
 		if (Constants.DEBUG) {
 			for (int xy = 0; xy < maxX - 1; xy++)
 				this.tiles[xy][xy] = 2;
+			
+			this.tiles[0][0] = 1;
+			this.tiles[maxX-1][maxY-1] = 1;
 		}
 	}
 	
@@ -76,10 +79,20 @@ public class TileMap {
 		return this.maxY;
 	}
 	
+	public int getMapPixelWidth(){
+		return this.maxX*this.tileWidth;
+	}
+
+	public int getMapPixelHeight(){
+		return this.maxY*this.tileHeight;
+	}
+	
 	public void drawMap(SpriteBatch batch) {
 		
-		for (int x = 0; x < maxX - 1; x++){
-			for (int y = 0; y < maxY - 1; y++) {
+		//TODO: Use Camera.unproject with (0,0), (0,screenheight), (screenwidth,0), and (screenwidth,screenheight)
+		// This way we only draw tiles that will be partially or fully visible within the camera
+		for (int x = 0; x < maxX ; x++){
+			for (int y = 0; y < maxY; y++) {
 				if (tiles[x][y] != 0){
 					//System.out.println("tile contents: " + tiles[x][y]);
 					batch.draw(atlas.findRegion(tileMap.get(tiles[x][y])), x*tileWidth, y*tileHeight);

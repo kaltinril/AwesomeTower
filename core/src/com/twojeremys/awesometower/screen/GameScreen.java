@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
@@ -81,11 +82,6 @@ public class GameScreen extends BaseScreen {
 		batch = new SpriteBatch();
 		overlayBatch = new SpriteBatch();
 
-		// TODO: Doesn't affect the android screen resolution will need to use
-		// some sort of depth adjustment to camera view
-		batch.getProjectionMatrix().setToOrtho2D(0, 0, 480, 320);
-		overlayBatch.getProjectionMatrix().setToOrtho2D(0, 0, 480, 320);
-
 		// Load the "loading screen" texture and sprite for rotation
 		loadingCircleTexture = new Texture("data/loadingCircle.png");
 		loadingCircleSprite = new Sprite(loadingCircleTexture);
@@ -95,7 +91,7 @@ public class GameScreen extends BaseScreen {
 				((Gdx.graphics.getWidth() / 2) - (loadingCircleSprite.getWidth() / 2)),
 				((Gdx.graphics.getHeight() / 2) - (loadingCircleSprite.getHeight() / 2))
 				);
-
+		
 		// Font
 		loadingFont = new BitmapFont(); // com.badlogic.gdx.graphics.g2d.BitmapFont; 
 		
@@ -115,6 +111,12 @@ public class GameScreen extends BaseScreen {
 		screenTileMapHeight = (tileMap.getMapHeight()*tileMap.getTileHeight()) - tileMap.getTileHeight();
 		screenTileMapWidth = (tileMap.getMapWidth()*tileMap.getTileWidth()) - tileMap.getTileWidth();
 
+		if (Constants.DEBUG) {
+			System.out.println("Width: " + Gdx.graphics.getWidth());
+			System.out.println("Height: " + Gdx.graphics.getHeight());
+			}
+
+		
 		// Camera
 		// http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),
@@ -122,6 +124,7 @@ public class GameScreen extends BaseScreen {
 		
 		// It appears all setting TRUE does, is flip the screen upside down.
 		// Which screws up text and images as they look upside down.
+		//TODO: Set screen resolution here
 		camera.setToOrtho(false, 480, 320);
 
 		// Setup build mode items:
@@ -140,15 +143,29 @@ public class GameScreen extends BaseScreen {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		time += delta; // Used only to create a delay for loading screen simulation
-
+		
+		//http://www.gamefromscratch.com/post/2013/10/24/LibGDX-Tutorial-5-Handling-Input-Touch-and-gestures.aspx
+		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
 		//TODO: Need to convert this to an icon to be clicked on
 		//Change to BUILD mode
 		if (Gdx.input.isKeyPressed(Input.Keys.B) && buildMode == BuildMode.manage){
 			buildMode = BuildMode.build;
 		}
+		
+		//TODO: Need to convert this to an icon to be clicked on
 		//Change to MANAGE mode
 		if (Gdx.input.isKeyPressed(Input.Keys.M) && buildMode == BuildMode.build){
 			buildMode = BuildMode.manage;
+		}
+		
+		//TODO: Turn this into multi-touch pinch to zoom feature
+		if (Gdx.input.isKeyPressed(Input.Keys.Z)){
+			camera.zoom+= 0.1f;
+		}
+		
+		//TODO: Turn this into multi-touch pinch to zoom feature
+		if (Gdx.input.isKeyPressed(Input.Keys.X)){
+			camera.zoom-= 0.1f;
 		}
 		
 		//Look for input from the FIRST (0) source (Mouse on PC, first finger contact on Android)
@@ -166,7 +183,13 @@ public class GameScreen extends BaseScreen {
 			//Do stuff depending on the Build Mode
 			switch (buildMode){
 			case build:
-				// Convert to TileX and TileY coordinates by dividing by the width/height
+				
+				//TODO: Need to allow a hover/sprite/temporary "shadow" copy of
+				//  the tile, it would be drawn separately from the tileMap.drawMap method.
+				//  This would allow tiles to be dragged around, and the screen to be moved
+				//  both in build mode without switching back and forth between modes
+				
+				//Convert to TileX and TileY coordinates by dividing by the width/height
 				// For a 20x20 tile, this converts 20 to 1, 40 to 2, 60 to 3.
 				touchPos.x = touchPos.x / tileMap.getTileWidth();
 				touchPos.y = touchPos.y / tileMap.getTileHeight();
@@ -176,16 +199,25 @@ public class GameScreen extends BaseScreen {
 				break;
 			case manage:
 				
-				//Allow moving the camera
+				//Allow moving the camera			
 				
-				//Get the change in input position
-				//Didn't work, was trying to fix the slight overdrag that happens
-				//Vector3 cameraDelta = new Vector3(Gdx.input.getDeltaX(), Gdx.input.getDeltaY(), 0);
-				//camera.unproject(cameraDelta);
-				
+				//TODO: Need to allow moving in Build mode eventually as well
 				//Move the camera based on that difference.
-				camera.position.x -= Gdx.input.getDeltaX();//cameraDelta.x;
-				camera.position.y += Gdx.input.getDeltaY();//cameraDelta.y;
+				
+				//Force the camera to stay within the bounds of the tile map (WARNING: Does not take into account zooming)
+				//Have to adjust for the fact that the camera's (0,0) is the center of the screen, not the bottom left.
+				camera.position.x = MathUtils.clamp(camera.position.x - Gdx.input.getDeltaX(), camera.viewportWidth/2, tileMap.getMapPixelWidth() - (camera.viewportWidth/2));
+				camera.position.y = MathUtils.clamp(camera.position.y + Gdx.input.getDeltaY(), camera.viewportHeight/2, tileMap.getMapPixelHeight()- (camera.viewportHeight/2));
+				
+				//http://stackoverflow.com/questions/12039465/keep-libgdx-camera-inside-boundaries-when-panning-and-zooming
+				/*float minCameraX = camera.zoom * (camera.viewportWidth / 2);
+				float maxCameraX = tileMap.getMapPixelWidth() - minCameraX;
+				float minCameraY = camera.zoom * (camera.viewportHeight / 2);
+				float maxCameraY = tileMap.getMapPixelHeight() - minCameraY;
+				camera.position.set(Math.min(maxCameraX, Math.max(camera.position.x - Gdx.input.getDeltaX(), minCameraX)),
+				        Math.min(maxCameraY, Math.max(camera.position.y + Gdx.input.getDeltaY(), minCameraY)),
+				        0);*/
+				
 				
 				break;
 			default:
@@ -205,15 +237,12 @@ public class GameScreen extends BaseScreen {
 				batch.begin(); // start - send data to the graphics pipeline for loading/processing
 				tileMap.drawMap(batch);
 				batch.end(); // end - Draw all items batched into the pipeline
-				
-				
+
 				//Draw the gridline
-				
 				if (buildMode == BuildMode.build){
 					renderGridOverlay();
 				}
 			}
-
 		} else {
 			// Simulate loading by waiting 1 seconds before setting
 			// "assetsLoaded".
@@ -227,14 +256,14 @@ public class GameScreen extends BaseScreen {
 			// This is a temporary loading section, and will no longer be displayed once the assets are loaded
 			loadingCircleSprite.rotate(6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
 
-			batch.begin(); // start - send data to the graphics pipeline for loading/processing
-			loadingCircleSprite.draw(batch); // Draw the loading circle sprite
-			loadingFont.draw(batch, "Loading...", loadingCircleSprite.getX(),
+			overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
+			loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
+			loadingFont.draw(overlayBatch, "Loading...", loadingCircleSprite.getX(),
 					loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
-			batch.end(); // end - Draw all items batched into the pipeline
+			overlayBatch.end(); // end - Draw all items batched into the pipeline
 		}
-		
-		if (Constants.DEBUG) {	
+
+		if (Constants.DEBUG) {
 			float deltaTime = Gdx.graphics.getDeltaTime();
 
 			float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
@@ -250,7 +279,13 @@ public class GameScreen extends BaseScreen {
 				debugInfo.append((int) javaHeapInBytes);
 				debugInfo.append("Mb, heap: ");
 				debugInfo.append((int) nativeHeapInBytes);
-				debugInfo.append("Mb)");
+				debugInfo.append("Mb ");
+				debugInfo.append((float) camera.zoom);
+				debugInfo.append(" Zoom ");
+				debugInfo.append((int) camera.viewportWidth);
+				debugInfo.append(" w ");
+				debugInfo.append((int) camera.viewportHeight);
+				debugInfo.append(" h ");
 			}
 			
 			overlayBatch.begin();
@@ -271,7 +306,6 @@ public class GameScreen extends BaseScreen {
 		//Setup the Shape Render to user LINE (Not fill) and white color
 		shapeRenderer.begin(ShapeType.Line);
 		shapeRenderer.setColor(1, 1, 1, 1);	
-		
 		
 		//TODO: Figure out why these 2 FOR loops grow the native heap. (ShapeRenderer issue?)
 		//Draw vertical lines
