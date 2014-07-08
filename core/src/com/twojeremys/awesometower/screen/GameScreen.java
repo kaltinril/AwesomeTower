@@ -1,11 +1,14 @@
 package com.twojeremys.awesometower.screen;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -21,8 +24,10 @@ import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
+import com.twojeremys.awesometower.tileengine.TileProperties;
 
 public class GameScreen extends BaseScreen implements GestureListener, InputProcessor {
 
@@ -143,6 +148,74 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         im.addProcessor(this);
         
         Gdx.input.setInputProcessor(im);
+        
+        
+        //For whatever reason can't use Json.fromJson like a static method
+        //Had to create an instance
+        Json json = new Json();	
+        
+        
+        
+        
+        //Create basic structure of TileProperties Json file to see how it will look
+        //ArrayList<TileProperties> tp = new ArrayList<TileProperties>();
+        
+        //TODO: Remove these tests and examples
+        TileProperties tp = new TileProperties();
+        tp.setBlockable(true);
+        tp.setID(1);
+        tp.setName("yellowTile");
+        tp.setTileSpanX(1);
+        tp.setTileSpanY(1);
+        
+        /*tp.getProperties().put("ID", "1");
+        tp.getProperties().put("Name", "yellowTile");
+        tp.getProperties().put("TileSpanX", "1");
+        tp.getProperties().put("TileSpanY", "1");
+        tp.getProperties().put("blockable", "true");
+        
+        TileProperties tp2 = new TileProperties();
+        tp2.getProperties().put("ID", "2");
+        tp2.getProperties().put("Name", "redTile");
+        tp2.getProperties().put("TileSpanX", "1");
+        tp2.getProperties().put("TileSpanY", "1");
+        tp2.getProperties().put("blockable", "true");
+        
+        TileProperties tp3 = new TileProperties();
+        tp3.getProperties().put("ID", "3");
+        tp3.getProperties().put("Name", "wideGreenTile");
+        tp3.getProperties().put("TileSpanX", "2");
+        tp3.getProperties().put("TileSpanY", "1");
+        tp3.getProperties().put("blockable", "true");*/
+        
+        //Adds in the full class name for each element
+        ArrayList<TileProperties> tpal = new ArrayList<TileProperties>();
+        tpal.add(tp);
+        //tpal.add(tp2);
+        //tpal.add(tp3);      
+        
+        String outputData = json.toJson(tp);
+        
+        //first write
+        //FileHandle outHandle = Gdx.files.external("tileProperties13.txt"); //External location for me was D:\Thisisme1\
+        //outHandle.writeString(outputData, false);
+        
+        //second write
+        //outputData = json.toJson(tp2);
+        //outHandle.writeString(outputData, true);
+        
+        //Attempt at loading JSON
+
+        //https://github.com/libgdx/libgdx/wiki/File-handling
+        //https://github.com/libgdx/libgdx/wiki/Reading-&-writing-JSON
+        FileHandle handle = Gdx.files.internal("data/tiles/tileProperties.txt");	//Load file from internal assets
+        tileMap.setTileProperties(json.fromJson(tileMap.getTileProperties().getClass(), handle)); //Convert data into its class
+   	
+    	//System.out.println("Blockable: " + tileProperties.get(2).getProperties().get("blockable").getClass());
+        
+        for(TileProperties tpr:tileMap.getTileProperties())
+        	System.out.println("TileProperties: " + tpr.getName());
+    	
 	}
 
 	@Override

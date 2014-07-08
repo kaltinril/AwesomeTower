@@ -1,5 +1,6 @@
 package com.twojeremys.awesometower.tileengine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -10,6 +11,8 @@ import com.twojeremys.awesometower.Constants;
 public class TileMap {
 
 	private int[][] tiles;
+	
+	private ArrayList<TileProperties> tileProperties;
 	
 	private HashMap<Integer, String> tileMap = new HashMap<Integer, String>();
 	
@@ -29,6 +32,8 @@ public class TileMap {
 		this.maxY = inMaxY;
 		this.tiles = new int[maxX][maxY];
 		this.atlas = atlas;
+		
+		this.tileProperties = new ArrayList<TileProperties>();
 		
 		//Generate the tileMap so that we can correlate the grid index key to the texture region
 		for (AtlasRegion reg : atlas.getRegions()) {
@@ -87,6 +92,24 @@ public class TileMap {
 		return this.maxY*this.tileHeight;
 	}
 	
+	
+	public ArrayList<TileProperties> getTileProperties() {
+		return tileProperties;
+	}
+
+	public void setTileProperties(ArrayList<TileProperties> tileProperties) {
+		this.tileProperties = tileProperties;
+	}
+
+	
+	
+	/*
+	 * need a way to mark tile as "used"
+	 - Could use negative value of the same ID
+	 - Convert int[][] into Tile[][], where tile contains properties unique to each placeable object (How many square it takes up, etc)
+	 - Create TileProperties class and TileProperties[][], that indicates at each position, if it has a parent tile (X,y) and information about that tile.
+	 */
+
 	public void drawMap(SpriteBatch batch) {
 		
 		//TODO: Use Camera.unproject with (0,0), (0,screenheight), (screenwidth,0), and (screenwidth,screenheight)
