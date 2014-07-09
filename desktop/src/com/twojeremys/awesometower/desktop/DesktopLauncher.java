@@ -8,7 +8,7 @@ import com.twojeremys.awesometower.AwesomeTower;
 
 public class DesktopLauncher {
 
-	private static final boolean rebuildAtlas = true;
+	private static final boolean rebuildAtlas = false;
 	private static final boolean drawDebugOutline = false;
 
 	public static void main(String[] arg) {

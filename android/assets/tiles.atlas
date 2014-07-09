@@ -10,18 +10,18 @@ redTile
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
-  index: 1
+  index: -1
 wideGreenTile
   rotate: false
   xy: 2, 2
   size: 40, 20
   orig: 40, 20
   offset: 0, 0
-  index: 3
+  index: -1
 yellowTile
   rotate: false
   xy: 66, 2
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
-  index: 2
+  index: -1

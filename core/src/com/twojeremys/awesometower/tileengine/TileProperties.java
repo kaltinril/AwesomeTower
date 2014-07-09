@@ -1,14 +1,11 @@
 package com.twojeremys.awesometower.tileengine;
 
-import java.util.HashMap;
 
 //This class creates a way to store extra information about tiles
 //NOTE: all KEYs in the file must exist in the class.
 //NOTE: Adding new variables to the class does not break existing files (Backwards compatible), just stores NULL.
 
 public class TileProperties {
-	
-	//private HashMap<String, String> properties = new HashMap<String, String>();
 	
 	 private int ID;     		//The Numeric lookup value for this tile
 	 private String name; 		//Name from the Atlas file
@@ -26,7 +23,7 @@ public class TileProperties {
 	}
 
 	public void setID(int iD) {
-		ID = iD;
+		this.ID = iD;
 	}
 
 	public String getName() {
@@ -42,7 +39,7 @@ public class TileProperties {
 	}
 
 	public void setTileSpanX(int tileSpanX) {
-		tileSpanX = tileSpanX;
+		this.tileSpanX = tileSpanX;
 	}
 
 	public int getTileSpanY() {
@@ -50,7 +47,7 @@ public class TileProperties {
 	}
 
 	public void setTileSpanY(int tileSpanY) {
-		tileSpanY = tileSpanY;
+		this.tileSpanY = tileSpanY;
 	}
 
 	public boolean isBlockable() {
@@ -60,15 +57,5 @@ public class TileProperties {
 	public void setBlockable(boolean blockable) {
 		this.blockable = blockable;
 	}
-	
-	/*public HashMap<String, String> getProperties() {
-		return properties;
-	}
-
-	public void setProperties(HashMap<String, String> properties) {
-		this.properties = properties;
-	}*/
-	
-	
 	
 }

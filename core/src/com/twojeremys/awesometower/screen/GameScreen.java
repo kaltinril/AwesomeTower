@@ -1,6 +1,8 @@
 package com.twojeremys.awesometower.screen;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -161,49 +163,23 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         //ArrayList<TileProperties> tp = new ArrayList<TileProperties>();
         
         //TODO: Remove these tests and examples
-        TileProperties tp = new TileProperties();
+/*        TileProperties tp = new TileProperties();
         tp.setBlockable(true);
         tp.setID(1);
         tp.setName("yellowTile");
         tp.setTileSpanX(1);
         tp.setTileSpanY(1);
         
-        /*tp.getProperties().put("ID", "1");
-        tp.getProperties().put("Name", "yellowTile");
-        tp.getProperties().put("TileSpanX", "1");
-        tp.getProperties().put("TileSpanY", "1");
-        tp.getProperties().put("blockable", "true");
-        
-        TileProperties tp2 = new TileProperties();
-        tp2.getProperties().put("ID", "2");
-        tp2.getProperties().put("Name", "redTile");
-        tp2.getProperties().put("TileSpanX", "1");
-        tp2.getProperties().put("TileSpanY", "1");
-        tp2.getProperties().put("blockable", "true");
-        
-        TileProperties tp3 = new TileProperties();
-        tp3.getProperties().put("ID", "3");
-        tp3.getProperties().put("Name", "wideGreenTile");
-        tp3.getProperties().put("TileSpanX", "2");
-        tp3.getProperties().put("TileSpanY", "1");
-        tp3.getProperties().put("blockable", "true");*/
-        
         //Adds in the full class name for each element
-        ArrayList<TileProperties> tpal = new ArrayList<TileProperties>();
-        tpal.add(tp);
-        //tpal.add(tp2);
-        //tpal.add(tp3);      
+        HashMap<Integer, TileProperties> tpal = new HashMap<Integer, TileProperties>();
+        tpal.put(tp.getID(), tp);
         
-        String outputData = json.toJson(tp);
+        String outputData = json.toJson(tpal);
         
         //first write
-        //FileHandle outHandle = Gdx.files.external("tileProperties13.txt"); //External location for me was D:\Thisisme1\
-        //outHandle.writeString(outputData, false);
-        
-        //second write
-        //outputData = json.toJson(tp2);
-        //outHandle.writeString(outputData, true);
-        
+        FileHandle outHandle = Gdx.files.external("tileProperties1.txt"); //User Directory
+        outHandle.writeString(outputData, false);*/
+                
         //Attempt at loading JSON
 
         //https://github.com/libgdx/libgdx/wiki/File-handling
@@ -211,10 +187,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         FileHandle handle = Gdx.files.internal("data/tiles/tileProperties.txt");	//Load file from internal assets
         tileMap.setTileProperties(json.fromJson(tileMap.getTileProperties().getClass(), handle)); //Convert data into its class
    	
-    	//System.out.println("Blockable: " + tileProperties.get(2).getProperties().get("blockable").getClass());
-        
-        for(TileProperties tpr:tileMap.getTileProperties())
-        	System.out.println("TileProperties: " + tpr.getName());
+    	//for(Entry<Integer, TileProperties> tpr : tileMap.getTileProperties().entrySet())
+        //	System.out.println("Key: " + tpr.getKey() + " ID: " + tpr.getValue().getID() + ", Name: " + tpr.getValue().getName());
     	
 	}
 

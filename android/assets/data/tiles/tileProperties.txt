@@ -1,3 +1,5 @@
-[{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:1,blockable:true,ID:2,name:yellowTile},
-{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:1,blockable:true,ID:1,name:redTile},
-{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:2,tileSpanY:1,blockable:true,ID:3,name:wideGreenTile}]
+{
+1:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:1,blockable:true,name:redTile,ID:1},
+2:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:1,blockable:true,name:yellowTile,ID:2},
+3:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:2,tileSpanY:1,blockable:true,name:wideGreenTile,ID:3}
+}
