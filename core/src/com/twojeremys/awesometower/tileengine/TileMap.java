@@ -55,11 +55,16 @@ public class TileMap {
 	
 	public void setTile(int tileX, int tileY, int tile){
 		
-		//Make sure the tile placement is on the screen, otherwise ignore it.
-		if (tileX >= 0 && tileX <= (maxX-1) &&	tileY >= 0 && tileY <= (maxY-1))
-			this.tiles[tileX][tileY] = tile;
-		else
-			System.out.println("Outside " + tileX + " " + tileY);
+		//Make sure there are no collisions before we place the tile
+		//if there is then do nothing 
+		//TODO we should pop toast to inform the user of collision
+		if (!hasCollision(tileX, tileY, tile)) {
+			//Make sure the tile placement is on the screen, otherwise ignore it.
+			if (tileX >= 0 && tileX <= (maxX-1) &&	tileY >= 0 && tileY <= (maxY-1))
+				this.tiles[tileX][tileY] = tile;
+			else
+				System.out.println("Outside " + tileX + " " + tileY);
+		}
 	}
 	
 	/*
@@ -97,8 +102,26 @@ public class TileMap {
 	public void setTileProperties(HashMap<Integer, TileProperties> tileProperties) {
 		this.tileProperties = tileProperties;
 	}
-
 	
+	public boolean hasCollision(int tileX, int tileY, int tile) {
+		
+		//If the point is outside the bounds of the map return true
+		if (tileX < 0 && tileX >= maxX || tileY < 0 && tileY >= maxY) {
+			return true;
+		}
+		
+		//Get tile properties so we now size of the tile we're working with
+		TileProperties tp = tileProperties.get(String.valueOf(tile));
+		
+		//if the tile will end up outside the bounds of the map return true
+		if (tileX + tp.getTileSpanX() > maxX || tileY + tp.getTileSpanY() > maxY) {
+			return true;
+		}
+		
+		//TODO Check for other items in the cell
+		
+		return false;
+	}
 	
 	/*
 	 * need a way to mark tile as "used"
