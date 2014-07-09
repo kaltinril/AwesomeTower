@@ -1,9 +1,5 @@
 package com.twojeremys.awesometower.screen;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
-
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -29,7 +25,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
-import com.twojeremys.awesometower.tileengine.TileProperties;
 
 public class GameScreen extends BaseScreen implements GestureListener, InputProcessor {
 
@@ -54,12 +49,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	//TODO add comments :)
 	private final StringBuilder debugInfo;
 
-	// Building
-	private enum BuildMode {
-		manage, build;
-	}
-
-	private BuildMode buildMode;
+	//Are we in build mode?
+	private boolean buildMode;
 
 	// Tile engine and map
 	TileMap tileMap;
@@ -136,9 +127,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		// Which screws up text and images as they look upside down.
 		//TODO: Set screen resolution here
 		camera.setToOrtho(false, 480, 320);
-
-		// Setup build mode items:
-		buildMode = BuildMode.manage;
 		
 		//Grid lines
 		shapeRenderer = new ShapeRenderer();
@@ -212,7 +200,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			batch.end(); // end - Draw all items batched into the pipeline
 
 			//Draw the gridline
-			if (buildMode == BuildMode.build){
+			if (buildMode){
 				renderGridOverlay();
 			}
 		} else {
@@ -343,8 +331,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     	}
     	
     	
-		switch (buildMode){
-		case build:
+		if (buildMode){
 			
 			//TODO: Need to allow a hover/sprite/temporary "shadow" copy of
 			//  the tile, it would be drawn separately from the tileMap.drawMap method.
@@ -368,15 +355,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 			// Set the tile based on this position to tile 0
 			tileMap.setTile((int) touchPos.x, (int) touchPos.y, 3); //TODO remove hard code
-			break;
-		case manage:
-
-
-		default:
-			break;
 		}
     	
-        return false;
+        return true;
     }
 
     @Override
@@ -460,15 +441,15 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
 		//TODO: Need to convert this to an icon to be clicked on
 		//Change to BUILD mode
-		if (keycode == Input.Keys.B && buildMode == BuildMode.manage){
-			buildMode = BuildMode.build;
+		if (keycode == Input.Keys.B && !buildMode){
+			toggleBuildMode();
 			return true;
 		}
 		
 		//TODO: Need to convert this to an icon to be clicked on
 		//Change to MANAGE mode
-		if (keycode == Input.Keys.M && buildMode == BuildMode.build){
-			buildMode = BuildMode.manage;
+		if (keycode == Input.Keys.M && buildMode){
+			toggleBuildMode();
 			return true;
 		}
 		
@@ -540,5 +521,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	public boolean scrolled(int amount) {
 		camera.zoom += (0.1f*amount);
 		return true;
+	}
+	
+	private void toggleBuildMode() {
+		this.buildMode = !buildMode;
 	}
 }
