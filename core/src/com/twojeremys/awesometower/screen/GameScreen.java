@@ -41,22 +41,25 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private SpriteBatch overlayBatch;  //Allow items to be drawn to the screen, independant of the camera.
 
 	// SIMULATION = Used to simulate a loading time
-	float deltaTime = 0;
+	private float deltaTime = 0;
 
 	// Font
 	private BitmapFont loadingFont; // com.badlogic.gdx.graphics.g2d.BitmapFont;
 	
 	//TODO add comments :)
-	private final StringBuilder debugInfo;
+	private StringBuilder debugInfo;
 
 	//Are we in build mode?
 	private boolean buildMode;
 
 	// Tile engine and map
-	TileMap tileMap;
+	private TileMap tileMap;
+	
+	// Stores the tile bing used for placement
+	private int currentTile = 1;
 
 	//Grid Line
-	ShapeRenderer shapeRenderer;
+	private ShapeRenderer shapeRenderer;
 	
 	// Camera, and fixing the origin of the screen
 	private OrthographicCamera camera; // com.badlogic.gdx.graphics.OrthographicCamera;
@@ -66,8 +69,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	//Vector3 touchPos;
 	
 	//Get the actual full Pixel height for the combined tile space, minus 1
-	int screenTileMapHeight;
-	int screenTileMapWidth;
+	private int screenTileMapHeight;
+	private int screenTileMapWidth;
 	
 	public GameScreen(Game game) {
 		super(game);
@@ -253,30 +256,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	}
 
 	
-	/******************************************************************************
-	 * Methods used for Input from multiple sources below
-	 ******************************************************************************/
-	
-	/*
-	Placing a Object
-	 1. Select object from build menu (some mechanism) [Triggers BUILD mode]
-	 2. LongPress event (Show object in Hover mode)
-	 3. Touch Dragged event (Move object to location of finger/mouse)
-	 4. TouchUp event (Show object in non-hover mode)
-	 5. Tap (multiple) [Place the Object into the tilemap], charge MONEY!
-
-	Build Mode:
-	 - Zoom  methods(zoom/scrolled)
-	 - Pan - (Moving the camera)
-	 - Disabled [Object/UI selection] (Tap) - only interact with "Object to be placed".
-
-	Manage Mode:
-	 - Zoom  methods(zoom/scrolled)
-	 - Pan - (Moving the camera)
-	 - Object/UI Selection (Tap)
-	*/
-	
-	
 	//TODO: Maybe this should be moved into the tilemap draw, since it uses so many private variables from the tilemap.
 	private void renderGridOverlay() {
 		//Map the shape render to the camera, so the lines move with it
@@ -313,14 +292,36 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		loadingCircleTexture.dispose();
 		assets.dispose();
 	}
+	
+	/******************************************************************************
+	 * Methods used for Input from multiple sources below
+	 ******************************************************************************/	
+	
+	/*
+	Placing a Object
+	 1. Select object from build menu (some mechanism) [Triggers BUILD mode]
+	 2. LongPress event (Show object in Hover mode)
+	 3. Touch Dragged event (Move object to location of finger/mouse)
+	 4. TouchUp event (Show object in non-hover mode)
+	 5. Tap (multiple) [Place the Object into the tilemap], charge MONEY!
+
+	Build Mode:
+	 - Zoom  methods(zoom/scrolled)
+	 - Pan - (Moving the camera)
+	 - Disabled [Object/UI selection] (Tap) - only interact with "Object to be placed".
+	 - Object Selection (Longpress)
+
+	Manage Mode:
+	 - Zoom  methods(zoom/scrolled)
+	 - Pan - (Moving the camera)
+	 - Object/UI Selection (Tap)
+	*/
 
 	
 
     @Override
+    //Not used
     public boolean touchDown(float x, float y, int pointer, int button) {
-		if (Constants.DEBUG){
-			System.out.println("GD: Touch Down: " + button + " at x:" + x + " y:" + y);
-		}
         return false;
     }
 
@@ -345,16 +346,15 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			touchPos.z = 0;
 			
 			// This will convert the screen coordinates passed in to "camera" coordinate system.
-			camera.unproject(touchPos); 
-
+			camera.unproject(touchPos);
 			
 			//Convert to TileX and TileY coordinates by dividing by the width/height
 			// For a 20x20 tile, this converts 20 to 1, 40 to 2, 60 to 3.
-			touchPos.x = touchPos.x / tileMap.getTileWidth();
-			touchPos.y = touchPos.y / tileMap.getTileHeight();
+			touchPos.x /= tileMap.getTileWidth();
+			touchPos.y /= tileMap.getTileHeight();
 
 			// Set the tile based on this position to tile 0
-			tileMap.setTile((int) touchPos.x, (int) touchPos.y, 3); //TODO remove hard code
+			tileMap.setTile((int) touchPos.x, (int) touchPos.y, this.currentTile);
 		}
     	
         return true;
@@ -373,12 +373,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     }
 
     @Override
+    //Not used
     public boolean fling(float velocityX, float velocityY, int button) {
-    	if (Constants.DEBUG) {
-    		System.out.println("Fling performed, velocity:" + Float.toString(velocityX) +
-                "," + Float.toString(velocityY));
-    	}
-        return true;
+        return false;
     }
 
     @Override
@@ -426,8 +423,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     }
 
 	@Override
+	//Not used
 	public boolean panStop(float x, float y, int pointer, int button) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -441,15 +438,24 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
 		//TODO: Need to convert this to an icon to be clicked on
 		//Change to BUILD mode
-		if (keycode == Input.Keys.B && !buildMode){
+		if (!buildMode && keycode == Input.Keys.B){
 			toggleBuildMode();
 			return true;
 		}
 		
 		//TODO: Need to convert this to an icon to be clicked on
 		//Change to MANAGE mode
-		if (keycode == Input.Keys.M && buildMode){
+		if (buildMode && keycode == Input.Keys.M){
 			toggleBuildMode();
+			return true;
+		}
+		
+		//TODO temp code used to toggle through the available tiles
+		if (Constants.DEBUG && buildMode && keycode == Input.Keys.T){
+			if (currentTile == 3)
+				currentTile = 1;
+			else
+				currentTile++;
 			return true;
 		}
 		
@@ -463,28 +469,21 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	}
 
 	@Override
+	//Not used
 	public boolean keyUp(int keycode) {
-		if (Constants.DEBUG){
-			System.out.println("Key Up: " + Input.Keys.toString(keycode));
-		}
 		return false;
 	}
 
 	@Override
-	public boolean keyTyped(char character) {
-		if (Constants.DEBUG){
-			System.out.println("Key Typed: " + character);
-		}
-		
+	//Not used
+	//TODO could use this to capture codes to triggering certain events e.g. more money.
+	public boolean keyTyped(char character) {	
 		return false;
 	}
 
 	@Override
-	//Doesn't appear to ever fire?
+	//Not used
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if (Constants.DEBUG){
-			System.out.println("IP: Touch Down: " + button + " at x:" + screenX + " y:" + screenY);
-		}
 		return false;
 	}
 
