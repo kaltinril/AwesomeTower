@@ -38,9 +38,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	// Items used for drawing
 	private SpriteBatch batch;
-	private SpriteBatch overlayBatch;  //Allow items to be drawn to the screen, independant of the camera.
+	private SpriteBatch overlayBatch;  //Allow items to be drawn to the screen, independent of the camera.
 
-	// SIMULATION = Used to simulate a loading time
+	// Store the time difference
 	private float deltaTime = 0;
 
 	// Font
@@ -55,7 +55,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	// Tile engine and map
 	private TileMap tileMap;
 	
-	// Stores the tile bing used for placement
+	// Stores the tile being used for placement
 	private int currentTile = 1;
 
 	//Grid Line
@@ -63,10 +63,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 	// Camera, and fixing the origin of the screen
 	private OrthographicCamera camera; // com.badlogic.gdx.graphics.OrthographicCamera;
-	//private Vector3 moveStartPosition;
-
-	//Input related
-	//Vector3 touchPos;
 	
 	//Get the actual full Pixel height for the combined tile space, minus 1
 	private int screenTileMapHeight;

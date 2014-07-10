@@ -7,12 +7,13 @@ package com.twojeremys.awesometower.tileengine;
 
 public class TileProperties {
 	
-	 private int ID;     		//The Numeric lookup value for this tile
-	 private String name; 		//Name from the Atlas file
-	 private int tileSpanX;  	//The number of horizontal tiles the image will span
-	 private int tileSpanY;  	//The number of vertical tiles the image will span
-	 private boolean blockable; //Can this type of tile block placement of other tiles?
-	 
+	private int ID;     		//The Numeric lookup value for this tile
+	private String name; 		//Name from the Atlas file
+	private int tileSpanX;  	//The number of horizontal tiles the image will span
+	private int tileSpanY;  	//The number of vertical tiles the image will span
+	private boolean blockable; //Can this type of tile block placement of other tiles?
+	
+	//TODO: Perhaps add a AtlasRegion to this, and store the Atlas details for the tile in the properties.  Less lookup needed at that point
 	
 	public TileProperties(){
 		

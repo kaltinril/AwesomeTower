@@ -8,7 +8,7 @@ import com.twojeremys.awesometower.Constants;
 
 public class TileMap {
 
-	private int[][] tiles;
+	private Tile[][] tiles;
 	
 	//Holds a map of all the tile properties we use; loads from file in GameScreen.java
 	private HashMap<Integer, TileProperties> tileProperties;
@@ -27,7 +27,7 @@ public class TileMap {
 	public TileMap(int inMaxX, int inMaxY, TextureAtlas atlas) {
 		this.maxX = inMaxX;
 		this.maxY = inMaxY;
-		this.tiles = new int[maxX][maxY];
+		this.tiles = new Tile[maxX][maxY];
 		this.atlas = atlas;
 		
 		//set the hash to new object (will be overridden later)
@@ -36,20 +36,20 @@ public class TileMap {
 		//Clear tiles
 		for (int x = 0; x < maxX - 1; x++){
 			for (int y = 0; y < maxY - 1; y++){
-				this.tiles[x][y] = 0;
+				this.tiles[x][y] = new Tile(0);
 			}
 		}
 		
 		//TODO: Remove when done testing screen fills
 		if (Constants.DEBUG) {
 			for (int xy = 0; xy < maxX - 1; xy++)
-				this.tiles[xy][xy] = 2;
+				this.tiles[xy][xy] = new Tile(2);
 			
 			//make the corners red
-			this.tiles[0][0] = 1;
-			this.tiles[maxX-1][maxY-1] = 1;
-			this.tiles[maxX-1][0] = 1;
-			this.tiles[0][maxY-1] = 1;
+			this.tiles[0][0] = new Tile(1);
+			this.tiles[maxX-1][maxY-1] = new Tile(1);
+			this.tiles[maxX-1][0] = new Tile(1);
+			this.tiles[0][maxY-1] = new Tile(1);
 		}
 	}
 	
@@ -59,11 +59,23 @@ public class TileMap {
 		//if there is then do nothing 
 		//TODO we should pop toast to inform the user of collision
 		if (!hasCollision(tileX, tileY, tile)) {
-			//Make sure the tile placement is on the screen, otherwise ignore it.
-			if (tileX >= 0 && tileX <= (maxX-1) &&	tileY >= 0 && tileY <= (maxY-1))
-				this.tiles[tileX][tileY] = tile;
-			else
-				System.out.println("Outside " + tileX + " " + tileY);
+			
+			//Get tile properties so we know size of the tile we're working with
+			TileProperties tp = tileProperties.get(String.valueOf(tile));
+			
+			Tile ParentTile = new Tile(tile);
+			
+			//Set all the Child tiles (negative means child)
+			for (int spanX=0; spanX < tp.getTileSpanX(); spanX++)
+				for (int spanY=0; spanY < tp.getTileSpanY(); spanY++)
+					this.tiles[tileX+spanX][tileY+spanY] = new Tile(-tile, ParentTile);
+			
+			//Set the Intial tile spot to the correct value
+			this.tiles[tileX][tileY] = new Tile(tile);
+			
+		}
+		else{
+			System.out.println("Outside or Collision " + tileX + " " + tileY);
 		}
 	}
 	
@@ -106,11 +118,11 @@ public class TileMap {
 	public boolean hasCollision(int tileX, int tileY, int tile) {
 		
 		//If the point is outside the bounds of the map return true
-		if (tileX < 0 && tileX >= maxX || tileY < 0 && tileY >= maxY) {
+		if (tileX < 0 || tileX >= maxX || tileY < 0 || tileY >= maxY) {
 			return true;
 		}
 		
-		//Get tile properties so we now size of the tile we're working with
+		//Get tile properties so we know size of the tile we're working with
 		TileProperties tp = tileProperties.get(String.valueOf(tile));
 		
 		//if the tile will end up outside the bounds of the map return true
@@ -119,27 +131,60 @@ public class TileMap {
 		}
 		
 		//TODO Check for other items in the cell
+		for (int spanX = 0; spanX < tp.getTileSpanX(); spanX++){
+			for (int spanY = 0; spanY < tp.getTileSpanY(); spanY++){
+				if (tiles[tileX+spanX][tileY+spanY] != null){
+					if (tiles[tileX+spanX][tileY+spanY].getID() != 0){
+						return true;
+					}
+				}
+			}
+		}
 		
 		return false;
 	}
-	
-	/*
-	 * need a way to mark tile as "used"
-	 - Could use negative value of the same ID
-	 - Convert int[][] into Tile[][], where tile contains properties unique to each placeable object (How many square it takes up, etc)
-	 - Create TileProperties class and TileProperties[][], that indicates at each position, if it has a parent tile (X,y) and information about that tile.
-	 */
 
+	//This returns the room clicked on, regardless of which PART of that room is clicked on
+	// Meaning if a tile is a "Child" return the parent instead.
+	// If the tile is empty, return null
+	public Tile getTile(int tileX, int tileY){
+		Tile possibleChildTile = tiles[tileX][tileY];
+		
+		if (possibleChildTile != null)
+		{
+			if (possibleChildTile.getParentTile() != null){
+				return possibleChildTile.getParentTile();
+			}
+			else {
+				return possibleChildTile; //This means that it IS the parent
+			}
+		}
+		else {
+			return null;
+		}
+	}
+	
 	public void drawMap(SpriteBatch batch) {
 		//TODO: Use Camera.unproject with (0,0), (0,screenheight), (screenwidth,0), and (screenwidth,screenheight)
 		// This way we only draw tiles that will be partially or fully visible within the camera
 		for (int x = 0; x < maxX ; x++){
 			for (int y = 0; y < maxY; y++) {
-				if (tiles[x][y] != 0){
+				if (tiles[x][y] != null && tiles[x][y].getID() > 0){
 					//For some reason using an Integer or int does not work.  have to cast it to string to find the match
 					// It makes no sense to me given that the hashmap key is set to be an Integer.
-					if (tileProperties.containsKey(String.valueOf(tiles[x][y]))) {
-						batch.draw(atlas.findRegion(tileProperties.get(String.valueOf(tiles[x][y])).getName()), x*tileWidth, y*tileHeight);
+					if (tileProperties.containsKey(String.valueOf(tiles[x][y].getID()))) {
+						
+						//Get a reference to the tile property to pull out more information from it
+						TileProperties tp = tileProperties.get(String.valueOf(tiles[x][y].getID()));
+						
+						//Draw this tile to the designated width and height based on tilespan and tilewidth/height
+						batch.draw(atlas.findRegion(tp.getName()), 
+								x*tileWidth, y*tileHeight, //Position
+								0, 0, //Origin Offset
+								tp.getTileSpanX() * tileWidth, tp.getTileSpanY() * tileHeight, //Width and Height to stretch to
+								1, 1,   //Scale, Could use this for "floating" affect
+								0		//rotation
+								);
 					}
 				}
 			}
