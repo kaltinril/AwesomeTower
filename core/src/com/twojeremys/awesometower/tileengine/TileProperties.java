@@ -13,7 +13,7 @@ public class TileProperties {
 	private int tileSpanY;  	//The number of vertical tiles the image will span
 	private boolean blockable; //Can this type of tile block placement of other tiles?
 	
-	//TODO: Perhaps add a AtlasRegion to this, and store the Atlas details for the tile in the properties.  Less lookup needed at that point
+	//TODO ENHANCEMENT Perhaps add a AtlasRegion to this, and store the Atlas details for the tile in the properties.  Less lookup needed at that point
 	
 	public TileProperties(){
 		

@@ -1,6 +1,7 @@
 package com.twojeremys.awesometower.screen;
 
 import com.badlogic.gdx.Game;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
@@ -26,6 +27,10 @@ import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
 
+//TODO TASK
+//TODO ENHANCEMENT
+//TODO DEBUG
+
 public class GameScreen extends BaseScreen implements GestureListener, InputProcessor {
 
 	//
@@ -46,7 +51,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	// Font
 	private BitmapFont loadingFont; // com.badlogic.gdx.graphics.g2d.BitmapFont;
 	
-	//TODO add comments :)
+	//Used to hold debug info in bottom left corner of screen
 	private StringBuilder debugInfo;
 
 	//Are we in build mode?
@@ -103,7 +108,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		// Load all items needed for game asynchronously with the AssetManager
 		assets = new AssetManager();
 		assets.load("tiles.atlas", TextureAtlas.class); //load the tiles atlas
-		assets.finishLoading(); //TODO if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
+		assets.finishLoading(); //FIXME if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
 
 		tileMap = new TileMap(30, 30, (TextureAtlas) assets.get("tiles.atlas"));
 		
@@ -124,7 +129,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		// It appears all setting TRUE does, is flip the screen upside down.
 		// Which screws up text and images as they look upside down.
-		//TODO: Set screen resolution here
+		//TODO TASK Set screen resolution here
 		camera.setToOrtho(false, 480, 320);
 		
 		//Grid lines
@@ -149,7 +154,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         //Create basic structure of TileProperties Json file to see how it will look
         //ArrayList<TileProperties> tp = new ArrayList<TileProperties>();
         
-        //TODO: Remove these tests and examples
+        //TODO DEBUG Remove these tests and examples
 /*        TileProperties tp = new TileProperties();
         tp.setBlockable(true);
         tp.setID(1);
@@ -252,7 +257,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	}
 
 	
-	//TODO: Maybe this should be moved into the tilemap draw, since it uses so many private variables from the tilemap.
+	//TODO ENHANCEMENT Maybe this should be moved into the tilemap draw, since it uses so many private variables from the tilemap.
 	private void renderGridOverlay() {
 		//Map the shape render to the camera, so the lines move with it
 		shapeRenderer.setProjectionMatrix(camera.combined);
@@ -261,7 +266,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		shapeRenderer.begin(ShapeType.Line);
 		shapeRenderer.setColor(1, 1, 1, 1);	
 		
-		//TODO: Figure out why these 2 FOR loops grow the native heap. (ShapeRenderer issue?)
+		//FIXME Figure out why these 2 FOR loops grow the native heap. (ShapeRenderer issue?)
 		//Draw vertical lines
 		//Start at the right side of the first tile, and end at the left side of the last tile.
 		for(int tileX = tileMap.getTileWidth(); tileX < screenTileMapWidth;tileX=tileX + tileMap.getTileWidth()){
@@ -274,7 +279,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			shapeRenderer.line(0, tileY, screenTileMapWidth, tileY);
 		}
 		 
-		//TODO: Figure out why this rect call grows the native heap (eventually by its self without the above for loops)
+		//FIXME Figure out why this rect call grows the native heap (eventually by its self without the above for loops)
 		//draw square around outside
 		shapeRenderer.rect(0, 0, screenTileMapWidth, screenTileMapHeight);
 		shapeRenderer.end();
@@ -330,7 +335,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     	
 		if (buildMode){
 			
-			//TODO: Need to allow a hover/sprite/temporary "shadow" copy of
+			//TODO TASK Need to allow a hover/sprite/temporary "shadow" copy of
 			//  the tile, it would be drawn separately from the tileMap.drawMap method.
 			//  This would allow tiles to be dragged around, and the screen to be moved
 			//  both in build mode without switching back and forth between modes
@@ -362,7 +367,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     		System.out.println("Long press performed");
     	}
     	
-    	//TODO: Put code here to make SelectedObject look like it is "Hovering"
+    	//TODO TASK Put code here to make SelectedObject look like it is "Hovering"
     	// By adding a shadow and/or increasing the image size slightly
     	
         return true;
@@ -381,12 +386,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
                 "," + Float.toString(deltaY));
     	}
     	
-    	//TODO: Check to see if we've clicked on any of the overlay items first.
+    	//TODO TASK Check to see if we've clicked on any of the overlay items first.
     	
-    	
-		//TODO: Need to allow moving in Build mode eventually as well
-		//Move the camera based on that difference.
-		
 		//Force the camera to stay within the bounds of the tile map (WARNING: Does not take into account zooming)
 		//Have to adjust for the fact that the camera's (0,0) is the center of the screen, not the bottom left.
     	
@@ -432,21 +433,21 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//http://www.gamefromscratch.com/post/2013/10/24/LibGDX-Tutorial-5-Handling-Input-Touch-and-gestures.aspx
 		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
-		//TODO: Need to convert this to an icon to be clicked on
+		//TODO TASK Need to convert this to an icon to be clicked on
 		//Change to BUILD mode
 		if (!buildMode && keycode == Input.Keys.B){
 			toggleBuildMode();
 			return true;
 		}
 		
-		//TODO: Need to convert this to an icon to be clicked on
+		//TODO TASK Need to convert this to an icon to be clicked on
 		//Change to MANAGE mode
 		if (buildMode && keycode == Input.Keys.M){
 			toggleBuildMode();
 			return true;
 		}
 		
-		//TODO temp code used to toggle through the available tiles
+		//TODO DEBUG temp code used to toggle through the available tiles
 		if (Constants.DEBUG && buildMode && keycode == Input.Keys.T){
 			if (currentTile == 3)
 				currentTile = 1;
@@ -455,7 +456,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			return true;
 		}
 		
-		//TODO: Pop up "Are you sure you want to deploy your airbag?"
+		//TODO TASK Pop up an "are you sure" message
 		if (keycode == Input.Keys.ESCAPE) {
 			game.setScreen(new MainMenuScreen(game));
 			return true;
@@ -472,7 +473,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	//Not used
-	//TODO could use this to capture codes to triggering certain events e.g. more money.
+	//TODO ENHANCEMENT could use this to capture codes to triggering certain events e.g. more money.
 	public boolean keyTyped(char character) {	
 		return false;
 	}
@@ -490,7 +491,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			System.out.println("Touch Up: " + button + " at x:" + screenX + " y:" + screenY);
 		}
 		
-		//TODO: Put code here to "place" SelectedObject (remove any shadow effects, etc)
+		//TODO TASK Put code here to "place" SelectedObject (remove any shadow effects, etc)
 		
 		return true;
 	}
@@ -501,7 +502,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			System.out.println("Touch Dragged: at x:" + screenX + " y:" + screenY);
 		}
 		
-		//TODO: Put code here to move the SelectedObject
+		//TODO TASK Put code here to move the SelectedObject
 		
 		return true;
 	}

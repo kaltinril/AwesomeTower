@@ -20,12 +20,13 @@ G:Green (Parent):
  Store all statistics*/
 
 public class Tile {
-	// A Negative value indicates a "child" tile
+	
+	// The ID of the image coming from TileProperties.id
 	private int ID;
 	
 	private Tile parentTile;
 	
-	//TODO: Add stats for tile (income, cost, health/dirt, noise, popularity, etc)
+	//TODO TASK Add stats for tile (income, cost, health/dirt, noise, popularity, etc)
 	
 	public Tile(int iD){
 		this.ID = iD;
@@ -51,6 +52,10 @@ public class Tile {
 
 	public void setParentTile(Tile parentTile) {
 		this.parentTile = parentTile;
+	}
+	
+	public boolean hasParent() {
+		return this.parentTile != null;
 	}
 
 	

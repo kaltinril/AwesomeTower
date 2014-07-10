@@ -9,7 +9,7 @@ import com.twojeremys.awesometower.screen.IntroScreen;
 
 public class DefaultMenuActionListener extends InputListener {
 	
-	//TODO: Turn this into an ENUM maybe?
+	//TODO ENHANCE Turn this into an ENUM maybe?
 	private String whichButton;
 
 	public DefaultMenuActionListener(String inWhichButton) {
@@ -44,7 +44,7 @@ public class DefaultMenuActionListener extends InputListener {
     		((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener())));
     	}
     	else if (whichButton.equalsIgnoreCase("loadgame")){
-    		// TODO: put the load game code screen/method call here
+    		// TODO TASK put the load game code screen/method call here
     		System.out.println("TODO: Load game code");
     	}
     		

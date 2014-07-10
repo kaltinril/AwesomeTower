@@ -33,17 +33,8 @@ public class TileMap {
 		//set the hash to new object (will be overridden later)
 		this.tileProperties = new HashMap<Integer, TileProperties>();
 		
-		//Clear tiles
-		for (int x = 0; x < maxX - 1; x++){
-			for (int y = 0; y < maxY - 1; y++){
-				this.tiles[x][y] = new Tile(0);
-			}
-		}
-		
-		//TODO: Remove when done testing screen fills
+		//TODO DEBUG Remove when done testing screen fills
 		if (Constants.DEBUG) {
-			for (int xy = 0; xy < maxX - 1; xy++)
-				this.tiles[xy][xy] = new Tile(2);
 			
 			//make the corners red
 			this.tiles[0][0] = new Tile(1);
@@ -59,16 +50,15 @@ public class TileMap {
 	public Tile getTile(int tileX, int tileY){
 		Tile possibleChildTile = tiles[tileX][tileY];
 		
-		if (possibleChildTile != null)
-		{
-			if (possibleChildTile.getParentTile() != null){
+		if (possibleChildTile != null) {
+			
+			if (possibleChildTile.hasParent()){
 				return possibleChildTile.getParentTile();
-			}
-			else {
+			} else {
 				return possibleChildTile; //This means that it IS the parent
 			}
-		}
-		else {
+			
+		} else {
 			return null;
 		}
 	}
@@ -77,21 +67,21 @@ public class TileMap {
 		
 		//Make sure there are no collisions before we place the tile
 		//if there is then do nothing 
-		//TODO we should pop toast to inform the user of collision
+		//TODO TASK we should pop toast to inform the user of collision
 		if (!hasCollision(tileX, tileY, tile)) {
 			
 			//Get tile properties so we know size of the tile we're working with
 			TileProperties tp = tileProperties.get(String.valueOf(tile));
 			
-			Tile ParentTile = new Tile(tile);
+			Tile parentTile = new Tile(tile);
 			
-			//Set all the Child tiles (negative means child)
+			//Set the child tiles to reference the parent for collision detection
 			for (int spanX=0; spanX < tp.getTileSpanX(); spanX++)
 				for (int spanY=0; spanY < tp.getTileSpanY(); spanY++)
-					this.tiles[tileX+spanX][tileY+spanY] = new Tile(-tile, ParentTile);
+					this.tiles[tileX+spanX][tileY+spanY] = new Tile(tile, parentTile);
 			
-			//Set the Intial tile spot to the correct value
-			this.tiles[tileX][tileY] = new Tile(tile);
+			//Set the Initial tile spot to the correct value
+			this.tiles[tileX][tileY] = parentTile;
 			
 		}
 		else{
@@ -150,13 +140,11 @@ public class TileMap {
 			return true;
 		}
 		
-		//TODO Check for other items in the cell
+		//Check for other items in the cell
 		for (int spanX = 0; spanX < tp.getTileSpanX(); spanX++){
 			for (int spanY = 0; spanY < tp.getTileSpanY(); spanY++){
 				if (tiles[tileX+spanX][tileY+spanY] != null){
-					if (tiles[tileX+spanX][tileY+spanY].getID() != 0){
-						return true;
-					}
+					return true;
 				}
 			}
 		}
@@ -165,11 +153,11 @@ public class TileMap {
 	}
 
 	public void drawMap(SpriteBatch batch) {
-		//TODO: Use Camera.unproject with (0,0), (0,screenheight), (screenwidth,0), and (screenwidth,screenheight)
+		//TODO ENHANCEMENT Use Camera.unproject with (0,0), (0,screenheight), (screenwidth,0), and (screenwidth,screenheight)
 		// This way we only draw tiles that will be partially or fully visible within the camera
 		for (int x = 0; x < maxX ; x++){
 			for (int y = 0; y < maxY; y++) {
-				if (tiles[x][y] != null && tiles[x][y].getID() > 0){
+				if (tiles[x][y] != null && !tiles[x][y].hasParent()){
 					//For some reason using an Integer or int does not work.  have to cast it to string to find the match
 					// It makes no sense to me given that the hashmap key is set to be an Integer.
 					if (tileProperties.containsKey(String.valueOf(tiles[x][y].getID()))) {
@@ -179,12 +167,12 @@ public class TileMap {
 						
 						//Draw this tile to the designated width and height based on tilespan and tilewidth/height
 						batch.draw(atlas.findRegion(tp.getName()), 
-								x*tileWidth, y*tileHeight, //Position
-								0, 0, //Origin Offset
-								tp.getTileSpanX() * tileWidth, tp.getTileSpanY() * tileHeight, //Width and Height to stretch to
-								1, 1,   //Scale, Could use this for "floating" affect
-								0		//rotation
-								);
+							x*tileWidth, y*tileHeight, //Position
+							0, 0, //Origin Offset
+							tp.getTileSpanX() * tileWidth, tp.getTileSpanY() * tileHeight, //Width and Height to stretch to
+							1, 1,   //Scale, Could use this for "floating" affect
+							0		//rotation
+						);
 					}
 				}
 			}

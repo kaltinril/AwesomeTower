@@ -60,7 +60,7 @@ public class MainMenuScreen extends BaseScreen {
 		atlas = new TextureAtlas(Gdx.files.internal("ui/button/button.atlas"));
 		skin = new Skin(atlas);
 		
-		// TODO: Replace with either gdx-freetype font, or a non-default BitmapFont.
+		// TODO ENHANCEMENT Replace with either gdx-freetype font, or a non-default BitmapFont.
 		// Create an instance of the default Aerial size 15 Bitmap Font to use with the buttons.
 		font = new BitmapFont();
 		
