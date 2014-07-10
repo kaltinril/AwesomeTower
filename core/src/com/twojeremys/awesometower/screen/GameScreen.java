@@ -31,6 +31,7 @@ import com.twojeremys.awesometower.tileengine.TileMap;
 //TODO ENHANCEMENT
 //TODO DEBUG
 
+//TODO TASK build a menu to select items from
 public class GameScreen extends BaseScreen implements GestureListener, InputProcessor {
 
 	//

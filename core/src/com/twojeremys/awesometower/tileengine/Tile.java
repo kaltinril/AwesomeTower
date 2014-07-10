@@ -1,5 +1,6 @@
 package com.twojeremys.awesometower.tileengine;
 
+
 /*
  *   Example of how this works
 [ ] [ ] [R] [ ]
@@ -24,9 +25,12 @@ public class Tile {
 	// The ID of the image coming from TileProperties.id
 	private int ID;
 	
+	//If null then it IS the parent
 	private Tile parentTile;
 	
-	//TODO TASK Add stats for tile (income, cost, health/dirt, noise, popularity, etc)
+	//Holds the stats for the tile
+	//Null if child object
+	private TileStats tileStats;
 	
 	public Tile(int iD){
 		this.ID = iD;
@@ -56,6 +60,23 @@ public class Tile {
 	
 	public boolean hasParent() {
 		return this.parentTile != null;
+	}
+
+	//Returns the stats for the tile
+	//may come from a parent if called on a child
+	public TileStats getTileStats() {
+		if (hasParent()) {
+			return this.parentTile.getTileStats();
+		}
+		return tileStats;
+	}
+
+	public void setTileStats(TileStats tileStats) {
+		if (this.hasParent()) {
+			this.parentTile.setTileStats(tileStats);
+		} else {
+			this.tileStats = tileStats;
+		}
 	}
 
 	
