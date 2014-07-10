@@ -21,8 +21,8 @@ public class TileMap {
 	private int maxY;
 	
 	// Width and height of the individual tiles
-	private int tileWidth = 20;
-	private int tileHeight = 20;
+	private int tileWidth = Constants.TILE_WIDTH;
+	private int tileHeight = Constants.TILE_HEIGHT;
 
 	public TileMap(int inMaxX, int inMaxY, TextureAtlas atlas) {
 		this.maxX = inMaxX;
@@ -53,6 +53,26 @@ public class TileMap {
 		}
 	}
 	
+	//This returns the room clicked on, regardless of which PART of that room is clicked on
+	// Meaning if a tile is a "Child" return the parent instead.
+	// If the tile is empty, return null
+	public Tile getTile(int tileX, int tileY){
+		Tile possibleChildTile = tiles[tileX][tileY];
+		
+		if (possibleChildTile != null)
+		{
+			if (possibleChildTile.getParentTile() != null){
+				return possibleChildTile.getParentTile();
+			}
+			else {
+				return possibleChildTile; //This means that it IS the parent
+			}
+		}
+		else {
+			return null;
+		}
+	}
+
 	public void setTile(int tileX, int tileY, int tile){
 		
 		//Make sure there are no collisions before we place the tile
@@ -144,26 +164,6 @@ public class TileMap {
 		return false;
 	}
 
-	//This returns the room clicked on, regardless of which PART of that room is clicked on
-	// Meaning if a tile is a "Child" return the parent instead.
-	// If the tile is empty, return null
-	public Tile getTile(int tileX, int tileY){
-		Tile possibleChildTile = tiles[tileX][tileY];
-		
-		if (possibleChildTile != null)
-		{
-			if (possibleChildTile.getParentTile() != null){
-				return possibleChildTile.getParentTile();
-			}
-			else {
-				return possibleChildTile; //This means that it IS the parent
-			}
-		}
-		else {
-			return null;
-		}
-	}
-	
 	public void drawMap(SpriteBatch batch) {
 		//TODO: Use Camera.unproject with (0,0), (0,screenheight), (screenwidth,0), and (screenwidth,screenheight)
 		// This way we only draw tiles that will be partially or fully visible within the camera
