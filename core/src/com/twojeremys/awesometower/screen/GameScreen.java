@@ -1,7 +1,6 @@
 package com.twojeremys.awesometower.screen;
 
 import com.badlogic.gdx.Game;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
@@ -23,6 +22,12 @@ import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
@@ -74,6 +79,19 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private int screenTileMapHeight;
 	private int screenTileMapWidth;
 	
+	
+	/**
+     * Menu Testing
+     * 
+     * 
+     * 
+     */
+	private Stage stage;
+	private Table container;
+	private ScrollPane scroll; 
+	
+	
+	
 	public GameScreen(Game game) {
 		super(game);
 		assetsLoaded = false;
@@ -83,6 +101,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	public void show() {
+		
+		stage = new Stage();
 
 		// Get an instance of the SpriteBatch
 		batch = new SpriteBatch();
@@ -139,6 +159,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Setup all the Input handling
         InputMultiplexer im = new InputMultiplexer();
         GestureDetector gd = new GestureDetector(this);
+        im.addProcessor(stage);
         im.addProcessor(gd);
         im.addProcessor(this);
         
@@ -182,7 +203,47 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
    	
     	//for(Entry<Integer, TileProperties> tpr : tileMap.getTileProperties().entrySet())
         //	System.out.println("Key: " + tpr.getKey() + " ID: " + tpr.getValue().getID() + ", Name: " + tpr.getValue().getName());
-    	
+        
+        
+        /**
+         * TODO TASK Menu Testing
+         * 
+         * 
+         * 
+         */
+        
+		LabelStyle labelStyle = new LabelStyle();
+		labelStyle.font = new BitmapFont();
+		labelStyle.fontColor = Color.YELLOW;
+
+	    container = new Table();
+	    	    
+		stage.addActor(container);
+		container.setFillParent(true);
+		
+		Table table = new Table();
+
+		scroll = new ScrollPane(table);
+		
+		
+		scroll.setScrollingDisabled(true, false);
+		
+		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();
+		genericTextButtonStyle.font = new BitmapFont();
+
+		for (int i = 0; i < 100; i++) {
+			table.row();
+			table.add(new Label("label "+i, labelStyle)).expandX().fillX();
+
+			TextButton button = new TextButton("push me "+i, genericTextButtonStyle);
+			table.add(button);
+		}
+
+		container.add(scroll).right().size(150, Gdx.graphics.getHeight());
+		container.row();
+		
+		//This is still not in the right location....
+		container.moveBy(screenTileMapWidth/2 - container.getMinWidth()/2, 0);
 	}
 
 	@Override
@@ -202,12 +263,17 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			// This is where our actual drawing and updating code will go for the game
 			batch.begin(); // start - send data to the graphics pipeline for loading/processing
 			tileMap.drawMap(batch);
+			//container.draw(batch, 1);
 			batch.end(); // end - Draw all items batched into the pipeline
 
 			//Draw the gridline
 			if (buildMode){
 				renderGridOverlay();
 			}
+			
+			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+	        stage.draw();			
+			
 		} else {
 			// Check the status of the assets loading
 			if (assets.update()) {
@@ -445,6 +511,14 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Change to MANAGE mode
 		if (buildMode && keycode == Input.Keys.M){
 			toggleBuildMode();
+			return true;
+		}
+		
+		//TODO TASK Need to convert this to an icon to be clicked on
+		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
+		//Toggle menu visibility
+		if (buildMode && keycode == Input.Keys.S){
+			scroll.setVisible(false);
 			return true;
 		}
 		
