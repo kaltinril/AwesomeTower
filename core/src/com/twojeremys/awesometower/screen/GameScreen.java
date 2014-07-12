@@ -65,7 +65,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private BitmapFont loadingFont; // com.badlogic.gdx.graphics.g2d.BitmapFont;
 	
 	//Used to hold debug info in bottom left corner of screen
-	private StringBuilder debugInfo;
+	private final StringBuilder debugInfo;
 
 	//Are we in build mode?
 	private boolean buildMode;
@@ -86,18 +86,13 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private int screenTileMapHeight;
 	private int screenTileMapWidth;
 	
-	
-	/**
-     * Menu Testing
-     * 
-     * 
-     * 
-     */
+	//Used to build the side menu
 	private Stage stage;
 	private ScrollPane scroll;
 	private Table scrollTable;
-	private Container container;
+	private Container<ScrollPane> container;
 	
+	private boolean drawTableDebug;
 	
 	
 	public GameScreen(Game game) {
@@ -186,7 +181,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	public void render(float delta) {
-		delta = Gdx.graphics.getDeltaTime();
+		//delta = Gdx.graphics.getDeltaTime();
+		
+		//System.out.println("rendercalls:" + batch.totalRenderCalls);
 	
 		//Clear the screen black.
 		Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
@@ -211,7 +208,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
 	        stage.draw();
-	        if (Constants.DEBUG){
+	        
+	        if (Constants.DEBUG && drawTableDebug){
 	        	scrollTable.drawDebug(stage);
 	        }
 			
@@ -219,24 +217,27 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			// Check the status of the assets loading
 			if (assets.update()) {
 				assetsLoaded = true;
+				loadingCircleTexture.dispose(); //remove the texture to free memory				
+			} else {
+	
+				// This is a temporary loading section, and will no longer be displayed once the assets are loaded
+				loadingCircleSprite.rotate(-6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
+		
+				overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
+				loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
+				loadingFont.draw(overlayBatch, "Loading...", loadingCircleSprite.getX(),
+						loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
+				overlayBatch.end(); // end - Draw all items batched into the pipeline
 			}
-	
-			// This is a temporary loading section, and will no longer be displayed once the assets are loaded
-			loadingCircleSprite.rotate(-6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
-	
-			overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
-			loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
-			loadingFont.draw(overlayBatch, "Loading...", loadingCircleSprite.getX(),
-					loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
-			overlayBatch.end(); // end - Draw all items batched into the pipeline
 		}
 	
 		if (Constants.DEBUG) {
 	
-			float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
-			float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
-	
-			if (deltaTime >= 3f) {
+			if (deltaTime >= 5f) {
+				
+				float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
+				float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
+				
 				deltaTime = 0f;
 				debugInfo.setLength(0);
 				debugInfo.append("fps: ");
@@ -292,7 +293,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		labelStyle.font = new BitmapFont();
 		labelStyle.fontColor = Color.WHITE;
 
-		container = new Container();
+		container = new Container<ScrollPane>();
 	    
 	    //Create the texture for the menu background (using grey just for POC)
 	    //TODO TASK needs to be moved into the asset manager
@@ -447,6 +448,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 		// Get rid of the assets loaded
 		loadingCircleTexture.dispose();
+		batch.dispose();
+		overlayBatch.dispose();
+		loadingFont.dispose();
+		shapeRenderer.dispose();
+		stage.dispose();
 		assets.dispose();
 	}
 	
@@ -603,20 +609,19 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			return true;
 		}
 		
+		//Used to toggle table debug line drawing
+		//using this has a memory leak
+		if (keycode == Input.Keys.D){
+			drawTableDebug = !drawTableDebug;
+			return true;
+		}
+		
+		
 		//TODO TASK Need to convert this to an icon to be clicked on
 		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
 		//Toggle menu visibility
 		if (keycode == Input.Keys.S){
 			scroll.setVisible(!scroll.isVisible());
-			return true;
-		}
-		
-		//TODO DEBUG temp code used to toggle through the available tiles
-		if (Constants.DEBUG && buildMode && keycode == Input.Keys.T){
-			if (currentTile == 3)
-				currentTile = 1;
-			else
-				currentTile++;
 			return true;
 		}
 		
