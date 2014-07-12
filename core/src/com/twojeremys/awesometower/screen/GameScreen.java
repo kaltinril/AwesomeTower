@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.input.GestureDetector;
@@ -25,6 +26,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -92,9 +94,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
      * 
      */
 	private Stage stage;
-	private Table container;
 	private ScrollPane scroll;
 	private Table scrollTable;
+	private Container container;
 	
 	
 	
@@ -172,16 +174,213 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         im.addProcessor(gd);
         im.addProcessor(this);
         
+        //Set the input processor to the multiplexer
         Gdx.input.setInputProcessor(im);
         
+        //Load the data from properties file
+        loadProperties();
         
-        //For whatever reason can't use Json.fromJson like a static method
+        //Build the side menu
+        buildSideMenu(atlas);
+	}
+
+	@Override
+	public void render(float delta) {
+		delta = Gdx.graphics.getDeltaTime();
+	
+		//Clear the screen black.
+		Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+	
+		deltaTime += delta; // Used only to create a delay for loading screen simulation
+	
+		camera.update(); // Make sure the camera is updated, not really needed in this example
+		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
+	
+		if (assetsLoaded) {
+			// This is where our actual drawing and updating code will go for the game
+			batch.begin(); // start - send data to the graphics pipeline for loading/processing
+			tileMap.drawMap(batch);
+			//container.draw(batch, 1);
+			batch.end(); // end - Draw all items batched into the pipeline
+	
+			//Draw the gridline
+			if (buildMode){
+				renderGridOverlay();
+			}
+	
+			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+	        stage.draw();
+	        if (Constants.DEBUG){
+	        	scrollTable.drawDebug(stage);
+	        }
+			
+		} else {
+			// Check the status of the assets loading
+			if (assets.update()) {
+				assetsLoaded = true;
+			}
+	
+			// This is a temporary loading section, and will no longer be displayed once the assets are loaded
+			loadingCircleSprite.rotate(-6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
+	
+			overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
+			loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
+			loadingFont.draw(overlayBatch, "Loading...", loadingCircleSprite.getX(),
+					loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
+			overlayBatch.end(); // end - Draw all items batched into the pipeline
+		}
+	
+		if (Constants.DEBUG) {
+	
+			float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
+			float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
+	
+			if (deltaTime >= 3f) {
+				deltaTime = 0f;
+				debugInfo.setLength(0);
+				debugInfo.append("fps: ");
+				debugInfo.append(Gdx.graphics.getFramesPerSecond());
+				debugInfo.append("\nmem: (java ");
+				debugInfo.append((int) javaHeapInBytes);
+				debugInfo.append("Mb, heap ");
+				debugInfo.append((int) nativeHeapInBytes);
+				debugInfo.append("Mb)");
+				debugInfo.append("\nzoom: ");
+				debugInfo.append((float) camera.zoom);
+				debugInfo.append("\nviewport: (w ");
+				debugInfo.append((int) camera.viewportWidth);
+				debugInfo.append(" ,h ");
+				debugInfo.append((int) camera.viewportHeight);
+				debugInfo.append(")");
+			}
+			
+			overlayBatch.begin();
+			//loadingFont.setColor(Color.WHITE);
+			loadingFont.drawMultiLine(overlayBatch, debugInfo, 4, 70);
+			loadingFont.setColor(Color.CYAN);
+			//loadingFont.drawMultiLine(overlayBatch, debugInfo, 5, 36);
+			//loadingFont.drawMultiLine(overlayBatch, debugInfo, 4, 37);
+			//loadingFont.setColor(Color.WHITE);	
+			overlayBatch.end();
+		}
+	}
+
+	private void buildSideMenu(TextureAtlas atlas) {
+		/**
+         * TODO TASK Menu Testing
+         * 
+         *  stage -> container -> scroll -> table
+         * 
+         */
+        
+        //TODO: Figure out how to create a "greyed out" affect for the menu, so items behind it do not bleed through.
+        //http://stackoverflow.com/questions/18200669/libgdx-background-and-foreground-in-single-stage
+        //Group background = new Group();
+        //background.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        //Group foreground = new Group();
+        //foreground.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        
+        // Notice the order
+        //stage.addActor(background);
+        //stage.addActor(foreground);
+
+        //change to "greyed out" image
+        //background.addActor(new Image(new Texture("data/intro.png"))); // your background image here.
+        
+		LabelStyle labelStyle = new LabelStyle();
+		labelStyle.font = new BitmapFont();
+		labelStyle.fontColor = Color.WHITE;
+
+		container = new Container();
+	    
+	    //Create the texture for the menu background (using grey just for POC)
+	    //TODO TASK needs to be moved into the asset manager
+	    //TODO TASK make more fancier
+	    TextureRegionDrawable tr = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("data/grey.png"))));
+	    
+	    //foreground.addActor(container);
+	    stage.addActor(container);
+		
+		scrollTable = new Table();
+
+		scroll = new ScrollPane(scrollTable);
+		scrollTable.setBackground(tr);
+
+		scroll.setScrollingDisabled(true, false);
+		
+		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();
+		genericTextButtonStyle.font = new BitmapFont();
+		
+		//TODO DEBUG Test loop just to build a bigger menu
+		for (int i = 0; i < 15; i++) {
+			buildSideMenuRows(atlas, labelStyle);
+		}
+		
+		//TODO Could use to hide scrollbar when not scrolling
+		//FIXME scrollbar doesn't actually show up for whatever reason
+		//scroll.setScrollBarPositions(false, true);
+		//scroll.setupFadeScrollBars(1.0f, 1.0f);
+		//scroll.setFadeScrollBars(true);
+		
+		container.setActor(scroll);
+		container.right();
+		
+		//TODO: Determine correct width based on size of text or images displayed
+		container.size(150, Gdx.graphics.getHeight());
+
+		container.setX(Gdx.graphics.getWidth());
+		container.setY(Gdx.graphics.getHeight()/2);
+		
+		if (Constants.DEBUG){
+			scrollTable.debug();
+		}
+	}
+
+	private void buildSideMenuRows(TextureAtlas atlas, LabelStyle labelStyle) {
+		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
+		    scrollTable.row();
+		    
+		    //Create a listener to add to the Label and button
+		    InputListener sideMenuActionListener = new InputListener(){
+				@Override
+			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+					if (scroll.isPanning()){return false;}
+					else {return true;}
+			    }
+				@Override
+			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+					currentTile = tileProperty.getID();
+			    }
+		    };
+	
+		    //Create a label to the left of the image and add a listener 
+		    //So the label OR button can be clicked on
+		    Label l = new Label(tileProperty.getName(), labelStyle);
+		    
+		    l.addListener(sideMenuActionListener);
+		    
+		    //Add the label to the table
+		    //expandX and fillX allow the label to essentially take up the entire cell
+			scrollTable.add(l).expandX().fillX();
+	
+			//Create an image button with the image of the tile (room/Purchasable)
+			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
+			ImageButton imgButton = new ImageButton(textureRegionDrawable);
+			
+			//Add the same listener to the button
+			imgButton.addListener(sideMenuActionListener);
+			
+			//expandX and fillX allow the image button to essentially take up the entire cell
+			scrollTable.add(imgButton).expandX().fillX();
+		}
+	}
+
+	private void loadProperties() {
+		//For whatever reason can't use Json.fromJson like a static method
         //Had to create an instance
         Json json = new Json();	
-        
-        
-        
-        
+
         //Create basic structure of TileProperties Json file to see how it will look
         //ArrayList<TileProperties> tp = new ArrayList<TileProperties>();
         
@@ -212,208 +411,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
    	
     	//for(Entry<Integer, TileProperties> tpr : tileMap.getTileProperties().entrySet())
         //	System.out.println("Key: " + tpr.getKey() + " ID: " + tpr.getValue().getID() + ", Name: " + tpr.getValue().getName());
-        
-        
-        /**
-         * TODO TASK Menu Testing
-         * 
-         *  stage -> container -> scroll -> table
-         * 
-         */
-        
-        //TODO: Figure out how to create a "greyed out" affect for the menu, so items behind it do not bleed through.
-        //http://stackoverflow.com/questions/18200669/libgdx-background-and-foreground-in-single-stage
-        //Group background = new Group();
-        //background.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        //Group foreground = new Group();
-        //foreground.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        
-        // Notice the order
-        //stage.addActor(background);
-        //stage.addActor(foreground);
-
-        //change to "greyed out" image
-        //background.addActor(new Image(new Texture("data/intro.png"))); // your background image here.
-        
-		LabelStyle labelStyle = new LabelStyle();
-		labelStyle.font = new BitmapFont();
-		labelStyle.fontColor = Color.YELLOW;
-
-	    container = new Table();
-	    
-	    //foreground.addActor(container);
-	    stage.addActor(container);
-		
-		scrollTable = new Table();
-
-		scroll = new ScrollPane(scrollTable);
-
-		scroll.setScrollingDisabled(true, false);
-		
-		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();
-		genericTextButtonStyle.font = new BitmapFont();
-				
-		//scrollTable.setTouchable(Touchable.enabled);
-		
-		//for(TextureRegion textureRegion:((TextureAtlas) assets.get("tiles.atlas")).getRegions()){
-		//for(Entry<Integer, TileProperties> tileProperty:tileMap.getTileProperties().entrySet()){
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		buildSideMenu(atlas, labelStyle);
-		
-		
-		//TODO: Determine correct width based on size of text or images displayed
-		container.add(scroll).right().size(150, Gdx.graphics.getHeight());
-		container.row();
-		
-		container.setX(Gdx.graphics.getWidth() - container.getMinWidth()/2);
-		container.setY(Gdx.graphics.getHeight() - container.getMinHeight()/2);
-		
-		if (Constants.DEBUG){
-			scrollTable.debug();
-		}
 	}
 
-	private void buildSideMenu(TextureAtlas atlas, LabelStyle labelStyle) {
-		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
-		    //Cell cell = scrollTable.row();
-		    scrollTable.row();
-		    
-		    //Create a listener to add to the Label and button
-		    InputListener sideMenuActionListener = new InputListener(){
-				@Override
-			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-					if (scroll.isPanning()){return false;}
-					else {return true;}
-			    }
-				@Override
-			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-					currentTile = tileProperty.getID();
-			    }
-		    };
-
-		    //Create a label to the left of the image and add a listener 
-		    //So the label OR button can be clicked on
-		    Label l = new Label(tileProperty.getName(), labelStyle);
-		    
-		    l.addListener(sideMenuActionListener);
-		    
-		    //Add the label to the table
-		    //expandX and fillX allow the label to essentially take up the entire cell
-			scrollTable.add(l).expandX().fillX();
-
-			//Create an image button with the image of the tile (room/Purchasable)
-			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
-			ImageButton imgButton = new ImageButton(textureRegionDrawable);
-			
-			//Add the same listener to the button
-			imgButton.addListener(sideMenuActionListener);
-			
-			//expandX and fillX allow the image button to essentially take up the entire cell
-			scrollTable.add(imgButton).expandX().fillX();
-		}
-	}
-
-	@Override
-	public void render(float delta) {
-		delta = Gdx.graphics.getDeltaTime();
-
-		//Clear the screen black.
-		Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		deltaTime += delta; // Used only to create a delay for loading screen simulation
-
-		camera.update(); // Make sure the camera is updated, not really needed in this example
-		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
-
-		if (assetsLoaded) {
-			// This is where our actual drawing and updating code will go for the game
-			batch.begin(); // start - send data to the graphics pipeline for loading/processing
-			tileMap.drawMap(batch);
-			//container.draw(batch, 1);
-			batch.end(); // end - Draw all items batched into the pipeline
-
-			//Draw the gridline
-			if (buildMode){
-				renderGridOverlay();
-			}
-
-			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
-	        stage.draw();
-	        if (Constants.DEBUG){
-	        	scrollTable.drawDebug(stage);
-	        }
-			
-		} else {
-			// Check the status of the assets loading
-			if (assets.update()) {
-				assetsLoaded = true;
-			}
-
-			// This is a temporary loading section, and will no longer be displayed once the assets are loaded
-			loadingCircleSprite.rotate(-6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
-
-			overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
-			loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
-			loadingFont.draw(overlayBatch, "Loading...", loadingCircleSprite.getX(),
-					loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
-			overlayBatch.end(); // end - Draw all items batched into the pipeline
-		}
-
-		if (Constants.DEBUG) {
-
-			float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
-			float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
-
-			if (deltaTime >= 3f) {
-				deltaTime = 0f;
-				debugInfo.setLength(0);
-				debugInfo.append("fps: ");
-				debugInfo.append(Gdx.graphics.getFramesPerSecond());
-				debugInfo.append("\nmem: (java ");
-				debugInfo.append((int) javaHeapInBytes);
-				debugInfo.append("Mb, heap: ");
-				debugInfo.append((int) nativeHeapInBytes);
-				debugInfo.append("Mb ");
-				debugInfo.append((float) camera.zoom);
-				debugInfo.append(" Zoom ");
-				debugInfo.append((int) camera.viewportWidth);
-				debugInfo.append(" w ");
-				debugInfo.append((int) camera.viewportHeight);
-				debugInfo.append(" h ");
-			}
-			
-			overlayBatch.begin();
-			loadingFont.setColor(Color.WHITE);
-			loadingFont.drawMultiLine(overlayBatch, debugInfo, 6, 35);
-			loadingFont.setColor(Color.CYAN);
-			loadingFont.drawMultiLine(overlayBatch, debugInfo, 5, 36);
-			loadingFont.setColor(Color.WHITE);	
-			overlayBatch.end();
-		}
-	}
-
-	
 	//TODO ENHANCEMENT Maybe this should be moved into the tilemap draw, since it uses so many private variables from the tilemap.
 	private void renderGridOverlay() {
 		//Map the shape render to the camera, so the lines move with it
