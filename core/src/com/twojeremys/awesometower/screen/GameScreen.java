@@ -22,15 +22,20 @@ import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
+import com.twojeremys.awesometower.tileengine.TileProperties;
 
 //TODO TASK
 //TODO ENHANCEMENT
@@ -88,7 +93,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
      */
 	private Stage stage;
 	private Table container;
-	private ScrollPane scroll; 
+	private ScrollPane scroll;
+	private Table scrollTable;
 	
 	
 	
@@ -131,7 +137,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		assets.load("tiles.atlas", TextureAtlas.class); //load the tiles atlas
 		assets.finishLoading(); //FIXME if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
 
-		tileMap = new TileMap(30, 30, (TextureAtlas) assets.get("tiles.atlas"));
+		//Store this for later use in setting the menu
+		TextureAtlas atlas = (TextureAtlas) assets.get("tiles.atlas");
+		
+		tileMap = new TileMap(30, 30, atlas);
 		
 		//Get the actual full Pixel height for the combined tile space, minus 1
 		screenTileMapHeight = tileMap.getMapPixelHeight();
@@ -159,7 +168,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Setup all the Input handling
         InputMultiplexer im = new InputMultiplexer();
         GestureDetector gd = new GestureDetector(this);
-        im.addProcessor(stage);
+        im.addProcessor(stage); //TODO: Fix desktop zoom loss
         im.addProcessor(gd);
         im.addProcessor(this);
         
@@ -208,42 +217,120 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         /**
          * TODO TASK Menu Testing
          * 
-         * 
+         *  stage -> container -> scroll -> table
          * 
          */
+        
+        //TODO: Figure out how to create a "greyed out" affect for the menu, so items behind it do not bleed through.
+        //http://stackoverflow.com/questions/18200669/libgdx-background-and-foreground-in-single-stage
+        //Group background = new Group();
+        //background.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        //Group foreground = new Group();
+        //foreground.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        
+        // Notice the order
+        //stage.addActor(background);
+        //stage.addActor(foreground);
+
+        //change to "greyed out" image
+        //background.addActor(new Image(new Texture("data/intro.png"))); // your background image here.
         
 		LabelStyle labelStyle = new LabelStyle();
 		labelStyle.font = new BitmapFont();
 		labelStyle.fontColor = Color.YELLOW;
 
 	    container = new Table();
-	    	    
-		stage.addActor(container);
-		container.setFillParent(true);
+	    
+	    //foreground.addActor(container);
+	    stage.addActor(container);
 		
-		Table table = new Table();
+		scrollTable = new Table();
 
-		scroll = new ScrollPane(table);
-		
-		
+		scroll = new ScrollPane(scrollTable);
+
 		scroll.setScrollingDisabled(true, false);
 		
 		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();
 		genericTextButtonStyle.font = new BitmapFont();
-
-		for (int i = 0; i < 100; i++) {
-			table.row();
-			table.add(new Label("label "+i, labelStyle)).expandX().fillX();
-
-			TextButton button = new TextButton("push me "+i, genericTextButtonStyle);
-			table.add(button);
-		}
-
+				
+		//scrollTable.setTouchable(Touchable.enabled);
+		
+		//for(TextureRegion textureRegion:((TextureAtlas) assets.get("tiles.atlas")).getRegions()){
+		//for(Entry<Integer, TileProperties> tileProperty:tileMap.getTileProperties().entrySet()){
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		buildSideMenu(atlas, labelStyle);
+		
+		
+		//TODO: Determine correct width based on size of text or images displayed
 		container.add(scroll).right().size(150, Gdx.graphics.getHeight());
 		container.row();
 		
-		//This is still not in the right location....
-		container.moveBy(screenTileMapWidth/2 - container.getMinWidth()/2, 0);
+		container.setX(Gdx.graphics.getWidth() - container.getMinWidth()/2);
+		container.setY(Gdx.graphics.getHeight() - container.getMinHeight()/2);
+		
+		if (Constants.DEBUG){
+			scrollTable.debug();
+		}
+	}
+
+	private void buildSideMenu(TextureAtlas atlas, LabelStyle labelStyle) {
+		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
+		    //Cell cell = scrollTable.row();
+		    scrollTable.row();
+		    
+		    //Create a listener to add to the Label and button
+		    InputListener sideMenuActionListener = new InputListener(){
+				@Override
+			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+					if (scroll.isPanning()){return false;}
+					else {return true;}
+			    }
+				@Override
+			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+					currentTile = tileProperty.getID();
+			    }
+		    };
+
+		    //Create a label to the left of the image and add a listener 
+		    //So the label OR button can be clicked on
+		    Label l = new Label(tileProperty.getName(), labelStyle);
+		    
+		    l.addListener(sideMenuActionListener);
+		    
+		    //Add the label to the table
+		    //expandX and fillX allow the label to essentially take up the entire cell
+			scrollTable.add(l).expandX().fillX();
+
+			//Create an image button with the image of the tile (room/Purchasable)
+			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
+			ImageButton imgButton = new ImageButton(textureRegionDrawable);
+			
+			//Add the same listener to the button
+			imgButton.addListener(sideMenuActionListener);
+			
+			//expandX and fillX allow the image button to essentially take up the entire cell
+			scrollTable.add(imgButton).expandX().fillX();
+		}
 	}
 
 	@Override
@@ -270,9 +357,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			if (buildMode){
 				renderGridOverlay();
 			}
-			
+
 			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
-	        stage.draw();			
+	        stage.draw();
+	        if (Constants.DEBUG){
+	        	scrollTable.drawDebug(stage);
+	        }
 			
 		} else {
 			// Check the status of the assets loading
@@ -517,8 +607,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//TODO TASK Need to convert this to an icon to be clicked on
 		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
 		//Toggle menu visibility
-		if (buildMode && keycode == Input.Keys.S){
-			scroll.setVisible(false);
+		if (keycode == Input.Keys.S){
+			scroll.setVisible(!scroll.isVisible());
 			return true;
 		}
 		
