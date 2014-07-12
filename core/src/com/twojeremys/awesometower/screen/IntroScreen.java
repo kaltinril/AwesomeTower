@@ -42,7 +42,12 @@ public class IntroScreen extends BaseScreen {
 
 	@Override
 	public void hide () {
-		Gdx.app.debug("TwoJeremys", "dispose intro screen");
+		dispose();
+	}
+	
+	@Override
+	public void dispose() {
+		Gdx.app.debug("twojeremys", "dispose intro screen");
 		batch.dispose();
 		intro.getTexture().dispose();
 	}

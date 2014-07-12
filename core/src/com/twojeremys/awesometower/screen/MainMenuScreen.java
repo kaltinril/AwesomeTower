@@ -9,15 +9,22 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.twojeremys.awesometower.AwesomeTower;
+import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.listener.DefaultMenuActionListener;
 
-public class MainMenuScreen extends BaseScreen {
+public class MainMenuScreen extends BaseScreen  {
 
 	TextureRegion title;
 	SpriteBatch batch;
@@ -37,6 +44,10 @@ public class MainMenuScreen extends BaseScreen {
 	
 	TextureAtlas atlas;
 
+	public MainMenuScreen() {
+		super(new AwesomeTower());
+	}
+	
 	public MainMenuScreen (Game game) {
 		super(game);
 	}
@@ -88,6 +99,33 @@ public class MainMenuScreen extends BaseScreen {
 		// Add another row
 		table.row();
 		
+//		InputListener menuActionListener = new InputListener(){
+//			@Override
+//		    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {return true;}
+//
+//		    //This only fires when the button is first let up
+//			@Override
+//		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//		    	
+//				if (Constants.DEBUG) {
+//					System.out.println("up pressed on [" + whichButton + "]");
+//				}
+//				
+//		    	if (whichButton.equalsIgnoreCase("exitgame")){
+//		    		Gdx.app.exit();
+//		    	}
+//		    	else if (whichButton.equalsIgnoreCase("newgame")){
+//		    		//Ugly pull in and cast
+//		    		((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener())));
+//		    	}
+//		    	else if (whichButton.equalsIgnoreCase("loadgame")){
+//		    		// TODO TASK put the load game code screen/method call here
+//		    		System.out.println("TODO: Load game code");
+//		    	}
+//		    		
+//		    }
+//	    };
+		
 		/* *******************************************
 		 *  Create the buttons and add them to the table
 		 ***********************************************/
@@ -109,6 +147,7 @@ public class MainMenuScreen extends BaseScreen {
 		// Create the new game button, and pass in the word "newGame" to a listener which is called on the DOWN/UP events
 		newGameButton = new TextButton("New game", genericTextButtonStyle);
         newGameButton.addListener(new DefaultMenuActionListener("newGame"));
+
 		
 		// add the start-game button to the table
         //  Using the returned [CELL] object, change that cell's size, make it uniform, and add space below it.
@@ -164,7 +203,12 @@ public class MainMenuScreen extends BaseScreen {
 
 	@Override
 	public void hide () {
-		Gdx.app.debug("TwoJeremys", "dispose main menu");
+		this.dispose();
+	}
+	
+	@Override
+	public void dispose() {
+		Gdx.app.debug("twojeremys", "dispose main menu");
 		batch.dispose();
 		title.getTexture().dispose();
 		
@@ -172,6 +216,7 @@ public class MainMenuScreen extends BaseScreen {
 		atlas.dispose();
 		skin.dispose();
 		stage.dispose();
-		font.dispose();		
+		font.dispose();	
 	}
+
 }

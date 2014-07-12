@@ -35,6 +35,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
+import com.twojeremys.awesometower.AwesomeTower;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
 import com.twojeremys.awesometower.tileengine.TileProperties;
@@ -91,6 +92,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private ScrollPane scroll;
 	private Table scrollTable;
 	private Container<ScrollPane> container;
+	private float maxButtonSize = 0f;
+	private float maxLabelSize = 0f;
 	
 	private boolean drawTableDebug;
 	
@@ -210,7 +213,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	        stage.draw();
 	        
 	        if (Constants.DEBUG && drawTableDebug){
-	        	scrollTable.drawDebug(stage);
+	        	Table.drawDebug(stage);
 	        }
 			
 		} else {
@@ -326,9 +329,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		container.setActor(scroll);
 		container.right();
-		
+				
 		//TODO: Determine correct width based on size of text or images displayed
-		container.size(150, Gdx.graphics.getHeight());
+		container.size(maxLabelSize + maxButtonSize, Gdx.graphics.getHeight());
 
 		container.setX(Gdx.graphics.getWidth());
 		container.setY(Gdx.graphics.getHeight()/2);
@@ -359,11 +362,17 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    //So the label OR button can be clicked on
 		    Label l = new Label(tileProperty.getName(), labelStyle);
 		    
+//		    System.out.println("getWidth" + l.getWidth());
+//		    System.out.println("getMinWidth" + l.getMinWidth());
+//		    System.out.println("getMaxWidth" + l.getMaxWidth());
+		    //Get the maximum label size so we can adjust the container size
+		    maxLabelSize = l.getWidth() > maxLabelSize ? l.getWidth() : maxLabelSize;
+		    
 		    l.addListener(sideMenuActionListener);
 		    
 		    //Add the label to the table
-		    //expandX and fillX allow the label to essentially take up the entire cell
-			scrollTable.add(l).expandX().fillX();
+		    //expand and fill allow the label to essentially take up the entire cell
+			scrollTable.add(l).expand().fill();
 	
 			//Create an image button with the image of the tile (room/Purchasable)
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
@@ -372,8 +381,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			//Add the same listener to the button
 			imgButton.addListener(sideMenuActionListener);
 			
-			//expandX and fillX allow the image button to essentially take up the entire cell
-			scrollTable.add(imgButton).expandX().fillX();
+			maxButtonSize = imgButton.getWidth() > maxButtonSize ? imgButton.getWidth() : maxButtonSize;
+			
+			//expand and fill allow the image button to essentially take up the entire cell
+			scrollTable.add(imgButton).expand().fill();
 		}
 	}
 
@@ -626,6 +637,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		}
 		
 		//TODO TASK Pop up an "are you sure" message
+		//FIXME ending and restarting the game is creating new GameScreen objects and the old ones are not released.
 		if (keycode == Input.Keys.ESCAPE) {
 			game.setScreen(new MainMenuScreen(game));
 			return true;

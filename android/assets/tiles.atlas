@@ -1,26 +1,47 @@
 
 tiles.png
-size: 86,22
+size: 188,44
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
+orangeTile
+  rotate: false
+  xy: 146, 4
+  size: 20, 40
+  orig: 20, 40
+  offset: 0, 0
+  index: -1
+pinkTile
+  rotate: false
+  xy: 2, 24
+  size: 100, 20
+  orig: 100, 20
+  offset: 0, 0
+  index: -1
+purpleTile
+  rotate: false
+  xy: 2, 2
+  size: 60, 20
+  orig: 60, 20
+  offset: 0, 0
+  index: -1
 redTile
   rotate: false
-  xy: 44, 2
+  xy: 64, 2
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
   index: -1
 wideGreenTile
   rotate: false
-  xy: 2, 2
+  xy: 104, 24
   size: 40, 20
   orig: 40, 20
   offset: 0, 0
   index: -1
 yellowTile
   rotate: false
-  xy: 66, 2
+  xy: 168, 24
   size: 20, 20
   orig: 20, 20
   offset: 0, 0
