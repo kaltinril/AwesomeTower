@@ -99,33 +99,6 @@ public class MainMenuScreen extends BaseScreen  {
 		// Add another row
 		table.row();
 		
-//		InputListener menuActionListener = new InputListener(){
-//			@Override
-//		    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {return true;}
-//
-//		    //This only fires when the button is first let up
-//			@Override
-//		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//		    	
-//				if (Constants.DEBUG) {
-//					System.out.println("up pressed on [" + whichButton + "]");
-//				}
-//				
-//		    	if (whichButton.equalsIgnoreCase("exitgame")){
-//		    		Gdx.app.exit();
-//		    	}
-//		    	else if (whichButton.equalsIgnoreCase("newgame")){
-//		    		//Ugly pull in and cast
-//		    		((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener())));
-//		    	}
-//		    	else if (whichButton.equalsIgnoreCase("loadgame")){
-//		    		// TODO TASK put the load game code screen/method call here
-//		    		System.out.println("TODO: Load game code");
-//		    	}
-//		    		
-//		    }
-//	    };
-		
 		/* *******************************************
 		 *  Create the buttons and add them to the table
 		 ***********************************************/

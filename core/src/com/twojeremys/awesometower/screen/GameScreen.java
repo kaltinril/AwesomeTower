@@ -23,16 +23,21 @@ import com.badlogic.gdx.input.GestureDetector.GestureListener;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.AwesomeTower;
@@ -91,9 +96,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private Stage stage;
 	private ScrollPane scroll;
 	private Table scrollTable;
-	private Container<ScrollPane> container;
+	private Container<Actor> groupLeft;
+	private Container<Actor> groupRight;
 	private float maxButtonSize = 0f;
 	private float maxLabelSize = 0f;
+	private float maxRowSize = 0f;
 	
 	private boolean drawTableDebug;
 	
@@ -274,41 +281,40 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		/**
          * TODO TASK Menu Testing
          * 
-         *  stage -> container -> scroll -> table
-         * 
+         *  stage -> container (left ) -> [TBD]
+         *           container (right) -> scrollpane -> table -> row -> [cell, cell]
          */
-        
-        //TODO: Figure out how to create a "greyed out" affect for the menu, so items behind it do not bleed through.
-        //http://stackoverflow.com/questions/18200669/libgdx-background-and-foreground-in-single-stage
-        //Group background = new Group();
-        //background.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        //Group foreground = new Group();
-        //foreground.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        
-        // Notice the order
-        //stage.addActor(background);
-        //stage.addActor(foreground);
-
-        //change to "greyed out" image
-        //background.addActor(new Image(new Texture("data/intro.png"))); // your background image here.
         
 		LabelStyle labelStyle = new LabelStyle();
 		labelStyle.font = new BitmapFont();
 		labelStyle.fontColor = Color.WHITE;
 
-		container = new Container<ScrollPane>();
-	    
+		//container = new Container<Actor>();
+		
 	    //Create the texture for the menu background (using grey just for POC)
 	    //TODO TASK needs to be moved into the asset manager
 	    //TODO TASK make more fancier
 	    TextureRegionDrawable tr = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("data/grey.png"))));
 	    
-	    //foreground.addActor(container);
-	    stage.addActor(container);
+	    groupLeft = new Container<Actor>();
+	    groupRight = new Container<Actor>();
+
+	    stage.addActor(groupLeft);
+	    stage.addActor(groupRight);
+	    
+	    VerticalGroup vg = new VerticalGroup();
+	    	    	    
+	    Label l1 = new Label("yay", labelStyle);
+	    Label l2 = new Label("string", labelStyle);
+	    vg.addActor(l1);
+	    vg.addActor(l2);
+	    
+	    groupLeft.setActor(vg);
 		
-		scrollTable = new Table();
+		scrollTable = new Table().pad(Constants.TABLE_PAD);
 
 		scroll = new ScrollPane(scrollTable);
+		
 		scrollTable.setBackground(tr);
 
 		scroll.setScrollingDisabled(true, false);
@@ -324,17 +330,34 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//TODO Could use to hide scrollbar when not scrolling
 		//FIXME scrollbar doesn't actually show up for whatever reason
 		//scroll.setScrollBarPositions(false, true);
+		//scroll.setScrollbarsOnTop(true);
 		//scroll.setupFadeScrollBars(1.0f, 1.0f);
 		//scroll.setFadeScrollBars(true);
 		
-		container.setActor(scroll);
-		container.right();
+		
+		groupRight.setActor(scroll);
+		groupRight.right(); //tells it to draw right to left
 				
-		//TODO: Determine correct width based on size of text or images displayed
-		container.size(maxLabelSize + maxButtonSize, Gdx.graphics.getHeight());
-
-		container.setX(Gdx.graphics.getWidth());
-		container.setY(Gdx.graphics.getHeight()/2);
+		//The longest row
+		//container.size(maxLabelSize + maxButtonSize, Gdx.graphics.getHeight());
+		//The longest combination
+		//container.size(maxRowSize+50, Gdx.graphics.getHeight());
+		
+		groupRight.size(maxRowSize, Gdx.graphics.getHeight());
+		
+		//Container draws right to left from x as long as you call the size method.  setSize fails
+		groupRight.setX(Gdx.graphics.getWidth());
+		groupRight.setY(Gdx.graphics.getHeight()/2);
+		
+		groupLeft.size(vg.getMinWidth(), Gdx.graphics.getHeight());
+		groupLeft.right();//tells it to draw right to left
+		
+//		System.out.println("getWidth" + vg.getWidth());
+//		System.out.println("getMinWidth" + vg.getMinWidth());
+//		System.out.println("getMaxWidth" + vg.getMaxWidth());
+		
+		groupLeft.setX(Gdx.graphics.getWidth() - groupRight.getMinWidth());
+		groupLeft.setY(Gdx.graphics.getHeight()/2);
 		
 		if (Constants.DEBUG){
 			scrollTable.debug();
@@ -343,7 +366,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	private void buildSideMenuRows(TextureAtlas atlas, LabelStyle labelStyle) {
 		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
-		    scrollTable.row();
+			
+			//Using spacing instead of padding
+			// see https://github.com/libgdx/libgdx/wiki/Table#padding
+			// for specifics
+			scrollTable.row().space(Constants.CELL_SPACE);
 		    
 		    //Create a listener to add to the Label and button
 		    InputListener sideMenuActionListener = new InputListener(){
@@ -361,19 +388,14 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    //Create a label to the left of the image and add a listener 
 		    //So the label OR button can be clicked on
 		    Label l = new Label(tileProperty.getName(), labelStyle);
-		    
-//		    System.out.println("getWidth" + l.getWidth());
-//		    System.out.println("getMinWidth" + l.getMinWidth());
-//		    System.out.println("getMaxWidth" + l.getMaxWidth());
-		    //Get the maximum label size so we can adjust the container size
-		    maxLabelSize = l.getWidth() > maxLabelSize ? l.getWidth() : maxLabelSize;
-		    
+		    		  
 		    l.addListener(sideMenuActionListener);
 		    
 		    //Add the label to the table
 		    //expand and fill allow the label to essentially take up the entire cell
-			scrollTable.add(l).expand().fill();
-	
+		    scrollTable.add(l).expand().fill();
+
+		    
 			//Create an image button with the image of the tile (room/Purchasable)
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
 			ImageButton imgButton = new ImageButton(textureRegionDrawable);
@@ -381,7 +403,17 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			//Add the same listener to the button
 			imgButton.addListener(sideMenuActionListener);
 			
-			maxButtonSize = imgButton.getWidth() > maxButtonSize ? imgButton.getWidth() : maxButtonSize;
+			//The width of the entire row including spacing
+			//TODO ENHANCEMENT way to determine the number of cells in a row?
+			float totalWidth = l.getWidth() + imgButton.getWidth() + (Constants.CELL_SPACE*3);
+			
+			//TODO TASK
+			//The longest row
+			//maxLabelSize = l.getWidth() > maxLabelSize ? l.getWidth() : maxLabelSize;
+			//maxButtonSize = imgButton.getWidth() > maxButtonSize ? imgButton.getWidth() : maxButtonSize;
+			
+			//The longest row combination
+			maxRowSize = totalWidth > maxRowSize ? totalWidth : maxRowSize;
 			
 			//expand and fill allow the image button to essentially take up the entire cell
 			scrollTable.add(imgButton).expand().fill();
