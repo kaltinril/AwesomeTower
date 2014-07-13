@@ -24,13 +24,10 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -40,7 +37,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
-import com.twojeremys.awesometower.AwesomeTower;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.tileengine.TileMap;
 import com.twojeremys.awesometower.tileengine.TileProperties;
@@ -381,7 +377,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			    }
 				@Override
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-					currentTile = tileProperty.getID();
+					//Kaltinril: appears touchUp was still being called anyways, added !scroll.isPanning check
+					if (!scroll.isPanning()){currentTile = tileProperty.getID();}
 			    }
 		    };
 	

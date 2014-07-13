@@ -4,5 +4,6 @@
 3:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:2,tileSpanY:1,blockable:true,name:wideGreenTile,ID:3},
 4:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:2,blockable:true,name:orangeTile,ID:4},
 5:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:5,tileSpanY:1,blockable:true,name:pinkTile,ID:5},
-6:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:3,tileSpanY:1,blockable:true,name:purpleTile,ID:6}
+6:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:3,tileSpanY:1,blockable:true,name:purpleTile,ID:6},
+7:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:3,tileSpanY:1,blockable:true,name:roomLobby,ID:7}
 }
