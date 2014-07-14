@@ -38,6 +38,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.gamefile.GameSave;
+import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.tileengine.TileMap;
 import com.twojeremys.awesometower.tileengine.TileProperties;
 
@@ -100,6 +102,17 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 	private boolean drawTableDebug;
 	
+	private GameSave gameSave;
+	private String saveName;
+	
+	
+	public GameScreen(Game game, GameSave gameSave, String saveName){
+		this(game);
+		
+		//Override with real gameSave data
+		this.gameSave = gameSave;
+		this.saveName = saveName;
+	}
 	
 	public GameScreen(Game game) {
 		super(game);
@@ -144,6 +157,13 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		TextureAtlas atlas = (TextureAtlas) assets.get("tiles.atlas");
 		
 		tileMap = new TileMap(30, 30, atlas);
+		
+		if (gameSave != null){
+			if (Constants.DEBUG) {
+				System.out.println("Loading save....");
+			}
+			tileMap.loadFromSave(gameSave);
+		}
 		
 		//Get the actual full Pixel height for the combined tile space, minus 1
 		screenTileMapHeight = tileMap.getMapPixelHeight();
@@ -660,8 +680,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//TODO TASK Need to convert this to an icon to be clicked on
 		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
 		//Toggle menu visibility
+		//FIXME converted this into save temporarily
 		if (keycode == Input.Keys.S){
-			scroll.setVisible(!scroll.isVisible());
+			//scroll.setVisible(!scroll.isVisible());
+			gameSave = tileMap.exportToSave();
+			GameSaveManager.saveState(gameSave, saveName);
 			return true;
 		}
 		

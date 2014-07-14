@@ -7,17 +7,36 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.twojeremys.awesometower.gamefile.GameSave;
 
 public class IntroScreen extends BaseScreen {
 
-	TextureRegion intro;
-	SpriteBatch batch;
-	float time = 0;
+	private TextureRegion intro;
+	private SpriteBatch batch;
+	private float time = 0;
+	
+	private GameSave gameSave;
+	private String saveName;
+
 
 	public IntroScreen (Game game) {
 		super(game);
 	}
 
+	public IntroScreen(Game game, GameSave gameSave, String saveName){
+		this(game);
+		
+		//Override with real gameSave data
+		this.gameSave = gameSave;
+		this.saveName = saveName;
+	}
+	
+	public IntroScreen(Game game, String saveName){
+		this(game);
+		
+		this.saveName = saveName;
+	}
+	
 	@Override
 	public void show () {
 		intro = new TextureRegion(new Texture(Gdx.files.internal("data/intro.png")), 0, 0, 480, 320);
@@ -35,7 +54,7 @@ public class IntroScreen extends BaseScreen {
 		time += delta;
 		if (time > 1) {
 			if (Gdx.input.isKeyPressed(Keys.ANY_KEY) || Gdx.input.justTouched()) {
-				game.setScreen(new GameScreen(game));
+				game.setScreen(new GameScreen(game, gameSave, saveName));
 			}
 		}
 	}

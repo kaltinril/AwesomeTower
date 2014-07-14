@@ -2,10 +2,19 @@ package com.twojeremys.awesometower.listener;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.gamefile.GameSave;
+import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.screen.IntroScreen;
+import com.twojeremys.awesometower.screen.LoadGameScreen;
 
 public class DefaultMenuActionListener extends InputListener {
 	
@@ -41,11 +50,12 @@ public class DefaultMenuActionListener extends InputListener {
     	}
     	else if (whichButton.equalsIgnoreCase("newgame")){
     		//Ugly pull in and cast
+    		//TODO TASK Create a way to allow user to name tower, so it can be used as the filename
+
     		((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener())));
     	}
-    	else if (whichButton.equalsIgnoreCase("loadgame")){
-    		// TODO TASK put the load game code screen/method call here
-    		System.out.println("TODO: Load game code");
+    	else if (whichButton.equalsIgnoreCase("loadgame")){    		
+    		((Game) Gdx.app.getApplicationListener()).setScreen(new LoadGameScreen(((Game) Gdx.app.getApplicationListener())));
     	}
     		
     }

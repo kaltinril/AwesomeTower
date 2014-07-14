@@ -2,6 +2,7 @@ package com.twojeremys.awesometower.screen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -17,33 +18,47 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.twojeremys.awesometower.AwesomeTower;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.listener.DefaultMenuActionListener;
 
 public class MainMenuScreen extends BaseScreen  {
 
-	TextureRegion title;
-	SpriteBatch batch;
+	private TextureRegion title;
+	private SpriteBatch batch;
 	
 	//Menu attempt using scene2d ui items
-	Table table;
-	Stage stage;
-	TextButton newGameButton;
-	TextButton exitGameButton;
-	TextButton loadGameButton;
-	Skin skin;
+	private Table table;
+	private Stage stage;
+	private TextButton newGameButton;
+	private TextButton exitGameButton;
+	private TextButton loadGameButton;
+	private Skin skin;
 	
-	Label label;
-	LabelStyle labelStyle;
+	private Label label;
+	private LabelStyle labelStyle;
 	
-	BitmapFont font;
+	private BitmapFont font;
 	
-	TextureAtlas atlas;
-
+	private TextureAtlas atlas;
+	
+	private TextButton.TextButtonStyle genericTextButtonStyle;
+	
+	private TextureRegionDrawable greyBackground;
+	private TextureRegionDrawable blackBackground;
+	private TextureRegionDrawable cursorDrawable;
+	
+	private TextField textField;
+	
 	public MainMenuScreen() {
 		super(new AwesomeTower());
 	}
@@ -57,6 +72,11 @@ public class MainMenuScreen extends BaseScreen  {
 		title = new TextureRegion(new Texture(Gdx.files.internal("data/pixietowers.png")), 0, 0, 480, 320);
 		batch = new SpriteBatch();
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, 480, 320);
+		
+		//Load textures
+		greyBackground = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("data/grey.png"))));
+		blackBackground = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("data/black.png"))));
+		cursorDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("data/cursor.png"))));
 		
 		/*
 		 *   Lets create a menu to display choices to the user
@@ -104,7 +124,7 @@ public class MainMenuScreen extends BaseScreen  {
 		 ***********************************************/
 		
 		// This is to define information for the TextButton, what it should look like, etc
-		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();	
+		genericTextButtonStyle = new TextButton.TextButtonStyle();	
 		
 		// Indicate which icons to use from the atlas, based on the named defined areas inside the altas file
 		genericTextButtonStyle.up = skin.getDrawable("button.up");				// Section of the atlas file with information
@@ -119,8 +139,23 @@ public class MainMenuScreen extends BaseScreen  {
 	
 		// Create the new game button, and pass in the word "newGame" to a listener which is called on the DOWN/UP events
 		newGameButton = new TextButton("New game", genericTextButtonStyle);
-        newGameButton.addListener(new DefaultMenuActionListener("newGame"));
+        //newGameButton.addListener(new DefaultMenuActionListener("newGame"));
+		newGameButton.addListener(new InputListener(){
+		    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {		        
+		        return true;
+		    }
 
+		    //This only fires when the button is first let up
+			@Override
+		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+		    	
+				if (Constants.DEBUG) {
+					System.out.println("NewGameButtonUp");
+				}
+				
+			createNewGamePopup();
+			}
+		});
 		
 		// add the start-game button to the table
         //  Using the returned [CELL] object, change that cell's size, make it uniform, and add space below it.
@@ -158,6 +193,80 @@ public class MainMenuScreen extends BaseScreen  {
 		stage.addActor(table);
 	}
 
+	
+	//This is a popup that will ask for a name
+	//TODO ENHANCE create a standard skin that all buttons images etc can use
+	private void createNewGamePopup(){
+		
+		//Create a label style to use
+		LabelStyle labelStyle = new LabelStyle();
+		labelStyle.font = new BitmapFont();
+		labelStyle.fontColor = Color.WHITE;
+		
+		//Setup a label
+		Label label = new Label("Enter a name for your tower:", labelStyle);
+		label.setWrap(true);
+		label.setFontScale(.8f);
+		label.setAlignment(Align.center);
+
+		//Setup a window style to use
+		WindowStyle windowStyle = new WindowStyle();
+		windowStyle.titleFont = new BitmapFont();
+		windowStyle.background = greyBackground;
+		
+		//Create a dialog box
+		Dialog dialog = new Dialog("New Tower", windowStyle) {
+		    protected void result (Object object) {
+		    	if ((Boolean)object == true){
+		    		if (Constants.DEBUG){
+		    			System.out.println("Save Game Name: " + textField.getText());
+		    		}
+		    		
+		    		((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener()), textField.getText()));
+		    	}
+		    }
+		};
+
+		//Setup how the text box should look
+		TextFieldStyle textFieldStyle = new TextFieldStyle();
+		textFieldStyle.font = new BitmapFont();
+		textFieldStyle.fontColor = Color.ORANGE;
+		textFieldStyle.background = blackBackground;
+		textFieldStyle.cursor = cursorDrawable;
+		textFieldStyle.cursor.setMinWidth(2f);
+		
+		//Create a text box (TextField) using the style created above
+		textField = new TextField("Kaltinril", textFieldStyle);
+		
+		
+		//Adjust Dialog padding
+		dialog.padTop(10).padBottom(10);
+		
+		//Add label and text box to content
+		dialog.getContentTable().add(label).padTop(10).row();
+		dialog.getContentTable().add(textField).padLeft(5).padRight(5).row();
+		
+		//Adjust button padding
+		dialog.getButtonTable().padTop(10);
+		
+		
+		
+		//Add the create game button
+		TextButton dbutton = new TextButton("Create Game", genericTextButtonStyle);
+		dialog.button(dbutton, true);
+
+		//Add the cancel button
+		dbutton = new TextButton("Cancel", genericTextButtonStyle);
+		
+		//Add and set it all up
+		dialog.button(dbutton, false);
+		dialog.key(Keys.ENTER, true).key(Keys.ESCAPE, false);
+		dialog.invalidateHierarchy();
+		dialog.invalidate();
+		dialog.layout();
+		dialog.show(stage);
+	}
+	
 	@Override
 	public void render (float delta) {
 		

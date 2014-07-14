@@ -5,6 +5,7 @@ import java.util.HashMap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.gamefile.GameSave;
 
 //TODO TASK Save game state etc
 public class TileMap {
@@ -115,6 +116,16 @@ public class TileMap {
 
 	public int getMapPixelHeight(){
 		return this.maxY*this.tileHeight;
+	}
+	
+	public void loadFromSave(GameSave gameSave){
+		this.tiles = gameSave.getTiles();
+	}
+	
+	public GameSave exportToSave(){
+		GameSave gameSave = new GameSave();
+		gameSave.setTiles(tiles);
+		return gameSave;
 	}
 	
 	
