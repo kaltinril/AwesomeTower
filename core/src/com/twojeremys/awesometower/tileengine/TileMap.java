@@ -191,4 +191,12 @@ public class TileMap {
 		}
 	}
 
+	//Not sure if this is needed, but added it.
+	public void dispose(){
+		tiles = null;
+		tileProperties = null;
+		
+		if (atlas!=null) 
+			atlas.dispose();
+	}
 }

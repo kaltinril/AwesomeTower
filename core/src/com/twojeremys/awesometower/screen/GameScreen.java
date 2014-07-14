@@ -32,6 +32,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
@@ -99,6 +101,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private float maxButtonSize = 0f;
 	private float maxLabelSize = 0f;
 	private float maxRowSize = 0f;
+	
+	//Attempt at adding scroll bars
+	private Skin skin;
 	
 	private boolean drawTableDebug;
 	
@@ -328,13 +333,24 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    groupLeft.setActor(vg);
 		
 		scrollTable = new Table().pad(Constants.TABLE_PAD);
-
-		scroll = new ScrollPane(scrollTable);
-		
 		scrollTable.setBackground(tr);
-
-		scroll.setScrollingDisabled(true, false);
 		
+		//Setup a skin to see if scroll bar will appear
+		//TODO ENHANCE create a real gameSkin.png and gameSkin.atlas for our game to include buttons, scroll bar, knobs, etc.
+		//https://searchcode.com/codesearch/view/3608486/
+		TextureAtlas tempAtlas = new TextureAtlas(Gdx.files.internal("ui/button/button.atlas"));
+		skin = new Skin(tempAtlas);
+		
+		//Setup which buttons manually since they are not named correctly
+		ScrollPaneStyle scrollPaneStyle = new ScrollPaneStyle();
+		scrollPaneStyle.vScroll = skin.getDrawable("button.up");
+		scrollPaneStyle.vScrollKnob = skin.getDrawable("button.down");
+		scrollPaneStyle.hScroll = skin.getDrawable("button.up");
+		scrollPaneStyle.hScrollKnob = skin.getDrawable("button.down");
+		
+		scroll = new ScrollPane(scrollTable, scrollPaneStyle);
+		scroll.setScrollingDisabled(true, false);
+				
 		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();
 		genericTextButtonStyle.font = new BitmapFont();
 		
@@ -343,13 +359,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			buildSideMenuRows(atlas, labelStyle);
 		}
 		
-		//TODO Could use to hide scrollbar when not scrolling
-		//FIXME scrollbar doesn't actually show up for whatever reason
-		//scroll.setScrollBarPositions(false, true);
-		//scroll.setScrollbarsOnTop(true);
-		//scroll.setupFadeScrollBars(1.0f, 1.0f);
-		//scroll.setFadeScrollBars(true);
-		
+		//Setup the scroll bar for vertical only, and fade it after 1 second over 1 second.
+		scroll.setScrollBarPositions(false, true);
+		scroll.setScrollbarsOnTop(true);
+		scroll.setupFadeScrollBars(1.0f, 1.0f);
+		scroll.setFadeScrollBars(true);
 		
 		groupRight.setActor(scroll);
 		groupRight.right(); //tells it to draw right to left
@@ -505,6 +519,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	@Override
 	public void hide() {
 		Gdx.app.debug("twojeremys", "dispose game screen");
+		
+		if (Constants.DEBUG){
+			System.out.println("Hide was called.");
+		}
 
 		// Get rid of the assets loaded
 		loadingCircleTexture.dispose();
@@ -514,6 +532,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		shapeRenderer.dispose();
 		stage.dispose();
 		assets.dispose();
+		skin.dispose();
+		
+		//Created a dispose method to see if that helps
+		tileMap.dispose();	
 	}
 	
 	/******************************************************************************
@@ -689,8 +711,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		}
 		
 		//TODO TASK Pop up an "are you sure" message
-		//FIXME ending and restarting the game is creating new GameScreen objects and the old ones are not released.
 		if (keycode == Input.Keys.ESCAPE) {
+			this.dispose(); //TODO CONFIRM - does this fix the old ones not being released?
 			game.setScreen(new MainMenuScreen(game));
 			return true;
 		}
