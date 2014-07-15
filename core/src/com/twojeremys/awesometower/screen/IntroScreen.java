@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.twojeremys.awesometower.gamefile.GameSave;
+import com.twojeremys.awesometower.gamefile.GameState;
 
 public class IntroScreen extends BaseScreen {
 
@@ -15,7 +15,7 @@ public class IntroScreen extends BaseScreen {
 	private SpriteBatch batch;
 	private float time = 0;
 	
-	private GameSave gameSave;
+	private GameState gameSave;
 	private String saveName;
 
 
@@ -23,7 +23,7 @@ public class IntroScreen extends BaseScreen {
 		super(game);
 	}
 
-	public IntroScreen(Game game, GameSave gameSave, String saveName){
+	public IntroScreen(Game game, GameState gameSave, String saveName){
 		this(game);
 		
 		//Override with real gameSave data

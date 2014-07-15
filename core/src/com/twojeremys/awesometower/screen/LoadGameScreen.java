@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.twojeremys.awesometower.gamefile.GameSave;
+import com.twojeremys.awesometower.gamefile.GameState;
 import com.twojeremys.awesometower.listener.LoadGameInputListener;
 
 public class LoadGameScreen extends BaseScreen{
@@ -21,7 +21,7 @@ public class LoadGameScreen extends BaseScreen{
 	private Table scrollInnerTable;
 
 	
-	private GameSave gameSave;
+	private GameState gameSave;
 	
 	public LoadGameScreen(Game game) {
 		super(game);

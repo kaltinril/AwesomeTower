@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.Json;
 
 public class GameSaveManager {
 
-	public static boolean saveState(GameSave gameSave, String saveFileName){
+	public static boolean saveState(GameState gameSave, String saveFileName){
 		
 		try{
 			Json json = new Json();	
@@ -31,9 +31,9 @@ public class GameSaveManager {
 		return true;
 	}
 	
-	public static GameSave loadState(String saveFileName)
+	public static GameState loadState(String saveFileName)
 	{
-		GameSave gameSave;
+		GameState gameSave;
 		Json json = new Json();	
 		
 		try{
@@ -46,7 +46,7 @@ public class GameSaveManager {
 	        saveData = Base64Coder.decodeString(saveData);
 	        
 	        //Translate JSON string into a GameSave object
-	        gameSave = json.fromJson(GameSave.class, saveData);
+	        gameSave = json.fromJson(GameState.class, saveData);
 		} catch (Throwable e) {
 			//TODO ENHANCEMENT make this some sort of real warning message or pop-up
 			System.out.println("ERROR: Couldn't Load from External Storage [awesomeTowerSave.txt]: " + e.getMessage() + "\n");

@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.input.GestureDetector;
@@ -30,9 +29,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane.ScrollPaneStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -40,8 +37,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Constants;
-import com.twojeremys.awesometower.gamefile.GameSave;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
+import com.twojeremys.awesometower.gamefile.GameState;
 import com.twojeremys.awesometower.tileengine.TileMap;
 import com.twojeremys.awesometower.tileengine.TileProperties;
 
@@ -98,8 +95,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private Table scrollTable;
 	private Container<Actor> groupLeft;
 	private Container<Actor> groupRight;
-	private float maxButtonSize = 0f;
-	private float maxLabelSize = 0f;
+	//private float maxButtonSize = 0f;
+	//private float maxLabelSize = 0f;
 	private float maxRowSize = 0f;
 	
 	//Attempt at adding scroll bars
@@ -107,15 +104,15 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 	private boolean drawTableDebug;
 	
-	private GameSave gameSave;
+	private GameState gameState;
 	private String saveName;
 	
 	
-	public GameScreen(Game game, GameSave gameSave, String saveName){
+	public GameScreen(Game game, GameState gameState, String saveName){
 		this(game);
 		
-		//Override with real gameSave data
-		this.gameSave = gameSave;
+		//Override with real gameState data
+		this.gameState = gameState;
 		this.saveName = saveName;
 	}
 	
@@ -161,13 +158,17 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Store this for later use in setting the menu
 		TextureAtlas atlas = (TextureAtlas) assets.get("tiles.atlas");
 		
-		tileMap = new TileMap(30, 30, atlas);
-		
-		if (gameSave != null){
+		//Create an instance of TileMap based on the GameState.
+		if (gameState != null){
 			if (Constants.DEBUG) {
 				System.out.println("Loading save....");
 			}
-			tileMap.loadFromSave(gameSave);
+			tileMap = new TileMap(atlas, gameState.getTiles());
+		}
+		else {
+			tileMap = new TileMap(atlas);
+			gameState = new GameState();
+			gameState.setTiles(tileMap.getTiles());
 		}
 		
 		//Get the actual full Pixel height for the combined tile space, minus 1
@@ -179,7 +180,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			System.out.println("Height: " + Gdx.graphics.getHeight());
 		}
 
-		
 		// Camera
 		// http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(),
@@ -306,16 +306,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
          *           container (right) -> scrollpane -> table -> row -> [cell, cell]
          */
         
-		LabelStyle labelStyle = new LabelStyle();
-		labelStyle.font = new BitmapFont();
-		labelStyle.fontColor = Color.WHITE;
-
-		//container = new Container<Actor>();
-		
-	    //Create the texture for the menu background (using grey just for POC)
-	    //TODO TASK needs to be moved into the asset manager
-	    //TODO TASK make more fancier
-	    TextureRegionDrawable tr = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("data/grey.png"))));
+		//Setup the skin to use for all UI items
+		skin = new Skin(Gdx.files.internal("ui/skin/uiskin.json"));
 	    
 	    groupLeft = new Container<Actor>();
 	    groupRight = new Container<Actor>();
@@ -325,30 +317,16 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    
 	    VerticalGroup vg = new VerticalGroup();
 	    	    	    
-	    Label l1 = new Label("yay", labelStyle);
-	    Label l2 = new Label("string", labelStyle);
+	    Label l1 = new Label("yay", skin, "default");
+	    Label l2 = new Label("string", skin, "default");
 	    vg.addActor(l1);
 	    vg.addActor(l2);
 	    
 	    groupLeft.setActor(vg);
 		
 		scrollTable = new Table().pad(Constants.TABLE_PAD);
-		scrollTable.setBackground(tr);
 		
-		//Setup a skin to see if scroll bar will appear
-		//TODO ENHANCE create a real gameSkin.png and gameSkin.atlas for our game to include buttons, scroll bar, knobs, etc.
-		//https://searchcode.com/codesearch/view/3608486/
-		TextureAtlas tempAtlas = new TextureAtlas(Gdx.files.internal("ui/button/button.atlas"));
-		skin = new Skin(tempAtlas);
-		
-		//Setup which buttons manually since they are not named correctly
-		ScrollPaneStyle scrollPaneStyle = new ScrollPaneStyle();
-		scrollPaneStyle.vScroll = skin.getDrawable("button.up");
-		scrollPaneStyle.vScrollKnob = skin.getDrawable("button.down");
-		scrollPaneStyle.hScroll = skin.getDrawable("button.up");
-		scrollPaneStyle.hScrollKnob = skin.getDrawable("button.down");
-		
-		scroll = new ScrollPane(scrollTable, scrollPaneStyle);
+		scroll = new ScrollPane(scrollTable, skin, "default");
 		scroll.setScrollingDisabled(true, false);
 				
 		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();
@@ -356,7 +334,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//TODO DEBUG Test loop just to build a bigger menu
 		for (int i = 0; i < 15; i++) {
-			buildSideMenuRows(atlas, labelStyle);
+			buildSideMenuRows(atlas);
 		}
 		
 		//Setup the scroll bar for vertical only, and fade it after 1 second over 1 second.
@@ -394,7 +372,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		}
 	}
 
-	private void buildSideMenuRows(TextureAtlas atlas, LabelStyle labelStyle) {
+	private void buildSideMenuRows(TextureAtlas atlas) {
 		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
 			
 			//Using spacing instead of padding
@@ -418,7 +396,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 		    //Create a label to the left of the image and add a listener 
 		    //So the label OR button can be clicked on
-		    Label l = new Label(tileProperty.getName(), labelStyle);
+		    Label l = new Label(tileProperty.getName(), skin, "default");
 		    		  
 		    l.addListener(sideMenuActionListener);
 		    
@@ -426,7 +404,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    //expand and fill allow the label to essentially take up the entire cell
 		    scrollTable.add(l).expand().fill();
 
-		    
 			//Create an image button with the image of the tile (room/Purchasable)
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
 			ImageButton imgButton = new ImageButton(textureRegionDrawable);
@@ -434,9 +411,13 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			//Add the same listener to the button
 			imgButton.addListener(sideMenuActionListener);
 			
+			//Right justify image so that label text does not overlap it
+			scrollTable.add(imgButton).right();
+			
 			//The width of the entire row including spacing
 			//TODO ENHANCEMENT way to determine the number of cells in a row?
-			float totalWidth = l.getWidth() + imgButton.getWidth() + (Constants.CELL_SPACE*3);
+			float totalWidth = imgButton.getWidth();
+			totalWidth += l.getWidth() + (Constants.CELL_SPACE*3);
 			
 			//TODO TASK
 			//The longest row
@@ -445,9 +426,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			
 			//The longest row combination
 			maxRowSize = totalWidth > maxRowSize ? totalWidth : maxRowSize;
-			
-			//expand and fill allow the image button to essentially take up the entire cell
-			scrollTable.add(imgButton).expand().fill();
 		}
 	}
 
@@ -705,8 +683,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//FIXME converted this into save temporarily
 		if (keycode == Input.Keys.S){
 			//scroll.setVisible(!scroll.isVisible());
-			gameSave = tileMap.exportToSave();
-			GameSaveManager.saveState(gameSave, saveName);
+			GameSaveManager.saveState(gameState, saveName);
 			return true;
 		}
 		

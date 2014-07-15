@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.twojeremys.awesometower.Constants;
-import com.twojeremys.awesometower.gamefile.GameSave;
+import com.twojeremys.awesometower.gamefile.GameState;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.screen.IntroScreen;
 
@@ -44,7 +44,7 @@ public class LoadGameInputListener extends InputListener {
 				System.out.println("File Selected: " + saveFileName);
 			}
 			// TODO TASK put the load game code screen/method call here
-			GameSave gameSave = GameSaveManager.loadState(saveFileName);
+			GameState gameSave = GameSaveManager.loadState(saveFileName);
 	
 			//TODO ENHANCE fix Ugly pull in and cast
 			((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener()), gameSave, saveFileName));

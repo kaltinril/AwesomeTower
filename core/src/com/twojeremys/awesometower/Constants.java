@@ -12,6 +12,10 @@ public class Constants {
 	public static final int TILE_WIDTH = 20;
 	public static final int TILE_HEIGHT = 20;
 	
+	//Default Max Tile Map Size
+	public static final int DEFAULT_MAX_TILE_MAP_SIZE_X = 30;
+	public static final int DEFAULT_MAX_TILE_MAP_SIZE_Y = 30;
+	
 	//The spacing between cells in the game screen side menu
 	public static final float CELL_SPACE = 1.5f; //all sides
 	

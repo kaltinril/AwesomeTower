@@ -5,7 +5,6 @@ import java.util.HashMap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.twojeremys.awesometower.Constants;
-import com.twojeremys.awesometower.gamefile.GameSave;
 
 //TODO TASK Save game state etc
 public class TileMap {
@@ -26,11 +25,15 @@ public class TileMap {
 	private int tileWidth = Constants.TILE_WIDTH;
 	private int tileHeight = Constants.TILE_HEIGHT;
 
-	public TileMap(int inMaxX, int inMaxY, TextureAtlas atlas) {
-		this.maxX = inMaxX;
-		this.maxY = inMaxY;
-		this.tiles = new Tile[maxX][maxY];
+	public TileMap(TextureAtlas atlas) {
+		this(atlas, new Tile[Constants.DEFAULT_MAX_TILE_MAP_SIZE_X][Constants.DEFAULT_MAX_TILE_MAP_SIZE_Y]);
+	}
+	
+	public TileMap(TextureAtlas atlas, Tile[][] tiles){
+		this.tiles = tiles;
 		this.atlas = atlas;
+		
+		calculateMaxTiles();
 		
 		//set the hash to new object (will be overridden later)
 		this.tileProperties = new HashMap<Integer, TileProperties>();
@@ -43,6 +46,13 @@ public class TileMap {
 			this.tiles[maxX-1][maxY-1] = new Tile(1);
 			this.tiles[maxX-1][0] = new Tile(1);
 			this.tiles[0][maxY-1] = new Tile(1);
+		}
+	}
+	private void calculateMaxTiles(){
+		if (tiles != null){
+			this.maxX = tiles.length;
+			this.maxY = tiles[0].length;
+			System.out.println("Max X" + this.maxX + " MaxY: " + this.maxY);
 		}
 	}
 	
@@ -118,16 +128,13 @@ public class TileMap {
 		return this.maxY*this.tileHeight;
 	}
 	
-	public void loadFromSave(GameSave gameSave){
-		this.tiles = gameSave.getTiles();
+	public Tile[][] getTiles() {
+		return tiles;
 	}
-	
-	public GameSave exportToSave(){
-		GameSave gameSave = new GameSave();
-		gameSave.setTiles(tiles);
-		return gameSave;
+
+	public void setTiles(Tile[][] tiles) {
+		this.tiles = tiles;
 	}
-	
 	
 	public HashMap<Integer, TileProperties> getTileProperties() {
 		return tileProperties;
