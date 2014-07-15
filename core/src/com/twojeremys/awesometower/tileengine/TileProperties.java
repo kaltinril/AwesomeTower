@@ -12,6 +12,7 @@ public class TileProperties {
 	private int tileSpanX;  	//The number of horizontal tiles the image will span
 	private int tileSpanY;  	//The number of vertical tiles the image will span
 	private boolean blockable; //Can this type of tile block placement of other tiles?
+	private String categoryName; //The category this tile should be placed in
 	
 	//TODO ENHANCEMENT Perhaps add a AtlasRegion to this, and store the Atlas details for the tile in the properties.  Less lookup needed at that point
 	
@@ -57,6 +58,14 @@ public class TileProperties {
 
 	public void setBlockable(boolean blockable) {
 		this.blockable = blockable;
+	}
+
+	public String getCategoryName() {
+		return categoryName;
+	}
+
+	public void setCategoryName(String categoryName) {
+		this.categoryName = categoryName;
 	}
 	
 }

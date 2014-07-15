@@ -91,10 +91,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 	//Used to build the side menu
 	private Stage stage;
-	private ScrollPane scroll;
-	private Table scrollTable;
-	private Container<Actor> groupLeft;
-	private Container<Actor> groupRight;
+	private ScrollPane selectionScroll;
+	private Table selectionTable;
+	private Container<Actor> categoryContainer;
+	private Container<Actor> selectionContainer;
 	//private float maxButtonSize = 0f;
 	//private float maxLabelSize = 0f;
 	private float maxRowSize = 0f;
@@ -135,6 +135,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		// Load the "loading screen" texture and sprite for rotation
 		loadingCircleTexture = new Texture("data/loadingCircle.png");
 		loadingCircleSprite = new Sprite(loadingCircleTexture);
+		
+		//Setup the skin to use for all UI items
+		skin = new Skin(Gdx.files.internal("ui/skin/uiskin.json"));
 
 		// move sprite to center of screen
 		loadingCircleSprite.setPosition(
@@ -302,35 +305,39 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		/**
          * TODO TASK Menu Testing
          * 
-         *  stage -> container (left ) -> [TBD]
-         *           container (right) -> scrollpane -> table -> row -> [cell, cell]
+         *  stage -> container (categories) -> [TBD]
+         *           container (selections) -> scrollpane -> table -> row -> [cell, cell]
          */
-        
-		//Setup the skin to use for all UI items
-		skin = new Skin(Gdx.files.internal("ui/skin/uiskin.json"));
 	    
-	    groupLeft = new Container<Actor>();
-	    groupRight = new Container<Actor>();
+	    categoryContainer = new Container<Actor>();
+	    selectionContainer = new Container<Actor>();
 
-	    stage.addActor(groupLeft);
-	    stage.addActor(groupRight);
+	    stage.addActor(categoryContainer);
+	    stage.addActor(selectionContainer);
 	    
-	    VerticalGroup vg = new VerticalGroup();
-	    	    	    
-	    Label l1 = new Label("yay", skin, "default");
-	    Label l2 = new Label("string", skin, "default");
-	    vg.addActor(l1);
-	    vg.addActor(l2);
+	    /**
+	     * Category Section
+	     */
 	    
-	    groupLeft.setActor(vg);
+	    //Holds the list of categories as a single vertical grouping
+	    VerticalGroup categoryGroup = new VerticalGroup();
+
+	    //Add the category group to the container
+	    categoryContainer.setActor(categoryGroup);
+	    
+	    //Build the category menu
+	    buildCategoryMenu(atlas, categoryGroup);
 		
-		scrollTable = new Table().pad(Constants.TABLE_PAD);
+	    /**
+	     * Selection Section
+	     */
+	    
+	    //selection table
+	    selectionTable = new Table().pad(Constants.TABLE_PAD);
 		
-		scroll = new ScrollPane(scrollTable, skin, "default");
-		scroll.setScrollingDisabled(true, false);
-				
-		TextButton.TextButtonStyle genericTextButtonStyle = new TextButton.TextButtonStyle();
-		genericTextButtonStyle.font = new BitmapFont();
+	    //selection table scroll pane
+	    selectionScroll = new ScrollPane(selectionTable, skin, "default");
+	    selectionScroll.setScrollingDisabled(true, false);
 		
 		//TODO DEBUG Test loop just to build a bigger menu
 		for (int i = 0; i < 15; i++) {
@@ -338,59 +345,73 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		}
 		
 		//Setup the scroll bar for vertical only, and fade it after 1 second over 1 second.
-		scroll.setScrollBarPositions(false, true);
-		scroll.setScrollbarsOnTop(true);
-		scroll.setupFadeScrollBars(1.0f, 1.0f);
-		scroll.setFadeScrollBars(true);
+		selectionScroll.setScrollBarPositions(false, true);
+		selectionScroll.setScrollbarsOnTop(true);
+		selectionScroll.setupFadeScrollBars(1.0f, 1.0f);
+		selectionScroll.setFadeScrollBars(true);
 		
-		groupRight.setActor(scroll);
-		groupRight.right(); //tells it to draw right to left
+		//Add the scrollpane to the container
+		selectionContainer.setActor(selectionScroll);
+		selectionContainer.right(); //tells it to draw right to left
 				
 		//The longest row
 		//container.size(maxLabelSize + maxButtonSize, Gdx.graphics.getHeight());
 		//The longest combination
 		//container.size(maxRowSize+50, Gdx.graphics.getHeight());
 		
-		groupRight.size(maxRowSize, Gdx.graphics.getHeight());
+		selectionContainer.size(maxRowSize, Gdx.graphics.getHeight());
 		
 		//Container draws right to left from x as long as you call the size method.  setSize fails
-		groupRight.setX(Gdx.graphics.getWidth());
-		groupRight.setY(Gdx.graphics.getHeight()/2);
+		selectionContainer.setX(Gdx.graphics.getWidth());
+		selectionContainer.setY(Gdx.graphics.getHeight()/2);
 		
-		groupLeft.size(vg.getMinWidth(), Gdx.graphics.getHeight());
-		groupLeft.right();//tells it to draw right to left
+		categoryContainer.size(categoryGroup.getMinWidth(), Gdx.graphics.getHeight());
+		categoryContainer.right();//tells it to draw right to left
 		
 //		System.out.println("getWidth" + vg.getWidth());
 //		System.out.println("getMinWidth" + vg.getMinWidth());
 //		System.out.println("getMaxWidth" + vg.getMaxWidth());
 		
-		groupLeft.setX(Gdx.graphics.getWidth() - groupRight.getMinWidth());
-		groupLeft.setY(Gdx.graphics.getHeight()/2);
+		categoryContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
+		categoryContainer.setY(Gdx.graphics.getHeight()/2);
 		
 		if (Constants.DEBUG){
-			scrollTable.debug();
+			selectionTable.debug();
 		}
+	}
+	
+	private void buildCategoryMenu(TextureAtlas atlas, VerticalGroup group) {
+		
+	    Label l1 = new Label("yay", skin, "default");
+	    Label l2 = new Label("string", skin, "default");
+	    
+	    group.addActor(l1);
+	    group.addActor(l2);
+	    
+//		for(final TileProperties tileProperty : tileMap.getTileProperties().values()){
+//			tileProperty.getCategoryName();
+//		}
 	}
 
 	private void buildSideMenuRows(TextureAtlas atlas) {
 		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
-			
+						
 			//Using spacing instead of padding
 			// see https://github.com/libgdx/libgdx/wiki/Table#padding
 			// for specifics
-			scrollTable.row().space(Constants.CELL_SPACE);
+			selectionTable.row().space(Constants.CELL_SPACE);
 		    
 		    //Create a listener to add to the Label and button
 		    InputListener sideMenuActionListener = new InputListener(){
 				@Override
 			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-					if (scroll.isPanning()){return false;}
+					if (selectionScroll.isPanning()){return false;}
 					else {return true;}
 			    }
 				@Override
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 					//Kaltinril: appears touchUp was still being called anyways, added !scroll.isPanning check
-					if (!scroll.isPanning()){currentTile = tileProperty.getID();}
+					if (!selectionScroll.isPanning()){currentTile = tileProperty.getID();}
 			    }
 		    };
 	
@@ -402,7 +423,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    
 		    //Add the label to the table
 		    //expand and fill allow the label to essentially take up the entire cell
-		    scrollTable.add(l).expand().fill();
+		    selectionTable.add(l).expand().fill();
 
 			//Create an image button with the image of the tile (room/Purchasable)
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
@@ -412,12 +433,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			imgButton.addListener(sideMenuActionListener);
 			
 			//Right justify image so that label text does not overlap it
-			scrollTable.add(imgButton).right();
+			selectionTable.add(imgButton).right();
 			
 			//The width of the entire row including spacing
 			//TODO ENHANCEMENT way to determine the number of cells in a row?
-			float totalWidth = imgButton.getWidth();
-			totalWidth += l.getWidth() + (Constants.CELL_SPACE*3);
+			float totalWidth = imgButton.getWidth() + l.getWidth() + (Constants.CELL_SPACE*3);
 			
 			//TODO TASK
 			//The longest row
