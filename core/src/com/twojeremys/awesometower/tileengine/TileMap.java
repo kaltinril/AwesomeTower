@@ -185,7 +185,7 @@ public class TileMap {
 						TileProperties tp = tileProperties.get(String.valueOf(tiles[x][y].getID()));
 						
 						//Draw this tile to the designated width and height based on tilespan and tilewidth/height
-						batch.draw(atlas.findRegion(tp.getName()), 
+						batch.draw(atlas.findRegion(tp.getAtlasName()), 
 							x*tileWidth, y*tileHeight, //Position
 							0, 0, //Origin Offset
 							tp.getTileSpanX() * tileWidth, tp.getTileSpanY() * tileHeight, //Width and Height to stretch to

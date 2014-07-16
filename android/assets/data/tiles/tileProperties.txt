@@ -1,9 +1,72 @@
 {
-1:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:1,blockable:true,name:redTile,ID:1},
-2:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:1,blockable:true,name:yellowTile,ID:2},
-3:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:2,tileSpanY:1,blockable:true,name:wideGreenTile,ID:3},
-4:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:1,tileSpanY:2,blockable:true,name:orangeTile,ID:4},
-5:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:5,tileSpanY:1,blockable:true,name:pinkTile,ID:5},
-6:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:3,tileSpanY:1,blockable:true,name:purpleTile,ID:6},
-7:{class:com.twojeremys.awesometower.tileengine.TileProperties,tileSpanX:3,tileSpanY:1,blockable:true,name:roomLobby,ID:7}
+	1:{
+		class:com.twojeremys.awesometower.tileengine.TileProperties
+		,tileSpanX:1
+		,tileSpanY:1
+		,blockable:true
+		,atlasName:redTile
+		,ID:1
+		,category:Commercial
+		,displayName:"Red Robin"
+	},
+	2:{
+		class:com.twojeremys.awesometower.tileengine.TileProperties
+		,tileSpanX:1
+		,tileSpanY:1
+		,blockable:true
+		,atlasName:yellowTile
+		,ID:2
+		,category:Residential
+		,displayName:"Super Apartment"
+	},
+	3:{
+		class:com.twojeremys.awesometower.tileengine.TileProperties
+		,tileSpanX:2
+		,tileSpanY:1
+		,blockable:true
+		,atlasName:wideGreenTile
+		,ID:3
+		,category:Transport
+		,displayName:"Stair"
+	},
+	4:{
+		class:com.twojeremys.awesometower.tileengine.TileProperties
+		,tileSpanX:1
+		,tileSpanY:2
+		,blockable:true
+		,atlasName:orangeTile
+		,ID:4
+		,category:Utility
+		,displayName:"Security"
+	},
+	5:{
+		class:com.twojeremys.awesometower.tileengine.TileProperties
+		,tileSpanX:5
+		,tileSpanY:1
+		,blockable:true
+		,atlasName:pinkTile
+		,ID:5
+		,category:Commercial
+		,displayName:"Pink Robin"
+	},
+	6:{
+		class:com.twojeremys.awesometower.tileengine.TileProperties
+		,tileSpanX:3
+		,tileSpanY:1
+		,blockable:true
+		,atlasName:purpleTile
+		,ID:6
+		,category:Residential
+		,displayName:"Condo1"
+	},
+	7:{
+		class:com.twojeremys.awesometower.tileengine.TileProperties
+		,tileSpanX:3
+		,tileSpanY:1
+		,blockable:true
+		,atlasName:roomLobby
+		,ID:7
+		,category:Lobby
+		,displayName:"Basic Lobby"
+	}
 }

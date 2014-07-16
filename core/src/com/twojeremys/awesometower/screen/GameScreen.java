@@ -36,6 +36,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
+import com.twojeremys.awesometower.Category;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.gamefile.GameState;
@@ -93,11 +94,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private Stage stage;
 	private ScrollPane selectionScroll;
 	private Table selectionTable;
-	private Container<Actor> categoryContainer;
+	private Container<Actor> categoryNameContainer;
 	private Container<Actor> selectionContainer;
 	//private float maxButtonSize = 0f;
 	//private float maxLabelSize = 0f;
 	private float maxRowSize = 0f;
+	private Category selectedCategory;
 	
 	//Attempt at adding scroll bars
 	private Skin skin;
@@ -309,24 +311,24 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
          *           container (selections) -> scrollpane -> table -> row -> [cell, cell]
          */
 	    
-	    categoryContainer = new Container<Actor>();
+	    categoryNameContainer = new Container<Actor>();
 	    selectionContainer = new Container<Actor>();
 
-	    stage.addActor(categoryContainer);
+	    stage.addActor(categoryNameContainer);
 	    stage.addActor(selectionContainer);
 	    
 	    /**
-	     * Category Section
+	     * categoryName Section
 	     */
 	    
 	    //Holds the list of categories as a single vertical grouping
-	    VerticalGroup categoryGroup = new VerticalGroup();
+	    VerticalGroup categoryNameGroup = new VerticalGroup();
 
-	    //Add the category group to the container
-	    categoryContainer.setActor(categoryGroup);
+	    //Add the categoryName group to the container
+	    categoryNameContainer.setActor(categoryNameGroup);
 	    
-	    //Build the category menu
-	    buildCategoryMenu(atlas, categoryGroup);
+	    //Build the categoryName menu
+	    buildCategoryNameMenu(atlas, categoryNameGroup);
 		
 	    /**
 	     * Selection Section
@@ -334,7 +336,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    
 	    //selection table
 	    selectionTable = new Table().pad(Constants.TABLE_PAD);
-		
+			    
 	    //selection table scroll pane
 	    selectionScroll = new ScrollPane(selectionTable, skin, "default");
 	    selectionScroll.setScrollingDisabled(true, false);
@@ -365,32 +367,43 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		selectionContainer.setX(Gdx.graphics.getWidth());
 		selectionContainer.setY(Gdx.graphics.getHeight()/2);
 		
-		categoryContainer.size(categoryGroup.getMinWidth(), Gdx.graphics.getHeight());
-		categoryContainer.right();//tells it to draw right to left
+		categoryNameContainer.size(categoryNameGroup.getMinWidth(), Gdx.graphics.getHeight());
+		categoryNameContainer.right();//tells it to draw right to left
 		
 //		System.out.println("getWidth" + vg.getWidth());
 //		System.out.println("getMinWidth" + vg.getMinWidth());
 //		System.out.println("getMaxWidth" + vg.getMaxWidth());
 		
-		categoryContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
-		categoryContainer.setY(Gdx.graphics.getHeight()/2);
+		categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
+		categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 		
 		if (Constants.DEBUG){
 			selectionTable.debug();
 		}
 	}
 	
-	private void buildCategoryMenu(TextureAtlas atlas, VerticalGroup group) {
-		
-	    Label l1 = new Label("yay", skin, "default");
-	    Label l2 = new Label("string", skin, "default");
-	    
-	    group.addActor(l1);
-	    group.addActor(l2);
-	    
-//		for(final TileProperties tileProperty : tileMap.getTileProperties().values()){
-//			tileProperty.getCategoryName();
-//		}
+	private void buildCategoryNameMenu(TextureAtlas atlas, VerticalGroup group) {
+		for (final Category c : Category.values()) {
+						
+			InputListener categoryListener = new InputListener(){
+				@Override
+			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+					if (selectionScroll.isPanning()){return false;}
+					else {return true;}
+			    }
+				@Override
+			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+					//Kaltinril: appears touchUp was still being called anyways, added !scroll.isPanning check
+					if (!selectionScroll.isPanning()){selectedCategory = c;}
+			    }
+		    };
+		    
+		    Label l = new Label(c.toString(), skin, "default");
+			
+		    //l.addListener(categoryListener);
+		    
+		    group.addActor(l);
+		}
 	}
 
 	private void buildSideMenuRows(TextureAtlas atlas) {
@@ -417,7 +430,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 		    //Create a label to the left of the image and add a listener 
 		    //So the label OR button can be clicked on
-		    Label l = new Label(tileProperty.getName(), skin, "default");
+		    Label l = new Label(tileProperty.getDisplayName(), skin, "default");
 		    		  
 		    l.addListener(sideMenuActionListener);
 		    
@@ -426,7 +439,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    selectionTable.add(l).expand().fill();
 
 			//Create an image button with the image of the tile (room/Purchasable)
-			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getName()));
+			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getAtlasName()));
 			ImageButton imgButton = new ImageButton(textureRegionDrawable);
 			
 			//Add the same listener to the button
@@ -458,23 +471,21 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         //ArrayList<TileProperties> tp = new ArrayList<TileProperties>();
         
         //TODO DEBUG Remove these tests and examples
-/*        TileProperties tp = new TileProperties();
+        /*
+        TileProperties tp = new TileProperties();
         tp.setBlockable(true);
         tp.setID(1);
-        tp.setName("yellowTile");
+        tp.setDisplayName("yellowTile");
         tp.setTileSpanX(1);
         tp.setTileSpanY(1);
+        tp.setCategory(Category.Commercial);
         
-        //Adds in the full class name for each element
-        HashMap<Integer, TileProperties> tpal = new HashMap<Integer, TileProperties>();
-        tpal.put(tp.getID(), tp);
-        
-        String outputData = json.toJson(tpal);
+        String outputData = json.toJson(tp);
         
         //first write
         FileHandle outHandle = Gdx.files.external("tileProperties1.txt"); //User Directory
-        outHandle.writeString(outputData, false);*/
-                
+        outHandle.writeString(outputData, false);
+         */      
         //Attempt at loading JSON
 
         //https://github.com/libgdx/libgdx/wiki/File-handling
