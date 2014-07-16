@@ -26,6 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -99,6 +100,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	//private float maxButtonSize = 0f;
 	//private float maxLabelSize = 0f;
 	private float maxRowSize = 0f;
+	
 	private Category selectedCategory;
 	
 	//Attempt at adding scroll bars
@@ -307,8 +309,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		/**
          * TODO TASK Menu Testing
          * 
-         *  stage -> container (categories) -> [TBD]
-         *           container (selections) -> scrollpane -> table -> row -> [cell, cell]
+         *  stage -> container (categories) -> verticalgroup -> label
+         *           container (selections) -> scrollpane -> table -> row -> cell
          */
 	    
 	    categoryNameContainer = new Container<Actor>();
@@ -323,27 +325,30 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    
 	    //Holds the list of categories as a single vertical grouping
 	    VerticalGroup categoryNameGroup = new VerticalGroup();
+	    
+	    //Right justify the stuff in the group
+	    categoryNameGroup.right();
 
 	    //Add the categoryName group to the container
 	    categoryNameContainer.setActor(categoryNameGroup);
 	    
+	    //attempt to rotate text - failed :(
+	    //categoryNameContainer.setTransform(true);
+	    
 	    //Build the categoryName menu
-	    buildCategoryNameMenu(atlas, categoryNameGroup);
+	    buildCategoryMenu(atlas, categoryNameGroup);
 		
 	    /**
 	     * Selection Section
 	     */
-	    
-	    //selection table
-	    selectionTable = new Table().pad(Constants.TABLE_PAD);
-			    
+	    			    
 	    //selection table scroll pane
 	    selectionScroll = new ScrollPane(selectionTable, skin, "default");
 	    selectionScroll.setScrollingDisabled(true, false);
 		
 		//TODO DEBUG Test loop just to build a bigger menu
 		for (int i = 0; i < 15; i++) {
-			buildSideMenuRows(atlas);
+			buildSelectionMenu(atlas);
 		}
 		
 		//Setup the scroll bar for vertical only, and fade it after 1 second over 1 second.
@@ -377,42 +382,57 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
 		categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 		
-		if (Constants.DEBUG){
-			selectionTable.debug();
-		}
+		//Print out the category table contents
+//		for (final Category c : Category.values()) {
+//			
+//			for (Cell cc : c.getTable().getCells()) {
+//				if ( cc.getActor() instanceof Label) {
+//					Label l = (Label) cc.getActor();
+//					System.out.println(l.getText());
+//				}
+//				
+//			}
+//		}
+		
 	}
 	
-	private void buildCategoryNameMenu(TextureAtlas atlas, VerticalGroup group) {
+	private void buildCategoryMenu(TextureAtlas atlas, VerticalGroup group) {
+		
+		//Loop through the category enum and build the buttons and tables
 		for (final Category c : Category.values()) {
+			
+			c.setTable(new Table().pad(Constants.TABLE_PAD));
 						
 			InputListener categoryListener = new InputListener(){
 				@Override
 			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-					if (selectionScroll.isPanning()){return false;}
-					else {return true;}
+					return true;
 			    }
 				@Override
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-					//Kaltinril: appears touchUp was still being called anyways, added !scroll.isPanning check
-					if (!selectionScroll.isPanning()){selectedCategory = c;}
+					//selectionScroll.clear();
+					selectionScroll.setWidget(c.getTable());
+					//selectionScroll.invalidate();
 			    }
 		    };
 		    
-		    Label l = new Label(c.toString(), skin, "default");
+		    TextButton l = new TextButton(c.toString(), skin, "default");
 			
-		    //l.addListener(categoryListener);
+		    l.addListener(categoryListener);
+		    
+		    l.rotateBy(90);
 		    
 		    group.addActor(l);
 		}
 	}
 
-	private void buildSideMenuRows(TextureAtlas atlas) {
+	private void buildSelectionMenu(TextureAtlas atlas) {
 		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
-						
+			
 			//Using spacing instead of padding
 			// see https://github.com/libgdx/libgdx/wiki/Table#padding
 			// for specifics
-			selectionTable.row().space(Constants.CELL_SPACE);
+			tileProperty.getCategory().getTable().row().space(Constants.CELL_SPACE);
 		    
 		    //Create a listener to add to the Label and button
 		    InputListener sideMenuActionListener = new InputListener(){
@@ -436,7 +456,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    
 		    //Add the label to the table
 		    //expand and fill allow the label to essentially take up the entire cell
-		    selectionTable.add(l).expand().fill();
+		    tileProperty.getCategory().getTable().add(l).expand().fill();
 
 			//Create an image button with the image of the tile (room/Purchasable)
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getAtlasName()));
@@ -446,7 +466,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			imgButton.addListener(sideMenuActionListener);
 			
 			//Right justify image so that label text does not overlap it
-			selectionTable.add(imgButton).right();
+			tileProperty.getCategory().getTable().add(imgButton).right();
 			
 			//The width of the entire row including spacing
 			//TODO ENHANCEMENT way to determine the number of cells in a row?
@@ -707,6 +727,16 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			return true;
 		}
 		
+		//TODO TASK Need to convert this to an icon to be clicked on
+		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
+		//Toggle category
+		if (keycode == Input.Keys.C){
+			//selectionScroll.clear();
+			System.out.println("commercial size=" + Category.Commercial.getTable().getCells().size);
+			selectionScroll.setWidget(Category.Commercial.getTable());
+			selectionScroll.invalidate();
+			return true;
+		}
 		
 		//TODO TASK Need to convert this to an icon to be clicked on
 		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
