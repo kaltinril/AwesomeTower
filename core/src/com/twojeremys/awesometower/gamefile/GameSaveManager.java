@@ -20,11 +20,12 @@ public class GameSaveManager {
 
 			//Windows:	This will default to the User Directory
 			//Android:	This will default to ............
+			//FIXME frigidplanet noticed .twr.twr, however all kaltinril saves and console messages do not show this double extension.
 	        FileHandle outHandle = Gdx.files.external(saveFileName + ".twr"); 
 	        outHandle.writeString(saveData, false);
 		} catch (Throwable e) {
 			//TODO ENHANCEMENT make this some sort of real warning message or pop-up
-			System.out.println("ERROR: Couldn't Save to External Storage [awesomeTowerSave.txt]: " + e.getMessage() + "\n");
+			System.out.println("ERROR: Couldn't Save to External Storage [saveFileName]: " + e.getMessage() + "\n");
 			return false;
 		}
 		
@@ -49,7 +50,7 @@ public class GameSaveManager {
 	        gameSave = json.fromJson(GameState.class, saveData);
 		} catch (Throwable e) {
 			//TODO ENHANCEMENT make this some sort of real warning message or pop-up
-			System.out.println("ERROR: Couldn't Load from External Storage [awesomeTowerSave.txt]: " + e.getMessage() + "\n");
+			System.out.println("ERROR: Couldn't Load from External Storage [saveFileName]: " + e.getMessage() + "\n");
 			return null;
 		}
 		

@@ -111,6 +111,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private GameState gameState;
 	private String saveName;
 	
+	Actor rotatingActor;
 	
 	public GameScreen(Game game, GameState gameState, String saveName){
 		this(game);
@@ -331,10 +332,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	    //Add the categoryName group to the container
 	    categoryNameContainer.setActor(categoryNameGroup);
-	    
-	    //attempt to rotate text - failed :(
-	    //categoryNameContainer.setTransform(true);
-	    
+	       
 	    //Build the categoryName menu
 	    buildCategoryMenu(atlas, categoryNameGroup);
 		
@@ -382,6 +380,14 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
 		categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 		
+	    //TODO ENHANCE figure out how to Rotate buttons, below code works but for some reason position ends up all messed up.
+	    //categoryNameContainer.setTransform(true);
+	    //rotatingActor = categoryNameContainer;
+	    //System.out.println(rotatingActor.getCenterX() + "  - -  " + rotatingActor.getOriginX());
+	    //System.out.println(rotatingActor.getCenterY() + "  - -  " + rotatingActor.getOriginY());
+	    //rotatingActor.setCenterPosition(rotatingActor.getWidth() / 2, rotatingActor.getHeight() / 2);
+	    //rotatingActor.setRotation(-90);
+		
 		//Print out the category table contents
 //		for (final Category c : Category.values()) {
 //			
@@ -420,7 +426,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			
 		    l.addListener(categoryListener);
 		    
-		    l.rotateBy(90);
+		    //rotatingActor = group;
+		    //rotatingActor.setRotation(90);
+		    
+		    //l.rotateBy(90);
 		    
 		    group.addActor(l);
 		}
