@@ -334,7 +334,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    categoryNameContainer.setActor(categoryNameGroup);
 	       
 	    //Build the categoryName menu
-	    buildCategoryMenu(atlas, categoryNameGroup);
+	    buildCategoryMenu(categoryNameGroup);
 		
 	    /**
 	     * Selection Section
@@ -370,23 +370,28 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		selectionContainer.setX(Gdx.graphics.getWidth());
 		selectionContainer.setY(Gdx.graphics.getHeight()/2);
 		
-		categoryNameContainer.size(categoryNameGroup.getMinWidth(), Gdx.graphics.getHeight());
+		//Configure the container size to match its child size
+		categoryNameContainer.size(categoryNameGroup.getMinWidth(), categoryNameGroup.getMinHeight());
 		categoryNameContainer.right();//tells it to draw right to left
 		
-//		System.out.println("getWidth" + vg.getWidth());
-//		System.out.println("getMinWidth" + vg.getMinWidth());
-//		System.out.println("getMaxWidth" + vg.getMaxWidth());
+		System.out.println("getWidth" + categoryNameContainer.getWidth());
+		System.out.println("getMinWidth" + categoryNameContainer.getMinWidth());
+		System.out.println("getMaxWidth" + categoryNameContainer.getMaxWidth());
 		
+		//Position container
 		categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
 		categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 		
-	    //TODO ENHANCE figure out how to Rotate buttons, below code works but for some reason position ends up all messed up.
-	    //categoryNameContainer.setTransform(true);
-	    //rotatingActor = categoryNameContainer;
-	    //System.out.println(rotatingActor.getCenterX() + "  - -  " + rotatingActor.getOriginX());
-	    //System.out.println(rotatingActor.getCenterY() + "  - -  " + rotatingActor.getOriginY());
-	    //rotatingActor.setCenterPosition(rotatingActor.getWidth() / 2, rotatingActor.getHeight() / 2);
-	    //rotatingActor.setRotation(-90);
+	    //TODO ENHANCEMENT figure out how to Rotate buttons, below code works but for some reason position ends up all messed up.
+		/*
+		categoryNameContainer.setTransform(true);
+	    rotatingActor = categoryNameContainer;
+	    
+	    System.out.println(rotatingActor.getCenterX() + "  - -  " + rotatingActor.getOriginX());
+	    System.out.println(rotatingActor.getCenterY() + "  - -  " + rotatingActor.getOriginY());
+	    
+	    rotatingActor.setRotation(-90);
+	    */
 		
 		//Print out the category table contents
 //		for (final Category c : Category.values()) {
@@ -402,13 +407,17 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 	}
 	
-	private void buildCategoryMenu(TextureAtlas atlas, VerticalGroup group) {
+	private void buildCategoryMenu(VerticalGroup group) {
+		
+		//Setup a Table to use the scroll pane background for the menu
+		Table backgroundTable = new Table();
+	    backgroundTable.background(skin.getDrawable("default-pane"));
 		
 		//Loop through the category enum and build the buttons and tables
 		for (final Category c : Category.values()) {
 			
 			c.setTable(new Table().pad(Constants.TABLE_PAD));
-						
+
 			InputListener categoryListener = new InputListener(){
 				@Override
 			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
@@ -416,23 +425,19 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			    }
 				@Override
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-					//selectionScroll.clear();
 					selectionScroll.setWidget(c.getTable());
-					//selectionScroll.invalidate();
 			    }
 		    };
 		    
+		    //Create a new text button, with the name of the category, adding the above listener.
 		    TextButton l = new TextButton(c.toString(), skin, "default");
-			
 		    l.addListener(categoryListener);
 		    
-		    //rotatingActor = group;
-		    //rotatingActor.setRotation(90);
-		    
-		    //l.rotateBy(90);
-		    
-		    group.addActor(l);
+		    //Add the button to the table, expanded to fill the width, then add a new row
+		    backgroundTable.add(l).expand().fill();
+		    backgroundTable.row();
 		}
+	    group.addActor(backgroundTable); //Only need to add the table once
 	}
 
 	private void buildSelectionMenu(TextureAtlas atlas) {
