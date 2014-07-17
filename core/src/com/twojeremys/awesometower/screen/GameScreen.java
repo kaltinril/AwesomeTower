@@ -425,14 +425,31 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 					
 					if (selectionScroll.getChildren().size > 0 && selectionScroll.getChildren().peek() == c.getTable()) {
-						selectionScroll.removeActor(c.getTable());
-						selectionContainer.size(0, Gdx.graphics.getHeight());
+						
+						//shrink and move the scrollpane
+						selectionScroll.addAction(
+								Actions.sequence(
+										Actions.parallel(
+													Actions.scaleTo(0, 0, 0.25f), 
+													Actions.moveTo(selectionScroll.getWidth(), selectionScroll.getHeight(), 0.5f)
+												)
+									    , Actions.run(new Runnable() {
+						    public void run () {
+						        System.out.println("Action complete!");
+						        selectionScroll.removeActor(c.getTable());
+						        selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
+						    }
+						})));
+						//selectionScroll.removeActor(c.getTable());
+						//selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
+						//selectionContainer.size(0, Gdx.graphics.getHeight());
 						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
 						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 					} else {
 						//selectionContainer.clearActions();
 						//selectionContainer.addAction(Actions.moveTo(Gdx.graphics.getWidth() - selectionContainer.getMinWidth(), Gdx.graphics.getHeight()/2, 0.5f));
 						selectionScroll.setWidget(c.getTable());
+						selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
 						selectionContainer.size(c.getTableWidth(), Gdx.graphics.getHeight());
 						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
 						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
