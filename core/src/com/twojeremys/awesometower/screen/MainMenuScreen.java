@@ -141,12 +141,6 @@ public class MainMenuScreen extends BaseScreen  {
 	//TODO ENHANCE create a standard skin that all buttons images etc can use
 	private void createNewGamePopup(){
 		
-		//Setup a label
-		Label label = new Label("Enter a name for your tower:", skin, "default");
-		label.setWrap(true);
-		label.setFontScale(.8f);
-		label.setAlignment(Align.center);
-		
 		//Create a dialog box
 		Dialog dialog = new Dialog("New Tower", skin, "default"){
 		    protected void result (Object object) {
@@ -166,22 +160,23 @@ public class MainMenuScreen extends BaseScreen  {
 		//Adjust Dialog padding
 		dialog.padTop(20).padBottom(20);
 		
-		//Add label and text box to content
-		dialog.getContentTable().add(label).padTop(10).row();
+		//Add a label to the dialog
+		dialog.text("Enter a Tower Name");
+		
+		//Add a row, then a text box to the Content table
+		dialog.getContentTable().row();
 		dialog.getContentTable().add(textField).padLeft(5).padRight(5).row();
 		
 		//Adjust button padding
 		dialog.getButtonTable().padTop(10);
 		
-		//Add the create game button
-		TextButton dbutton = new TextButton("Create Game", skin, "default");
-		dialog.button(dbutton, true);
+		//Add the create game button, which will call result with "TRUE"
+		dialog.button("Create Game", true);
 
-		//Add the cancel button
-		dbutton = new TextButton("Cancel", skin, "default");
+		//Add the cancel button, which will call result with "FALSE"
+		dialog.button("Cancel", false);
 		
-		//Add and set it all up
-		dialog.button(dbutton, false);
+		//set it all up
 		dialog.key(Keys.ENTER, true).key(Keys.ESCAPE, false);
 		dialog.invalidateHierarchy();
 		dialog.invalidate();
