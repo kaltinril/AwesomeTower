@@ -21,7 +21,7 @@ public class GameSaveManager {
 			//Windows:	This will default to the User Directory
 			//Android:	This will default to ............
 			//FIXME frigidplanet noticed .twr.twr, however all kaltinril saves and console messages do not show this double extension.
-	        FileHandle outHandle = Gdx.files.external(saveFileName + ".twr"); 
+	        FileHandle outHandle = Gdx.files.external(saveFileName); 
 	        outHandle.writeString(saveData, false);
 		} catch (Throwable e) {
 			//TODO ENHANCEMENT make this some sort of real warning message or pop-up

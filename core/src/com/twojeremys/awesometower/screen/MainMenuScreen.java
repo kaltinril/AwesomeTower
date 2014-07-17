@@ -180,6 +180,7 @@ public class MainMenuScreen extends BaseScreen  {
 		dialog.button("Cancel", false);
 		
 		//set it all up
+		dialog.setMovable(false);
 		dialog.key(Keys.ENTER, true).key(Keys.ESCAPE, false);
 		dialog.invalidateHierarchy();
 		dialog.invalidate();
