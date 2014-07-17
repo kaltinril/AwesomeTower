@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -63,9 +64,7 @@ public class MainMenuScreen extends BaseScreen  {
 		skin = new Skin(Gdx.files.internal("ui/skin/uiskin.json"));
 
 		// Create the table and add the "skin" to it
-		// Unsure why a skin for buttons is needed for the table, if we have to explicitly define up/down later?
 		table = new Table(skin);
-		table.setFillParent(true);
 		
 		/* *******************************************
 		 *  Create the label and add it to the table
@@ -131,6 +130,10 @@ public class MainMenuScreen extends BaseScreen  {
         
         // Add the extGameButton to the table so it is active/displayed
         table.add(exitGameButton);
+        
+        //Make the menu move up from off the screen.
+        table.setPosition(Gdx.graphics.getWidth()/2, 0);
+        table.addAction(Actions.moveTo(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, 0.5f));
         
 		// add the table onto the stage
 		stage.addActor(table);
