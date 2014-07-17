@@ -26,8 +26,10 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -352,35 +354,30 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Setup the scroll bar for vertical only, and fade it after 1 second over 1 second.
 		selectionScroll.setScrollBarPositions(false, true);
 		selectionScroll.setScrollbarsOnTop(true);
-		selectionScroll.setupFadeScrollBars(1.0f, 1.0f);
+		selectionScroll.setupFadeScrollBars(.125f, .125f);
 		selectionScroll.setFadeScrollBars(true);
 		
 		//Add the scrollpane to the container
 		selectionContainer.setActor(selectionScroll);
 		selectionContainer.right(); //tells it to draw right to left
-				
-		//The longest row
-		//container.size(maxLabelSize + maxButtonSize, Gdx.graphics.getHeight());
-		//The longest combination
-		//container.size(maxRowSize+50, Gdx.graphics.getHeight());
 		
 		selectionContainer.size(maxRowSize, Gdx.graphics.getHeight());
-		
-		//Container draws right to left from x as long as you call the size method.  setSize fails
-		selectionContainer.setX(Gdx.graphics.getWidth());
-		selectionContainer.setY(Gdx.graphics.getHeight()/2);
 		
 		//Configure the container size to match its child size
 		categoryNameContainer.size(categoryNameGroup.getMinWidth(), categoryNameGroup.getMinHeight());
 		categoryNameContainer.right();//tells it to draw right to left
 		
+		//Position container
+		categoryNameContainer.setX(Gdx.graphics.getWidth());
+		categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
+		
+		//Container draws right to left from x as long as you call the size method.
+		selectionContainer.setX(Gdx.graphics.getWidth() - categoryNameContainer.getMinWidth());
+		selectionContainer.setY(Gdx.graphics.getHeight()/2);
+		
 		System.out.println("getWidth" + categoryNameContainer.getWidth());
 		System.out.println("getMinWidth" + categoryNameContainer.getMinWidth());
 		System.out.println("getMaxWidth" + categoryNameContainer.getMaxWidth());
-		
-		//Position container
-		categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
-		categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 		
 	    //TODO ENHANCEMENT figure out how to Rotate buttons, below code works but for some reason position ends up all messed up.
 		/*
@@ -411,13 +408,14 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//Setup a Table to use the scroll pane background for the menu
 		Table backgroundTable = new Table();
+		backgroundTable.debug();
 	    backgroundTable.background(skin.getDrawable("default-pane"));
 		
 		//Loop through the category enum and build the buttons and tables
 		for (final Category c : Category.values()) {
 			
-			c.setTable(new Table().pad(Constants.TABLE_PAD));
-
+			c.setTable(new Table().pad(Constants.TABLE_PAD).debug());
+			
 			InputListener categoryListener = new InputListener(){
 				@Override
 			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
@@ -425,7 +423,21 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			    }
 				@Override
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-					selectionScroll.setWidget(c.getTable());
+					
+					if (selectionScroll.getChildren().size > 0 && selectionScroll.getChildren().peek() == c.getTable()) {
+						selectionScroll.removeActor(c.getTable());
+						selectionContainer.size(0, Gdx.graphics.getHeight());
+						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
+						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
+					} else {
+						//selectionContainer.clearActions();
+						//selectionContainer.addAction(Actions.moveTo(Gdx.graphics.getWidth() - selectionContainer.getMinWidth(), Gdx.graphics.getHeight()/2, 0.5f));
+						selectionScroll.setWidget(c.getTable());
+						selectionContainer.size(c.getTableWidth(), Gdx.graphics.getHeight());
+						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
+						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
+					}
+
 			    }
 		    };
 		    
@@ -441,12 +453,25 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	}
 
 	private void buildSelectionMenu(TextureAtlas atlas) {
+		
 		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
+			
+			System.out.println("property=" + tileProperty.getDisplayName());
+			
+			//Get the table for this category
+			Table t = tileProperty.getCategory().getTable();
+			float size = tileProperty.getCategory().getTableWidth();
+			
+			Image sep = new Image(new Texture(Gdx.files.internal("data/grey.png")));
+			sep.setHeight(0.5f);
+			
+			System.out.println("initial size=" + size);
 			
 			//Using spacing instead of padding
 			// see https://github.com/libgdx/libgdx/wiki/Table#padding
 			// for specifics
-			tileProperty.getCategory().getTable().row().space(Constants.CELL_SPACE);
+			//Set the column span since we have a row with two items in it below
+			t.row().space(Constants.CELL_SPACE).colspan(2);
 		    
 		    //Create a listener to add to the Label and button
 		    InputListener sideMenuActionListener = new InputListener(){
@@ -465,12 +490,20 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    //Create a label to the left of the image and add a listener 
 		    //So the label OR button can be clicked on
 		    Label l = new Label(tileProperty.getDisplayName(), skin, "default");
-		    		  
+		    
 		    l.addListener(sideMenuActionListener);
 		    
 		    //Add the label to the table
 		    //expand and fill allow the label to essentially take up the entire cell
-		    tileProperty.getCategory().getTable().add(l).expand().fill();
+		    t.add(l).center().expand().fill();
+		    
+		    //Check max row size
+		    size = (l.getWidth() + Constants.CELL_SPACE*2) > size ? (l.getWidth() + Constants.CELL_SPACE*2) : size;
+		    System.out.println("size=" + size);
+		    
+		    //Create a new row
+		    //Set the column span since we have a row with two items in it below
+		    t.row().space(Constants.CELL_SPACE).colspan(2);
 
 			//Create an image button with the image of the tile (room/Purchasable)
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getAtlasName()));
@@ -480,19 +513,37 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			imgButton.addListener(sideMenuActionListener);
 			
 			//Right justify image so that label text does not overlap it
-			tileProperty.getCategory().getTable().add(imgButton).right();
+			t.add(imgButton);
 			
-			//The width of the entire row including spacing
-			//TODO ENHANCEMENT way to determine the number of cells in a row?
-			float totalWidth = imgButton.getWidth() + l.getWidth() + (Constants.CELL_SPACE*3);
+			size = (imgButton.getWidth() + Constants.CELL_SPACE*2) > size ? (imgButton.getWidth() + Constants.CELL_SPACE*2) : size;
+			System.out.println("size=" + size);
 			
-			//TODO TASK
-			//The longest row
-			//maxLabelSize = l.getWidth() > maxLabelSize ? l.getWidth() : maxLabelSize;
-			//maxButtonSize = imgButton.getWidth() > maxButtonSize ? imgButton.getWidth() : maxButtonSize;
+			//Create a new row
+		    t.row().space(Constants.CELL_SPACE);
+		    
+		    Label cost = new Label(Constants.USD_SIGN + tileProperty.getPurchaseCost(), skin, "default");
+		    
+		    cost.addListener(sideMenuActionListener);
+		    
+		    //Add the label to the table
+		    //expand and fill allow the label to essentially take up the entire cell
+		    t.add(cost).expand().fill();
+		    
+		    TextButton info = new TextButton("Info", skin, "default");
+		    
+		    t.add(info).expand().fill();
+		    
+		    size = (cost.getWidth() + info.getWidth() + Constants.CELL_SPACE*3) > size ? (cost.getWidth() + info.getWidth() + Constants.CELL_SPACE*3) : size;
+		    System.out.println("size=" + size);
 			
-			//The longest row combination
-			maxRowSize = totalWidth > maxRowSize ? totalWidth : maxRowSize;
+			tileProperty.getCategory().setTableWidth(size);
+			
+			t.row().space(Constants.CELL_SPACE).colspan(2);
+						
+			t.add(sep).expand().fill();
+						
+			System.out.println("final size=" + tileProperty.getCategory().getTableWidth());
+			System.out.println();
 		}
 	}
 

@@ -17,8 +17,11 @@ public class Constants {
 	public static final int DEFAULT_MAX_TILE_MAP_SIZE_Y = 30;
 	
 	//The spacing between cells in the game screen side menu
-	public static final float CELL_SPACE = 1.5f; //all sides
+	public static final float CELL_SPACE = 3f; //all sides
 	
 	//The padding around the table in the game screen side menu
 	public static final float TABLE_PAD = 1.5f;
+	
+	//dollar sign for cost display
+	public static final String USD_SIGN = "$";
 }

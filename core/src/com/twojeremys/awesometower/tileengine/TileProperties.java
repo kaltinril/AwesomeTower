@@ -16,6 +16,7 @@ public class TileProperties {
 	private boolean blockable; 			//Can this type of tile block placement of other tiles?
 	private Category category; 			//The categoryName this tile should be placed in
 	private String displayName;			//The name shown in the UI
+	private int purchaseCost;			//The cost to purchase the item
 	
 	//TODO ENHANCEMENT Perhaps add a AtlasRegion to this, and store the Atlas details for the tile in the properties.  Less lookup needed at that point
 
@@ -73,6 +74,14 @@ public class TileProperties {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public int getPurchaseCost() {
+		return purchaseCost;
+	}
+
+	public void setPurchaseCost(int purchaseCost) {
+		this.purchaseCost = purchaseCost;
 	}
 	
 }
