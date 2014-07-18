@@ -432,7 +432,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						selectionScroll.addAction(
 								Actions.sequence(
 										Actions.parallel(
-													Actions.scaleTo(0, 0, 0.25f)
+													Actions.fadeOut(0.25f)
+													//Actions.scaleTo(0, 0, 0.25f)
 													//Actions.moveBy(selectionScroll.getWidth(), 0, 0.5f)
 													//Actions.moveTo(0, selectionScroll.getY(), 1f)
 												)
@@ -470,9 +471,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						//shrink and move the scrollpane
 						selectionScroll.addAction(
 								Actions.sequence(
-										Actions.moveTo(0,selectionScroll.getY()),
 										Actions.parallel(
-													Actions.scaleTo(1, 1, 0.25f) 
+													Actions.fadeIn(0.25f)
+													//Actions.scaleTo(1, 1, 0.25f) 
 													//Actions.moveTo(-categoryNameContainer.getMinWidth(), selectionScroll.getY(), 1f)
 												)
 									    , Actions.run(new Runnable() {
