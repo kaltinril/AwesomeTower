@@ -426,18 +426,21 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 					
 					if (selectionScroll.getChildren().size > 0 && selectionScroll.getChildren().peek() == c.getTable()) {
 						
+						//System.out.println("Before Shrink POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
+						
 						//shrink and move the scrollpane
 						selectionScroll.addAction(
 								Actions.sequence(
 										Actions.parallel(
-													Actions.scaleTo(0, 0, 0.25f), 
-													Actions.moveTo(selectionScroll.getWidth(), selectionScroll.getHeight(), 0.5f)
+													Actions.scaleTo(0, 0, 0.25f)
+													//Actions.moveBy(selectionScroll.getWidth(), 0, 0.5f)
+													//Actions.moveTo(0, selectionScroll.getY(), 1f)
 												)
 									    , Actions.run(new Runnable() {
 						    public void run () {
-						        System.out.println("Action complete!");
 						        selectionScroll.removeActor(c.getTable());
 						        selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
+						        //System.out.println("Shrunk POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
 						    }
 						})));
 						//selectionScroll.removeActor(c.getTable());
@@ -446,11 +449,48 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
 						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 					} else {
-						//selectionContainer.clearActions();
-						//selectionContainer.addAction(Actions.moveTo(Gdx.graphics.getWidth() - selectionContainer.getMinWidth(), Gdx.graphics.getHeight()/2, 0.5f));
+						
+						//Setup the position of the scroll as ontop of the container
+						//selectionScroll.setScale(0.0f);
+						//selectionScroll.set
+						
+						//System.out.println("Before Grow POS params:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
+						
+						//selectionScroll.setX(0);
 						selectionScroll.setWidget(c.getTable());
 						selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
+
 						selectionContainer.size(c.getTableWidth(), Gdx.graphics.getHeight());
+						//System.out.println("Before Grow POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
+
+						//selectionScroll.setPosition(-categoryNameContainer.getMinWidth(), selectionScroll.getY());
+						
+						//System.out.println(-categoryNameContainer.getMinWidth());
+						
+						//shrink and move the scrollpane
+						selectionScroll.addAction(
+								Actions.sequence(
+										Actions.moveTo(0,selectionScroll.getY()),
+										Actions.parallel(
+													Actions.scaleTo(1, 1, 0.25f) 
+													//Actions.moveTo(-categoryNameContainer.getMinWidth(), selectionScroll.getY(), 1f)
+												)
+									    , Actions.run(new Runnable() {
+						    public void run () {
+						        //selectionScroll.removeActor(c.getTable());
+						        //selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
+						        //System.out.println("After Grow POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
+						    }
+						})));
+						
+						
+						//selectionContainer.clearActions();
+						//selectionContainer.addAction(Actions.moveTo(Gdx.graphics.getWidth() - selectionContainer.getMinWidth(), Gdx.graphics.getHeight()/2, 0.5f));
+						
+						//selectionScroll.setWidget(c.getTable());
+						//selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
+						//selectionContainer.size(c.getTableWidth(), Gdx.graphics.getHeight());
+						
 						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
 						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
 					}
