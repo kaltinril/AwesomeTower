@@ -15,7 +15,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
-import com.twojeremys.awesometower.gamefile.GameState;
 
 public class LoadGameScreen extends BaseScreen{
 	
@@ -25,8 +24,6 @@ public class LoadGameScreen extends BaseScreen{
 	private ScrollPane scrollPane;
 	private Table scrollInnerTable;
 	private FileHandle[] files;
-
-	private GameState gameSave;
 	
 	public LoadGameScreen(Game game, FileHandle[] files) {
 		super(game);
@@ -71,6 +68,7 @@ public class LoadGameScreen extends BaseScreen{
 							if (Constants.DEBUG) {
 								System.out.println("File Selected: " + file);
 							}
+							dispose();
 							game.setScreen(new GameScreen(game, GameSaveManager.loadState(file), file.name()));
 						}
 					}
@@ -114,12 +112,12 @@ public class LoadGameScreen extends BaseScreen{
 	
 	@Override
 	public void hide () {
-		dispose();
+		super.hide();
 	}
 	
 	@Override
 	public void dispose() {
-		Gdx.app.debug(TAG, "dispose intro screen");
+		Gdx.app.debug(TAG, "dispose load screen");
 
 		stage.dispose();
 		

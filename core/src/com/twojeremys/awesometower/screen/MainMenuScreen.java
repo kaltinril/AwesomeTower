@@ -102,6 +102,8 @@ public class MainMenuScreen extends BaseScreen  {
 			@Override
 		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 				if (Constants.DEBUG) {System.out.println("NewGameButtonUp");}
+				//FIXME this is creating a new dialog each time which is using up memory
+				//  should change to show/hide concept so we can reuse the objects.
 				createNewGamePopup();
 			}
 		});
@@ -148,7 +150,8 @@ public class MainMenuScreen extends BaseScreen  {
 	    		Gdx.app.debug(TAG, "found files: " + foundFiles);
 	    		
 	    		//If we found files then load the screen
-	    		if (foundFiles > 0) {  		
+	    		if (foundFiles > 0) {
+	    			dispose();
 	    			game.setScreen(new LoadGameScreen(game, sysFiles));
 	    		} else {
 	    			Dialog dialog = new Dialog("No games found!", skin, "default");
@@ -226,6 +229,7 @@ public class MainMenuScreen extends BaseScreen  {
 		    					);
 		    			cancel();	//Cancel the closing of the window
 		    		}else {
+		    			dispose();
 			    		game.setScreen(new IntroScreen(game, textField.getText()));
 			    		Gdx.input.setOnscreenKeyboardVisible(false);
 		    		}
@@ -295,7 +299,7 @@ public class MainMenuScreen extends BaseScreen  {
 	
 	@Override
 	public void dispose() {
-		Gdx.app.debug("twojeremys", "dispose main menu");
+		Gdx.app.debug(TAG, "dispose main menu");
 		batch.dispose();
 		title.getTexture().dispose();
 		

@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.twojeremys.awesometower.gamefile.GameState;
 
 public class IntroScreen extends BaseScreen {
+	
+	private static final String TAG = IntroScreen.class.getSimpleName();
 
 	private TextureRegion intro;
 	private SpriteBatch batch;
@@ -54,6 +56,7 @@ public class IntroScreen extends BaseScreen {
 		time += delta;
 		if (time > 1) {
 			if (Gdx.input.isKeyPressed(Keys.ANY_KEY) || Gdx.input.justTouched()) {
+				dispose();
 				game.setScreen(new GameScreen(game, gameSave, saveName));
 			}
 		}
@@ -61,12 +64,12 @@ public class IntroScreen extends BaseScreen {
 
 	@Override
 	public void hide () {
-		dispose();
+		super.hide();
 	}
 	
 	@Override
 	public void dispose() {
-		Gdx.app.debug("twojeremys", "dispose intro screen");
+		Gdx.app.debug(TAG, "dispose intro screen");
 		batch.dispose();
 		intro.getTexture().dispose();
 	}

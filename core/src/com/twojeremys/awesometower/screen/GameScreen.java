@@ -872,7 +872,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//TODO TASK Pop up an "are you sure" message
 		if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
-			this.dispose(); //TODO CONFIRM - does this fix the old ones not being released?
+			dispose();
 			game.setScreen(new MainMenuScreen(game));
 			return true;
 		}
