@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Base64Coder;
 import com.badlogic.gdx.utils.Json;
+import com.twojeremys.awesometower.Constants;
 
 public class GameSaveManager {
 
@@ -21,11 +22,21 @@ public class GameSaveManager {
 			//Windows:	This will default to the User Directory
 			//Android:	This will default to ............
 			//FIXME frigidplanet noticed .twr.twr, however all kaltinril saves and console messages do not show this double extension.
-	        FileHandle outHandle = Gdx.files.external(saveFileName); 
+	        FileHandle outHandle= Gdx.files.local(Constants.SAVE_FOLDER + saveFileName);
+	        
+	        //sometimes we don't have external storage...
+//	        if (Gdx.files.isExternalStorageAvailable()) {
+//	        	outHandle = Gdx.files.external(saveFileName);
+//	        } else {
+//	        	outHandle = Gdx.files.internal(saveFileName);
+//	        }
+	        
+	        System.out.println(outHandle.path());
+	        
 	        outHandle.writeString(saveData, false);
 		} catch (Throwable e) {
 			//TODO ENHANCEMENT make this some sort of real warning message or pop-up
-			System.out.println("ERROR: Couldn't Save to External Storage [saveFileName]: " + e.getMessage() + "\n");
+			System.out.println("ERROR: Couldn't Save to storage [" + saveFileName + "]: " + e.getLocalizedMessage() + "\n");
 			return false;
 		}
 		
@@ -38,7 +49,14 @@ public class GameSaveManager {
 		Json json = new Json();	
 		
 		try{
-	        FileHandle handle = Gdx.files.external(saveFileName);	//Load file from external location
+	        FileHandle handle= Gdx.files.local(Constants.SAVE_FOLDER + saveFileName);
+	        
+//	        if (Gdx.files.isExternalStorageAvailable()) {
+//	        	handle = Gdx.files.external(saveFileName);
+//	        } else {
+//	        	handle = Gdx.files.internal(saveFileName);
+//	        }
+	        //Gdx.files.external(saveFileName);	//Load file from external location
 	        String saveData = handle.readString();
 	        
 			//TODO ENHANCEMENT DECRYPT data before saving to file
@@ -50,7 +68,7 @@ public class GameSaveManager {
 	        gameSave = json.fromJson(GameState.class, saveData);
 		} catch (Throwable e) {
 			//TODO ENHANCEMENT make this some sort of real warning message or pop-up
-			System.out.println("ERROR: Couldn't Load from External Storage [saveFileName]: " + e.getMessage() + "\n");
+			System.out.println("ERROR: Couldn't Save to storage [" + saveFileName + "]: " + e.getLocalizedMessage() + "\n");
 			return null;
 		}
 		

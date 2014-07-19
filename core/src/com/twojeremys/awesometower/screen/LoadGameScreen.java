@@ -15,17 +15,19 @@ import com.twojeremys.awesometower.gamefile.GameState;
 import com.twojeremys.awesometower.listener.LoadGameInputListener;
 
 public class LoadGameScreen extends BaseScreen{
+	
+	private static final String TAG = LoadGameScreen.class.getSimpleName();
 
 	private Stage stage;
 	private ScrollPane scrollPane;
 	private Table scrollInnerTable;
+	private FileHandle[] files;
 
-	
 	private GameState gameSave;
 	
-	public LoadGameScreen(Game game) {
+	public LoadGameScreen(Game game, FileHandle[] files) {
 		super(game);
-		// TODO Auto-generated constructor stub
+		this.files = files;
 	}
 
 	@Override
@@ -42,12 +44,10 @@ public class LoadGameScreen extends BaseScreen{
 		
 		//Add the Inner table to the scroll pane
 		scrollPane = new ScrollPane(scrollInnerTable);
-	    
-		//Load a list of items in the directory
-		FileHandle[] files = Gdx.files.external("").list();
-		for(FileHandle file: files) {
+		
+		for(FileHandle file: this.files) {
 			//Must not be a directory, and must end with .twr (tower)
-			if (!file.isDirectory() && file.name().endsWith(".twr")){
+			if (!file.isDirectory()){// && file.name().endsWith(".twr")){
 			   Label label = new Label(file.name(), labelStyle);
 			   label.addListener(new LoadGameInputListener(file.name(), scrollPane));
 			   
@@ -88,7 +88,7 @@ public class LoadGameScreen extends BaseScreen{
 	
 	@Override
 	public void dispose() {
-		Gdx.app.debug("twojeremys", "dispose intro screen");
+		Gdx.app.debug(TAG, "dispose intro screen");
 
 		stage.dispose();
 		

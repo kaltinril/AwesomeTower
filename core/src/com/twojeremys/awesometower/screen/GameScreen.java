@@ -27,7 +27,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -52,6 +51,8 @@ import com.twojeremys.awesometower.tileengine.TileProperties;
 
 //TODO TASK build a menu to select items from
 public class GameScreen extends BaseScreen implements GestureListener, InputProcessor {
+	
+	private static final String TAG = GameScreen.class.getSimpleName();
 
 	//
 	private AssetManager assets;
@@ -67,6 +68,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	// Store the time difference
 	private float deltaTime = 0;
+	private float deltaSaveTime = 0;
 
 	// Font
 	private BitmapFont loadingFont; // com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -170,9 +172,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//Create an instance of TileMap based on the GameState.
 		if (gameState != null){
-			if (Constants.DEBUG) {
-				System.out.println("Loading save....");
-			}
+			Gdx.app.debug(TAG, "Loading save....");
 			tileMap = new TileMap(atlas, gameState.getTiles());
 		}
 		else {
@@ -185,10 +185,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		screenTileMapHeight = tileMap.getMapPixelHeight();
 		screenTileMapWidth = tileMap.getMapPixelWidth();
 
-		if (Constants.DEBUG) {
-			System.out.println("Width: " + Gdx.graphics.getWidth());
-			System.out.println("Height: " + Gdx.graphics.getHeight());
-		}
+		Gdx.app.debug(TAG, "Width: " + Gdx.graphics.getWidth());
+		Gdx.app.debug(TAG, "Height: " + Gdx.graphics.getHeight());
 
 		// Camera
 		// http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
@@ -231,6 +229,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 	
 		deltaTime += delta; // Used only to create a delay for loading screen simulation
+		deltaSaveTime += delta; //used to keep track of time since last save
 	
 		camera.update(); // Make sure the camera is updated, not really needed in this example
 		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
@@ -271,10 +270,16 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				overlayBatch.end(); // end - Draw all items batched into the pipeline
 			}
 		}
+		
+		//auto save if exceed interval setting
+		if (deltaSaveTime > Constants.SAVE_INTERVAL) {
+			deltaSaveTime = 0f;
+			GameSaveManager.saveState(gameState, saveName);
+		}
 	
 		if (Constants.DEBUG) {
 	
-			if (deltaTime >= 5f) {
+			if (deltaTime >= Constants.DEBUG_DISPLAY_INTERVAL) {
 				
 				float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
 				float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
@@ -514,7 +519,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
 			
-			System.out.println("property=" + tileProperty.getDisplayName());
+			//System.out.println("property=" + tileProperty.getDisplayName());
 			
 			//Get the table for this category
 			Table t = tileProperty.getCategory().getTable();
@@ -523,7 +528,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			Image sep = new Image(new Texture(Gdx.files.internal("data/grey.png")));
 			sep.setHeight(0.5f);
 			
-			System.out.println("initial size=" + size);
+			//System.out.println("initial size=" + size);
 			
 			//Using spacing instead of padding
 			// see https://github.com/libgdx/libgdx/wiki/Table#padding
@@ -541,7 +546,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				@Override
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 					//Kaltinril: appears touchUp was still being called anyways, added !scroll.isPanning check
-					if (!selectionScroll.isPanning()){currentTile = tileProperty.getID();}
+					if (!selectionScroll.isPanning()){
+						currentTile = tileProperty.getID();
+						toggleBuildMode();
+					}
 			    }
 		    };
 	
@@ -557,7 +565,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    
 		    //Check max row size
 		    size = (l.getWidth() + Constants.CELL_SPACE*2) > size ? (l.getWidth() + Constants.CELL_SPACE*2) : size;
-		    System.out.println("size=" + size);
+		    //System.out.println("size=" + size);
 		    
 		    //Create a new row
 		    //Set the column span since we have a row with two items in it below
@@ -574,7 +582,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			t.add(imgButton);
 			
 			size = (imgButton.getWidth() + Constants.CELL_SPACE*2) > size ? (imgButton.getWidth() + Constants.CELL_SPACE*2) : size;
-			System.out.println("size=" + size);
+			//System.out.println("size=" + size);
 			
 			//Create a new row
 		    t.row().space(Constants.CELL_SPACE);
@@ -592,7 +600,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    t.add(info).expand().fill();
 		    
 		    size = (cost.getWidth() + info.getWidth() + Constants.CELL_SPACE*3) > size ? (cost.getWidth() + info.getWidth() + Constants.CELL_SPACE*3) : size;
-		    System.out.println("size=" + size);
+		    //System.out.println("size=" + size);
 			
 			tileProperty.getCategory().setTableWidth(size);
 			
@@ -600,8 +608,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						
 			t.add(sep).expand().fill();
 						
-			System.out.println("final size=" + tileProperty.getCategory().getTableWidth());
-			System.out.println();
+			//System.out.println("final size=" + tileProperty.getCategory().getTableWidth());
+			//System.out.println();
 		}
 	}
 
@@ -670,12 +678,28 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	public void hide() {
-		Gdx.app.debug("twojeremys", "dispose game screen");
-		
-		if (Constants.DEBUG){
-			System.out.println("Hide was called.");
-		}
+		Gdx.app.debug(TAG, "hide game screen");
+		GameSaveManager.saveState(gameState, saveName);
+		super.hide();
+	}
+	
+	@Override
+	public void pause() {
+		Gdx.app.debug(TAG, "pause game screen");
+		super.pause();
+	}
 
+	@Override
+	public void resume() {
+		Gdx.app.debug(TAG, "resume game screen");
+		super.resume();
+	}
+
+	@Override
+	public void dispose() {
+		Gdx.app.debug(TAG, "dispose game screen");
+		GameSaveManager.saveState(gameState, saveName);
+		
 		// Get rid of the assets loaded
 		loadingCircleTexture.dispose();
 		batch.dispose();
@@ -689,7 +713,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Created a dispose method to see if that helps
 		tileMap.dispose();	
 	}
-	
+
 	/******************************************************************************
 	 * Methods used for Input from multiple sources below
 	 ******************************************************************************/	
@@ -701,32 +725,30 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	 3. Touch Dragged event (Move object to location of finger/mouse)
 	 4. TouchUp event (Show object in non-hover mode)
 	 5. Tap (multiple) [Place the Object into the tilemap], charge MONEY!
-
+	
 	Build Mode:
 	 - Zoom  methods(zoom/scrolled)
 	 - Pan - (Moving the camera)
 	 - Disabled [Object/UI selection] (Tap) - only interact with "Object to be placed".
 	 - Object Selection (Longpress)
-
+	
 	Manage Mode:
 	 - Zoom  methods(zoom/scrolled)
 	 - Pan - (Moving the camera)
 	 - Object/UI Selection (Tap)
 	*/
-
 	
+	
+	
+	@Override
+	//Not used
+	public boolean touchDown(float x, float y, int pointer, int button) {
+	    return false;
+	}
 
-    @Override
-    //Not used
-    public boolean touchDown(float x, float y, int pointer, int button) {
-        return false;
-    }
-
-    @Override
+	@Override
     public boolean tap(float x, float y, int count, int button) {
-    	if (Constants.DEBUG) {
-        	System.out.println("Tap performed, finger" + Integer.toString(button));
-    	}
+    	Gdx.app.debug(TAG, "Tap performed, finger" + Integer.toString(button));
     	
     	
 		if (buildMode){
@@ -759,9 +781,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
     @Override
     public boolean longPress(float x, float y) {
-    	if (Constants.DEBUG) {
-    		System.out.println("Long press performed");
-    	}
+    	Gdx.app.debug(TAG, "Long press performed");
     	
     	//TODO TASK Put code here to make SelectedObject look like it is "Hovering"
     	// By adding a shadow and/or increasing the image size slightly
@@ -777,10 +797,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-    	if (Constants.DEBUG) {
-    		System.out.println("Pan performed, delta:" + Float.toString(deltaX) +
-                "," + Float.toString(deltaY));
-    	}
+    	Gdx.app.debug(TAG, "Pan performed, delta:" + Float.toString(deltaX) + "," + Float.toString(deltaY));
     	
     	//TODO TASK Check to see if we've clicked on any of the overlay items first.
     	
@@ -796,10 +813,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
     @Override
     public boolean zoom(float initialDistance, float distance) {
-    	if (Constants.DEBUG) {
-    		System.out.println("Zoom performed, initial Distance:" + Float.toString(initialDistance) +
+    	Gdx.app.debug(TAG, "Zoom performed, initial Distance:" + Float.toString(initialDistance) +
                 " Distance: " + Float.toString(distance));
-    	}
     	
     	camera.zoom += (0.1f*(initialDistance-distance));
     	
@@ -809,9 +824,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     @Override
     public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2,
             Vector2 pointer1, Vector2 pointer2) {
-    	if (Constants.DEBUG) {
-    		System.out.println("Pinch performed");
-    	}
+    	Gdx.app.debug(TAG, "Pinch performed");
         return true;
     }
 
@@ -823,22 +836,13 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	public boolean keyDown(int keycode) {
-		if (Constants.DEBUG){
-			System.out.println("Key Down: " + Input.Keys.toString(keycode));
-		}
+		Gdx.app.debug(TAG, "Key Down: " + Input.Keys.toString(keycode));
 		
 		//http://www.gamefromscratch.com/post/2013/10/24/LibGDX-Tutorial-5-Handling-Input-Touch-and-gestures.aspx
 		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
 		//TODO TASK Need to convert this to an icon to be clicked on
 		//Change to BUILD mode
-		if (!buildMode && keycode == Input.Keys.B){
-			toggleBuildMode();
-			return true;
-		}
-		
-		//TODO TASK Need to convert this to an icon to be clicked on
-		//Change to MANAGE mode
-		if (buildMode && keycode == Input.Keys.M){
+		if (keycode == Input.Keys.B){
 			toggleBuildMode();
 			return true;
 		}
@@ -849,18 +853,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			drawTableDebug = !drawTableDebug;
 			return true;
 		}
-		
-		//TODO TASK Need to convert this to an icon to be clicked on
-		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
-		//Toggle category
-		if (keycode == Input.Keys.C){
-			//selectionScroll.clear();
-			System.out.println("commercial size=" + Category.Commercial.getTable().getCells().size);
-			selectionScroll.setWidget(Category.Commercial.getTable());
-			selectionScroll.invalidate();
-			return true;
-		}
-		
+
 		//TODO TASK Need to convert this to an icon to be clicked on
 		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
 		//Toggle menu visibility
@@ -872,7 +865,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		}
 		
 		//TODO TASK Pop up an "are you sure" message
-		if (keycode == Input.Keys.ESCAPE) {
+		if (keycode == Input.Keys.ESCAPE || keycode == Input.Keys.BACK) {
 			this.dispose(); //TODO CONFIRM - does this fix the old ones not being released?
 			game.setScreen(new MainMenuScreen(game));
 			return true;
@@ -903,9 +896,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	@Override
 	//Fires after a touchDragged event set ends, perhaps other situations as well
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if (Constants.DEBUG){
-			System.out.println("Touch Up: " + button + " at x:" + screenX + " y:" + screenY);
-		}
+		Gdx.app.debug(TAG, "Touch Up: " + button + " at x:" + screenX + " y:" + screenY);
 		
 		//TODO TASK Put code here to "place" SelectedObject (remove any shadow effects, etc)
 		
@@ -914,9 +905,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		if (Constants.DEBUG){
-			System.out.println("Touch Dragged: at x:" + screenX + " y:" + screenY);
-		}
+		Gdx.app.debug(TAG, "Touch Dragged: at x:" + screenX + " y:" + screenY);
 		
 		//TODO TASK Put code here to move the SelectedObject
 		

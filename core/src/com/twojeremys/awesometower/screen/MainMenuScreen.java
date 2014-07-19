@@ -3,6 +3,7 @@ package com.twojeremys.awesometower.screen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -17,12 +18,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.twojeremys.awesometower.AwesomeTower;
 import com.twojeremys.awesometower.Constants;
-import com.twojeremys.awesometower.listener.DefaultMenuActionListener;
 
 public class MainMenuScreen extends BaseScreen  {
+	
+	private static final String TAG = MainMenuScreen.class.getSimpleName();
 
 	private TextureRegion title;
 	private SpriteBatch batch;
@@ -95,7 +96,7 @@ public class MainMenuScreen extends BaseScreen  {
 			@Override
 		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 				if (Constants.DEBUG) {System.out.println("NewGameButtonUp");}
-			createNewGamePopup();
+				createNewGamePopup();
 			}
 		});
 		
@@ -111,7 +112,46 @@ public class MainMenuScreen extends BaseScreen  {
 		
 		// Create the Load Game Button, pass in "loadgame" to the listener
 		loadGameButton = new TextButton("Load Game", skin, "default");
-		loadGameButton.addListener(new DefaultMenuActionListener("loadgame"));
+		//loadGameButton.addListener(new DefaultMenuActionListener("loadgame"));
+		loadGameButton.addListener(new InputListener(){
+		    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {		        
+		        return true;
+		    }
+
+		    //This only fires when the button is first let up
+			@Override
+		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+				//Do a TSA precheck and see if there are any files
+				FileHandle[] sysFiles = Gdx.files.local(Constants.SAVE_FOLDER).list();
+				
+				Gdx.app.debug(TAG, "local avail?: " + Gdx.files.isLocalStorageAvailable());
+				Gdx.app.debug(TAG, "exter avail?: " + Gdx.files.isExternalStorageAvailable());
+				Gdx.app.debug(TAG, "int path: >" + Gdx.files.getLocalStoragePath() + "<");
+				Gdx.app.debug(TAG, "ext path: >" + Gdx.files.getExternalStoragePath() + "<");
+				Gdx.app.debug(TAG, "files: " + sysFiles.length);
+				
+				int foundFiles = 0;
+				
+				for(FileHandle file: sysFiles) {
+					//Must not be a directory
+					if (!file.isDirectory()){
+						foundFiles++;
+					}
+				}
+	    		
+	    		Gdx.app.debug(TAG, "found files: " + foundFiles);
+	    		
+	    		//If we found files then load the screen
+	    		if (foundFiles > 0) {  		
+	    			game.setScreen(new LoadGameScreen(game, sysFiles));
+	    		} else {
+	    			Dialog dialog = new Dialog("No games found!", skin, "default");
+	    			
+	    			dialog.button("Aww...", true);
+	    			dialog.show(stage);
+	    		}
+			}
+		});
 		
 		// Setup format to be the same as start button
 		
@@ -123,7 +163,18 @@ public class MainMenuScreen extends BaseScreen  {
 		
 		// Create another button using the same style, passing in the word "extiGame" to the listener for handling later
         exitGameButton = new TextButton("Exit Game", skin, "default");
-        exitGameButton.addListener(new DefaultMenuActionListener("exitGame"));
+        exitGameButton.addListener(new InputListener(){
+		    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {		        
+		        return true;
+		    }
+
+		    //This only fires when the button is first let up
+			@Override
+		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+				Gdx.app.debug(TAG, "exit button pressed. bye now.");
+				Gdx.app.exit();
+			}
+		});;
         
         // Add some padding all the way around the button this time
         exitGameButton.pad(10);
@@ -146,19 +197,24 @@ public class MainMenuScreen extends BaseScreen  {
 		
 		//Create a dialog box
 		Dialog dialog = new Dialog("New Tower", skin, "default"){
+			@Override
 		    protected void result (Object object) {
 		    	if ((Boolean)object == true){
 		    		if (Constants.DEBUG){
 		    			System.out.println("Save Game Name: " + textField.getText());
 		    		}
 		    		//TODO ENHANCEMENT dispose of the main menu screen in some form or fashion.
-		    		((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener()), textField.getText()));
+		    		//((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener()), textField.getText()));
+		    		game.setScreen(new IntroScreen(game, textField.getText()));
+		    		Gdx.input.setOnscreenKeyboardVisible(false);
+		    	} else {
+		    		Gdx.input.setOnscreenKeyboardVisible(false);
 		    	}
 		    }
 		};
 
 		//Create a text box (TextField) using the style created above
-		textField = new TextField("Kaltinril", skin, "default");
+		textField = new TextField("", skin, "default");
 		
 		//Adjust Dialog padding
 		dialog.padTop(20).padBottom(20);
@@ -181,7 +237,7 @@ public class MainMenuScreen extends BaseScreen  {
 		
 		//set it all up
 		dialog.setMovable(false);
-		dialog.key(Keys.ENTER, true).key(Keys.ESCAPE, false);
+		dialog.key(Keys.ENTER, true).key(Keys.ESCAPE, false).key(Keys.BACK, false); //FIXME the back button on android is exiting the game not the dialog
 		dialog.invalidateHierarchy();
 		dialog.invalidate();
 		dialog.layout();
@@ -206,7 +262,7 @@ public class MainMenuScreen extends BaseScreen  {
 
 	@Override
 	public void hide () {
-		this.dispose();
+		super.hide();
 	}
 	
 	@Override
