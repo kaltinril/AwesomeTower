@@ -43,19 +43,23 @@ public class GameSaveManager {
 		return true;
 	}
 	
-	public static GameState loadState(String saveFileName)
-	{
+	public static GameState loadState(String saveFileName) {		
+		try{
+	        FileHandle handle = Gdx.files.local(Constants.SAVE_FOLDER + saveFileName);
+	        
+	        return  loadState(handle);
+		} catch (Throwable e) {
+			//TODO ENHANCEMENT make this some sort of real warning message or pop-up
+			System.out.println("ERROR: Couldn't Save to storage [" + saveFileName + "]: " + e.getLocalizedMessage() + "\n");
+			return null;
+		}
+	}
+	
+	public static GameState loadState(FileHandle handle) {
 		GameState gameSave;
 		Json json = new Json();	
 		
 		try{
-	        FileHandle handle= Gdx.files.local(Constants.SAVE_FOLDER + saveFileName);
-	        
-//	        if (Gdx.files.isExternalStorageAvailable()) {
-//	        	handle = Gdx.files.external(saveFileName);
-//	        } else {
-//	        	handle = Gdx.files.internal(saveFileName);
-//	        }
 	        //Gdx.files.external(saveFileName);	//Load file from external location
 	        String saveData = handle.readString();
 	        
@@ -66,9 +70,10 @@ public class GameSaveManager {
 	        
 	        //Translate JSON string into a GameSave object
 	        gameSave = json.fromJson(GameState.class, saveData);
+	        
 		} catch (Throwable e) {
 			//TODO ENHANCEMENT make this some sort of real warning message or pop-up
-			System.out.println("ERROR: Couldn't Save to storage [" + saveFileName + "]: " + e.getLocalizedMessage() + "\n");
+			System.out.println("ERROR: Couldn't Save to storage [" + handle.name() + "]: " + e.getLocalizedMessage() + "\n");
 			return null;
 		}
 		

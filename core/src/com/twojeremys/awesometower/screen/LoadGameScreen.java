@@ -6,13 +6,16 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.gamefile.GameState;
-import com.twojeremys.awesometower.listener.LoadGameInputListener;
 
 public class LoadGameScreen extends BaseScreen{
 	
@@ -45,11 +48,33 @@ public class LoadGameScreen extends BaseScreen{
 		//Add the Inner table to the scroll pane
 		scrollPane = new ScrollPane(scrollInnerTable);
 		
-		for(FileHandle file: this.files) {
-			//Must not be a directory, and must end with .twr (tower)
-			if (!file.isDirectory()){// && file.name().endsWith(".twr")){
+		for(final FileHandle file: this.files) {
+			//Must not be a directory
+			if (!file.isDirectory()){
 			   Label label = new Label(file.name(), labelStyle);
-			   label.addListener(new LoadGameInputListener(file.name(), scrollPane));
+			   
+				label.addListener(new InputListener() {
+					@Override
+					public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+						if (!scrollPane.isPanning()) {
+							if (Constants.DEBUG) {
+								System.out.println("down pressed on [" + file + "]");
+							}
+							return true;
+						}
+						return false;
+					}
+					
+					@Override
+					public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+						if (!scrollPane.isPanning()) {
+							if (Constants.DEBUG) {
+								System.out.println("File Selected: " + file);
+							}
+							game.setScreen(new GameScreen(game, GameSaveManager.loadState(file), file.name()));
+						}
+					}
+				});
 			   
 			   scrollInnerTable.add(label);
 			   
