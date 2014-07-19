@@ -4,14 +4,20 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Interpolation;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.ColorAction;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -181,10 +187,18 @@ public class MainMenuScreen extends BaseScreen  {
         
         // Add the extGameButton to the table so it is active/displayed
         table.add(exitGameButton);
-        
-        //Make the menu move up from off the screen.
+
+        //Set the table off the screen, to use actions to add "tween" flare
         table.setPosition(Gdx.graphics.getWidth()/2, 0);
-        table.addAction(Actions.moveTo(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, 0.5f));
+        
+//        MoveToAction bounceAction = new MoveToAction();
+//        bounceAction.setInterpolation(Interpolation.swing);
+//        bounceAction.setPosition(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
+//        bounceAction.setDuration(0.5f);
+//        table.addAction(bounceAction);
+        
+        //Make the menu move up from off the screen with flare and "tween" by adding Interpolation.swing
+        table.addAction(Actions.moveTo(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, 0.5f, Interpolation.swing));
         
 		// add the table onto the stage
 		stage.addActor(table);
@@ -192,7 +206,6 @@ public class MainMenuScreen extends BaseScreen  {
 
 	
 	//This is a popup that will ask for a name
-	//TODO ENHANCE create a standard skin that all buttons images etc can use
 	private void createNewGamePopup(){
 		
 		//Create a dialog box
@@ -203,10 +216,19 @@ public class MainMenuScreen extends BaseScreen  {
 		    		if (Constants.DEBUG){
 		    			System.out.println("Save Game Name: " + textField.getText());
 		    		}
-		    		//TODO ENHANCEMENT dispose of the main menu screen in some form or fashion.
-		    		//((Game) Gdx.app.getApplicationListener()).setScreen(new IntroScreen(((Game) Gdx.app.getApplicationListener()), textField.getText()));
-		    		game.setScreen(new IntroScreen(game, textField.getText()));
-		    		Gdx.input.setOnscreenKeyboardVisible(false);
+		    		
+		    		//Verify text is not empty, add "Tween" red highlight
+		    		if (textField.getText().equals("")){
+		    			textField.addAction(
+		    					Actions.sequence(
+		    							Actions.color(Color.RED, 0.2f),
+		    							Actions.color(Color.WHITE, 0.2f))
+		    					);
+		    			cancel();	//Cancel the closing of the window
+		    		}else {
+			    		game.setScreen(new IntroScreen(game, textField.getText()));
+			    		Gdx.input.setOnscreenKeyboardVisible(false);
+		    		}
 		    	} else {
 		    		Gdx.input.setOnscreenKeyboardVisible(false);
 		    	}
