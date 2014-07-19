@@ -313,6 +313,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		}
 	}
 
+	//Allow buttons on the stage to be correctly adjusted and positioned
+	public void resize (int width, int height) {
+	    // See below for what true means.
+	    stage.getViewport().update(width, height, true);
+	}
+	
 	private void buildSideMenu(TextureAtlas atlas) {
 		/**
          * TODO TASK Menu Testing

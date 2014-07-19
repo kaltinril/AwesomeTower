@@ -81,6 +81,12 @@ public class LoadGameScreen extends BaseScreen{
 		stage.draw();
 	}
 
+	//Allow buttons on the stage to be correctly adjusted and positioned
+	public void resize (int width, int height) {
+	    // See below for what true means.
+	    stage.getViewport().update(width, height, true);
+	}
+	
 	@Override
 	public void hide () {
 		dispose();
