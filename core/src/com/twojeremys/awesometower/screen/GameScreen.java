@@ -198,6 +198,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//TODO TASK Set screen resolution here
 		camera.setToOrtho(false, 480, 320);
 		
+		//default camera zoom
+		camera.zoom = Constants.ZOOM_DEFAULT;
+		
 		//Grid lines
 		shapeRenderer = new ShapeRenderer();
 		
@@ -225,7 +228,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//System.out.println("rendercalls:" + batch.totalRenderCalls);
 	
 		//Clear the screen black.
-		Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
+		//Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
+		Gdx.gl.glClearColor(0.48f, 0.729f, 0.870f, 1.0f); //sky blue!! (as opposed to ocean blue :)
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 	
 		deltaTime += delta; // Used only to create a delay for loading screen simulation
@@ -754,7 +758,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
     public boolean tap(float x, float y, int count, int button) {
-    	Gdx.app.debug(TAG, "Tap performed, finger" + Integer.toString(button));
+    	Gdx.app.debug(TAG, "Tap performed {"
+    			+ "button: " + button
+    			+ " count: " + count
+    			+ " x: " + x
+    			+ " y: " + y
+    	+ "}");
     	
     	
 		if (buildMode){
@@ -803,7 +812,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-    	Gdx.app.debug(TAG, "Pan performed, delta:" + Float.toString(deltaX) + "," + Float.toString(deltaY));
+    	Gdx.app.debug(TAG, "Pan performed {"
+    			+ " delta: (" + Float.toString(deltaX) + "," + Float.toString(deltaY) + ")"
+    			+ ", xy: (" + Float.toString(x) + "," + Float.toString(y)
+    	+ "}");
     	
     	//TODO TASK Check to see if we've clicked on any of the overlay items first.
     	
@@ -822,16 +834,21 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     	Gdx.app.debug(TAG, "Zoom performed, initial Distance:" + Float.toString(initialDistance) +
                 " Distance: " + Float.toString(distance));
     	
-    	camera.zoom += (0.1f*(initialDistance-distance));
+    	return scrollZoom(0.0001f, (int)(initialDistance-distance));
     	
-        return true;
+    	//Using a really small value otherwise it's too fast on device
+//    	camera.zoom = MathUtils.clamp(camera.zoom + 0.0001f*(initialDistance-distance), Constants.ZOOM_MIN, Constants.ZOOM_MAX);
+//    	
+//    	adjustCameraWhenZooming();
+//    	
+//      return true;
     }
 
     @Override
     public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2,
             Vector2 pointer1, Vector2 pointer2) {
-    	Gdx.app.debug(TAG, "Pinch performed");
-        return true;
+    	//Gdx.app.debug(TAG, "Pinch performed");
+        return false;
     }
 
 	@Override
@@ -926,11 +943,48 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	public boolean scrolled(int amount) {
-		camera.zoom += (0.1f*amount);
-		return true;
+		Gdx.app.debug(TAG, "scrolled: " + amount);
+		return scrollZoom(0.1f, amount);
 	}
 	
 	private void toggleBuildMode() {
 		this.buildMode = !buildMode;
 	}
+	
+	private boolean scrollZoom(float scrollFactor, int scrollAmount) {
+		//This is almost too slow may want to increase.
+		camera.zoom = MathUtils.clamp(camera.zoom + scrollFactor*scrollAmount, Constants.ZOOM_MIN, Constants.ZOOM_MAX);
+		//adjustCameraWhenZooming();
+		return true;
+	}
+	
+    private void adjustCameraWhenZooming() {
+        float cameraAdjustX, cameraAdjustY;
+        
+        float leftBound = 0;
+        float rightBound = camera.viewportWidth;
+        float upperBound = camera.viewportHeight;
+        float lowerBound = 0;
+        
+        Gdx.app.debug(TAG, "camera.position.x: " + camera.position.x + " camera.position.y: " + camera.position.y);
+        
+        
+        if (camera.position.x <= leftBound) {
+            cameraAdjustX = camera.position.x - leftBound;
+            camera.position.x -= cameraAdjustX;
+        }
+        else if (camera.position.x >= rightBound) {
+            cameraAdjustX = camera.position.x - rightBound;
+            camera.position.x -= cameraAdjustX;
+        }
+        if (camera.position.y >= upperBound) {
+           cameraAdjustY = camera.position.y - upperBound;
+           camera.position.y -= cameraAdjustY;
+        }
+        else if (camera.position.y <= lowerBound) {
+           cameraAdjustY = camera.position.y - lowerBound;
+           camera.position.y -= cameraAdjustY;
+        }         
+     }
+
 }

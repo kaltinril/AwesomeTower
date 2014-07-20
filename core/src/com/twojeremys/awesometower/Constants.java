@@ -31,4 +31,8 @@ public class Constants {
 	
 	//save directory
 	public static final String SAVE_FOLDER = "saves/";
+	
+	public static final float ZOOM_MAX = 5f;
+	public static final float ZOOM_MIN = 1f;
+	public static final float ZOOM_DEFAULT = 2f;	
 }

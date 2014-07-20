@@ -277,6 +277,7 @@ public class MainMenuScreen extends BaseScreen  {
 		stage.act();
 		
 		//Clear the screen and draw the background
+		Gdx.gl.glClearColor(0.48f, 0.729f, 0.870f, 1.0f); //sky blue!! (as opposed to ocean blue :)
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
 		batch.draw(title, 0, 0);

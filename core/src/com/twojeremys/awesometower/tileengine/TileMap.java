@@ -2,12 +2,15 @@ package com.twojeremys.awesometower.tileengine;
 
 import java.util.HashMap;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.twojeremys.awesometower.Constants;
 
 //TODO TASK Save game state etc
 public class TileMap {
+	
+	private static final String TAG = TileMap.class.getSimpleName();
 
 	private Tile[][] tiles;
 	
@@ -52,7 +55,7 @@ public class TileMap {
 		if (tiles != null){
 			this.maxX = tiles.length;
 			this.maxY = tiles[0].length;
-			System.out.println("Max X" + this.maxX + " MaxY: " + this.maxY);
+			Gdx.app.debug(TAG, "maxX: " + this.maxX + " maxY: " + this.maxY);
 		}
 	}
 	
@@ -75,29 +78,29 @@ public class TileMap {
 		}
 	}
 
-	public void setTile(int tileX, int tileY, int tile){
+	public void setTile(int x, int y, int tile){
 		
 		//Make sure there are no collisions before we place the tile
 		//if there is then do nothing 
-		//TODO TASK we should pop toast to inform the user of collision
-		if (!hasCollision(tileX, tileY, tile)) {
+		if (!hasCollision(x, y, tile)) {
 			
 			//Get tile properties so we know size of the tile we're working with
-			TileProperties tp = tileProperties.get(String.valueOf(tile));
+			TileProperties tp = getTilePropertiesById(tile);
 			
 			Tile parentTile = new Tile(tile);
 			
 			//Set the child tiles to reference the parent for collision detection
 			for (int spanX=0; spanX < tp.getTileSpanX(); spanX++)
 				for (int spanY=0; spanY < tp.getTileSpanY(); spanY++)
-					this.tiles[tileX+spanX][tileY+spanY] = new Tile(tile, parentTile);
+					this.tiles[x+spanX][y+spanY] = new Tile(tile, parentTile);
 			
 			//Set the Initial tile spot to the correct value
-			this.tiles[tileX][tileY] = parentTile;
+			this.tiles[x][y] = parentTile;
 			
 		}
 		else{
-			System.out.println("Outside or Collision " + tileX + " " + tileY);
+			//TODO TASK we should pop toast to inform the user of collision
+			System.out.println("Outside or Collision " + x + " " + y);
 		}
 	}
 	
@@ -145,14 +148,14 @@ public class TileMap {
 	}
 	
 	public boolean hasCollision(int tileX, int tileY, int tile) {
-		
+				
 		//If the point is outside the bounds of the map return true
 		if (tileX < 0 || tileX >= maxX || tileY < 0 || tileY >= maxY) {
 			return true;
 		}
 		
 		//Get tile properties so we know size of the tile we're working with
-		TileProperties tp = tileProperties.get(String.valueOf(tile));
+		TileProperties tp = getTilePropertiesById(tile);
 		
 		//if the tile will end up outside the bounds of the map return true
 		if (tileX + tp.getTileSpanX() > maxX || tileY + tp.getTileSpanY() > maxY) {
@@ -182,7 +185,7 @@ public class TileMap {
 					if (tileProperties.containsKey(String.valueOf(tiles[x][y].getID()))) {
 						
 						//Get a reference to the tile property to pull out more information from it
-						TileProperties tp = tileProperties.get(String.valueOf(tiles[x][y].getID()));
+						TileProperties tp = getTilePropertiesById(tiles[x][y].getID());
 						
 						//Draw this tile to the designated width and height based on tilespan and tilewidth/height
 						batch.draw(atlas.findRegion(tp.getAtlasName()), 
@@ -196,6 +199,10 @@ public class TileMap {
 				}
 			}
 		}
+	}
+	
+	private TileProperties getTilePropertiesById(int tile) {
+		return tileProperties.get(String.valueOf(tile));
 	}
 
 	//Not sure if this is needed, but added it.
