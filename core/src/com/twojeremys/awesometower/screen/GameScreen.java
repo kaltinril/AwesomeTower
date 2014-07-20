@@ -62,6 +62,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private Texture loadingCircleTexture;
 	private Sprite loadingCircleSprite;
 	private boolean assetsLoaded;
+	
+	// Items used for "what am I currently building"?
+	private Sprite selectedBuildTileSprite;
+	private Sprite prePurchaseSprite;
 
 	// Items used for drawing
 	private SpriteBatch batch;
@@ -82,6 +86,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	// Tile engine and map
 	private TileMap tileMap;
+	private TextureAtlas tileAtlas;
 	
 	// Stores the tile being used for placement
 	private int currentTile = 1;
@@ -169,15 +174,15 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		assets.finishLoading(); //FIXME if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
 
 		//Store this for later use in setting the menu
-		TextureAtlas atlas = (TextureAtlas) assets.get("tiles.atlas");
+		tileAtlas = (TextureAtlas) assets.get("tiles.atlas");
 		
 		//Create an instance of TileMap based on the GameState.
 		if (gameState != null){
 			Gdx.app.debug(TAG, "Loading save....");
-			tileMap = new TileMap(atlas, gameState.getTiles());
+			tileMap = new TileMap(tileAtlas, gameState.getTiles());
 		}
 		else {
-			tileMap = new TileMap(atlas);
+			tileMap = new TileMap(tileAtlas);
 			gameState = new GameState();
 			gameState.setTiles(tileMap.getTiles());
 		}
@@ -219,7 +224,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         loadProperties();
         
         //Build the side menu
-        buildSideMenu(atlas);
+        buildSideMenu(tileAtlas);
 	}
 
 	@Override
@@ -244,6 +249,13 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			batch.begin(); // start - send data to the graphics pipeline for loading/processing
 			tileMap.drawMap(batch);
 			//container.draw(batch, 1);
+			
+			if (buildMode){
+		        if (prePurchaseSprite != null){
+		        	prePurchaseSprite.draw(batch);
+		        }
+			}
+			
 			batch.end(); // end - Draw all items batched into the pipeline
 	
 			//Draw the gridline
@@ -253,6 +265,32 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
 	        stage.draw();
+	        
+	        overlayBatch.begin();
+	        
+	        if (buildMode){
+		        if (selectedBuildTileSprite != null){
+		        	
+		        	//TODO ENHANCE perhaps create a Table, that has a set location for this along with other stats (gold/etc)
+		        	
+		        	//Create a small boarder around the image
+		        	selectedBuildTileSprite.setColor(Color.BLACK);
+		        	selectedBuildTileSprite.setScale(1.1f);
+		        	selectedBuildTileSprite.draw(overlayBatch);
+		        	
+		        	//Draw the image
+		        	selectedBuildTileSprite.setColor(Color.WHITE);
+		        	selectedBuildTileSprite.setScale(1.0f);
+		        	selectedBuildTileSprite.draw(overlayBatch);
+		        }
+
+			}
+	        
+	        if (buildMode){
+	        	
+	        }
+	        
+	        overlayBatch.end();
 	        
 	        if (Constants.DEBUG && drawTableDebug){
 	        	Table.drawDebug(stage);
@@ -592,11 +630,22 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						// if the same tile is clicked it pulls you out of build mode
 						if (!buildMode) {
 							currentTile = tileProperty.getID();
+							selectedBuildTileSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							selectedBuildTileSprite.setCenter(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight() - selectedBuildTileSprite.getHeight());
+
+							prePurchaseSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							prePurchaseSprite.setPosition(-1000, -1000);
+							
 							toggleBuildMode();
 						} else if (currentTile == tileProperty.getID()) {
 							toggleBuildMode();
 						} else {
 							currentTile = tileProperty.getID();
+							selectedBuildTileSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							selectedBuildTileSprite.setCenter(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight() - selectedBuildTileSprite.getHeight());
+
+							prePurchaseSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							prePurchaseSprite.setPosition(-1000, -1000);
 						}
 				    }
 			    };
@@ -660,7 +709,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			//System.out.println();
 		}
 	}
-
+	
 	private void loadProperties() {
 		//For whatever reason can't use Json.fromJson like a static method
         //Had to create an instance
@@ -821,15 +870,34 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			
 			//Convert to TileX and TileY coordinates by dividing by the width/height
 			// For a 20x20 tile, this converts 20 to 1, 40 to 2, 60 to 3.
-			touchPos.x /= tileMap.getTileWidth();
-			touchPos.y /= tileMap.getTileHeight();
+			Vector2 tileTouchPos = new Vector2(touchPos.x / tileMap.getTileWidth(), touchPos.y / tileMap.getTileHeight());
+
 
 			Gdx.app.debug(TAG, "Tap performed (unproject) {"
-	    			+ "xy: (" + Float.toString(touchPos.x) + "," + Float.toString(touchPos.y) + ")"
+	    			+ "xy: (" + Float.toString(tileTouchPos.x) + "," + Float.toString(tileTouchPos.y) + ")"
 	    	+ "}");
 			
-			// Set the tile based on this position to tile 0
-			tileMap.setTile((int) touchPos.x, (int) touchPos.y, this.currentTile);
+			if (count == 1){
+				
+				//Attempt to tint the sprite green or red depending on a tile collision.
+				if (tileMap.hasCollision((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile)){
+					//Red Tinted (Slightly)
+					prePurchaseSprite.setColor(1.0f, 0.5f, 0.5f, 1.0f);
+				}else {
+					//Green Tinted (Slightly)
+					prePurchaseSprite.setColor(0.5f, 1.0f, 0.5f, 1.0f);
+				}
+				
+				//Adjust the position so it is blocked in at each tile boundary
+				prePurchaseSprite.setPosition((int) tileTouchPos.x*tileMap.getTileWidth(), (int) tileTouchPos.y*tileMap.getTileHeight());
+			}
+			else if (count > 1){
+				if (prePurchaseSprite.getBoundingRectangle().contains(touchPos.x, touchPos.y)){
+					// Set the tile based on this position to tile 0
+					tileMap.setTile((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile);
+					prePurchaseSprite.setPosition(-1000, -1000);
+				}
+			}
 		}
     	
         return true;
@@ -844,6 +912,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     @Override
     //Not used
     public boolean fling(float velocityX, float velocityY, int button) {
+    	System.out.println("Fling");
         return false;
     }
 

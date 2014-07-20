@@ -15,6 +15,8 @@ public class GameScreenPuchaseMenu {
 	//Passed in during creation
 	private Skin skin;
 	
+	//TODO THIS CLASS IS NOT USED YET
+	
 	//TODO ENHANCE learn more about skins
 	private String menuStyleName;	//what to look-up in the atlas/json for the menu images
 	
