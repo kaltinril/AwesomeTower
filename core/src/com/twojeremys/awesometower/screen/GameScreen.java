@@ -36,6 +36,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
+import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Category;
@@ -207,7 +208,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Setup all the Input handling
         InputMultiplexer im = new InputMultiplexer();
         GestureDetector gd = new GestureDetector(this);
-        im.addProcessor(stage); //TODO: Fix desktop zoom loss
+        im.addProcessor(stage);
         im.addProcessor(gd);
         im.addProcessor(this);
         
@@ -547,21 +548,58 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			t.row().space(Constants.CELL_SPACE).colspan(2);
 		    
 		    //Create a listener to add to the Label and button
-		    InputListener sideMenuActionListener = new InputListener(){
-				@Override
-			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
-					if (selectionScroll.isPanning()){return false;}
-					else {return true;}
-			    }
-				@Override
-			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-					//Kaltinril: appears touchUp was still being called anyways, added !scroll.isPanning check
-					if (!selectionScroll.isPanning()){
-						currentTile = tileProperty.getID();
-						toggleBuildMode();
-					}
-			    }
-		    };
+//		    InputListener sideMenuActionListener = new InputListener(){
+//				@Override
+//			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+//					if (selectionScroll.isPanning()){return false;}
+//					else {return true;}
+//			    }
+//				@Override
+//			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//					//Kaltinril: appears touchUp was still being called anyways, added !scroll.isPanning check
+//					if (!selectionScroll.isPanning()){
+//						currentTile = tileProperty.getID();
+//						toggleBuildMode();
+//					}
+//			    }
+//		    };
+			
+			ActorGestureListener sideMenuActionListener = new ActorGestureListener(){
+					@Override
+				    public boolean longPress (Actor actor, float x, float y) {
+						Gdx.app.debug(TAG, "longPress performed {"
+				    			+ " actor: " + actor.toString()
+				    			+ ", xy: (" + Float.toString(x) + "," + Float.toString(y) + ")"
+				    	+ "}");
+						
+				    	//TODO i don't think we need this
+						
+						return false;
+				    }
+					@Override
+				    public void tap (InputEvent event, float x, float y, int pointer, int button) {
+						Gdx.app.debug(TAG, "Tap performed {"
+				    			+ " event: " + event.getType().toString()
+				    			+ ", xy: (" + Float.toString(x) + "," + Float.toString(y) + ")"
+				    			+ ", pointer: " + pointer //this is the tap count but fires everytime...
+				    			+ ", button: " + button
+				    	+ "}");
+						
+						//TODO TASK Put code here to make SelectedObject look like it is "Hovering"
+				    	// By adding a shadow and/or increasing the image size slightly
+						
+						//This will allow you to switch between different tiles while in build mode
+						// if the same tile is clicked it pulls you out of build mode
+						if (!buildMode) {
+							currentTile = tileProperty.getID();
+							toggleBuildMode();
+						} else if (currentTile == tileProperty.getID()) {
+							toggleBuildMode();
+						} else {
+							currentTile = tileProperty.getID();
+						}
+				    }
+			    };
 	
 		    //Create a label to the left of the image and add a listener 
 		    //So the label OR button can be clicked on
@@ -760,9 +798,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     public boolean tap(float x, float y, int count, int button) {
     	Gdx.app.debug(TAG, "Tap performed {"
     			+ "button: " + button
-    			+ " count: " + count
-    			+ " x: " + x
-    			+ " y: " + y
+    			+ ", count: " + count
+    			+ ", xy: (" + Float.toString(x) + "," + Float.toString(y) + ")"
     	+ "}");
     	
     	
@@ -787,6 +824,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			touchPos.x /= tileMap.getTileWidth();
 			touchPos.y /= tileMap.getTileHeight();
 
+			Gdx.app.debug(TAG, "Tap performed (unproject) {"
+	    			+ "xy: (" + Float.toString(touchPos.x) + "," + Float.toString(touchPos.y) + ")"
+	    	+ "}");
+			
 			// Set the tile based on this position to tile 0
 			tileMap.setTile((int) touchPos.x, (int) touchPos.y, this.currentTile);
 		}
@@ -797,11 +838,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     @Override
     public boolean longPress(float x, float y) {
     	Gdx.app.debug(TAG, "Long press performed");
-    	
-    	//TODO TASK Put code here to make SelectedObject look like it is "Hovering"
-    	// By adding a shadow and/or increasing the image size slightly
-    	
-        return true;
+        return false;
     }
 
     @Override
