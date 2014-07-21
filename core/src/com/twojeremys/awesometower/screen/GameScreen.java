@@ -27,6 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -382,6 +383,18 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         //Use a group so that the table will actually draw its background
         VerticalGroup tempGroup = new VerticalGroup();
         Table statusTable = statusMenu.getStatusTable();
+        
+        //FIXME adjusts the size to match the category container but it's still a bit off. :(
+        float col0Size = 0f;
+        for (Cell c : statusTable.getCells()) {
+        	
+        	if (c.getColumn() == 0) {
+        		col0Size = c.getMinWidth();
+        	} else if (c.getColumn() == 1) {
+        		c.width(categoryNameGroup.getMinWidth() - col0Size);
+        		break;
+        	}
+        }
         
         //Add the table to the group and pack it.
         tempGroup.addActor(statusTable);
