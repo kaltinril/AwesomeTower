@@ -147,6 +147,19 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		batch = new SpriteBatch();
 		overlayBatch = new SpriteBatch();
 
+		// Camera
+		// http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
+		camera = new OrthographicCamera(Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
+		
+		// It appears all setting TRUE does, is flip the screen upside down.
+		// Which screws up text and images as they look upside down.
+		//TODO TASK Set screen resolution here
+		camera.setToOrtho(false, 480, 320);
+		
+		//default camera zoom
+		camera.zoom = Constants.ZOOM_DEFAULT;
+		
 		// Load the "loading screen" texture and sprite for rotation
 		loadingCircleTexture = new Texture("data/loadingCircle.png");
 		loadingCircleSprite = new Sprite(loadingCircleTexture);
@@ -179,10 +192,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//Create an instance of TileMap based on the GameState.
 		if (gameState != null){
 			Gdx.app.debug(TAG, "Loading save....");
-			tileMap = new TileMap(tileAtlas, gameState.getTiles());
+			tileMap = new TileMap(tileAtlas, camera, gameState.getTiles());
 		}
 		else {
-			tileMap = new TileMap(tileAtlas);
+			tileMap = new TileMap(tileAtlas, camera);
 			gameState = new GameState();
 			gameState.setTiles(tileMap.getTiles());
 		}
@@ -193,19 +206,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 		Gdx.app.debug(TAG, "Width: " + Gdx.graphics.getWidth());
 		Gdx.app.debug(TAG, "Height: " + Gdx.graphics.getHeight());
-
-		// Camera
-		// http://stackoverflow.com/questions/7708379/changing-the-coordinate-system-in-libgdx-java
-		camera = new OrthographicCamera(Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
-		
-		// It appears all setting TRUE does, is flip the screen upside down.
-		// Which screws up text and images as they look upside down.
-		//TODO TASK Set screen resolution here
-		camera.setToOrtho(false, 480, 320);
-		
-		//default camera zoom
-		camera.zoom = Constants.ZOOM_DEFAULT;
 		
 		//Grid lines
 		shapeRenderer = new ShapeRenderer();
@@ -429,33 +429,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		selectionContainer.setX(Gdx.graphics.getWidth() - categoryNameContainer.getMinWidth());
 		selectionContainer.setY(Gdx.graphics.getHeight()/2);
 		
-		System.out.println("getWidth" + categoryNameContainer.getWidth());
-		System.out.println("getMinWidth" + categoryNameContainer.getMinWidth());
-		System.out.println("getMaxWidth" + categoryNameContainer.getMaxWidth());
-		
-	    //TODO ENHANCEMENT figure out how to Rotate buttons, below code works but for some reason position ends up all messed up.
-		/*
-		categoryNameContainer.setTransform(true);
-	    rotatingActor = categoryNameContainer;
-	    
-	    System.out.println(rotatingActor.getCenterX() + "  - -  " + rotatingActor.getOriginX());
-	    System.out.println(rotatingActor.getCenterY() + "  - -  " + rotatingActor.getOriginY());
-	    
-	    rotatingActor.setRotation(-90);
-	    */
-		
-		//Print out the category table contents
-//		for (final Category c : Category.values()) {
-//			
-//			for (Cell cc : c.getTable().getCells()) {
-//				if ( cc.getActor() instanceof Label) {
-//					Label l = (Label) cc.getActor();
-//					System.out.println(l.getText());
-//				}
-//				
-//			}
-//		}
-		
+		if (Constants.DEBUG){
+			System.out.println("getWidth" + categoryNameContainer.getWidth());
+			System.out.println("getMinWidth" + categoryNameContainer.getMinWidth());
+			System.out.println("getMaxWidth" + categoryNameContainer.getMaxWidth());
+		}
 	}
 	
 	private void buildCategoryMenu(VerticalGroup group) {
@@ -980,16 +958,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//using this has a memory leak
 		if (keycode == Input.Keys.D){
 			drawTableDebug = !drawTableDebug;
-			return true;
-		}
-
-		//TODO TASK Need to convert this to an icon to be clicked on
-		//FIXME does not work for some reason...even tried it on the Table object.  works if you set this before initial draw though
-		//Toggle menu visibility
-		//FIXME converted this into save temporarily
-		if (keycode == Input.Keys.S){
-			//scroll.setVisible(!scroll.isVisible());
-			GameSaveManager.saveState(gameState, saveName);
 			return true;
 		}
 		

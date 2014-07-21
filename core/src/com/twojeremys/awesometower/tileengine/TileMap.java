@@ -3,8 +3,11 @@ package com.twojeremys.awesometower.tileengine;
 import java.util.HashMap;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 import com.twojeremys.awesometower.Constants;
 
 //TODO TASK Save game state etc
@@ -27,14 +30,18 @@ public class TileMap {
 	// Width and height of the individual tiles
 	private int tileWidth = Constants.TILE_WIDTH;
 	private int tileHeight = Constants.TILE_HEIGHT;
+	
+	// Add the Camera for use in restricting what is drawn
+	private Camera cam;
 
-	public TileMap(TextureAtlas atlas) {
-		this(atlas, new Tile[Constants.DEFAULT_MAX_TILE_MAP_SIZE_X][Constants.DEFAULT_MAX_TILE_MAP_SIZE_Y]);
+	public TileMap(TextureAtlas atlas, Camera camera) {
+		this(atlas, camera, new Tile[Constants.DEFAULT_MAX_TILE_MAP_SIZE_X][Constants.DEFAULT_MAX_TILE_MAP_SIZE_Y]);
 	}
 	
-	public TileMap(TextureAtlas atlas, Tile[][] tiles){
+	public TileMap(TextureAtlas atlas, Camera cam, Tile[][] tiles){
 		this.tiles = tiles;
 		this.atlas = atlas;
+		this.cam = cam;
 		
 		calculateMaxTiles();
 		
@@ -175,10 +182,46 @@ public class TileMap {
 	}
 
 	public void drawMap(SpriteBatch batch) {
-		//TODO ENHANCEMENT Use Camera.unproject with (0,0), (0,screenheight), (screenwidth,0), and (screenwidth,screenheight)
-		// This way we only draw tiles that will be partially or fully visible within the camera
-		for (int x = 0; x < maxX ; x++){
-			for (int y = 0; y < maxY; y++) {
+		
+		//TODO NOTE - This section may not be needed at all if the size of the full map does not increase
+		// Currently this is only saving drawing maybe 2-3 columns and 2-3 rows
+		// This is because of the required buffer since we are not drawing actual TILES but tiles that can SPAN
+		/*****
+		 *   Below section may not be needed
+		 *   - Try to figure out what the first "visible" tile is on the screen, and the last "visible" tile is
+		 *   - Only draw the tiles that are going to be up being "visible"
+		 */
+		
+		//Create a buffer so that wide tiles (pink robbin) are still drawn
+		// - to see why this is used set the bufferWidth to 0, place a pink robbin room
+		// - Zoom all the way in, and pan around
+		int bufferWidth = 6;
+		int bufferHeight = 2;
+		
+		//Bottom Left (plus 6 tiles, to accommodate wider and taller tiles
+		Vector3 minPos = new Vector3(-(tileWidth*bufferWidth), Gdx.graphics.getHeight() + (tileHeight*bufferHeight), 0);
+		
+		//Top Right
+		Vector3 maxPos = new Vector3(Gdx.graphics.getWidth() + (tileWidth*bufferWidth),-(tileHeight*bufferHeight), 0);
+		
+		//Adjust to the camera positions
+		minPos = cam.unproject(minPos);
+		maxPos = cam.unproject(maxPos);
+
+		//Convert to tile positions
+		minPos.x = MathUtils.clamp(minPos.x / this.tileWidth, 0, maxX);
+		minPos.y = MathUtils.clamp(minPos.y / this.tileHeight, 0, maxY);
+		
+		maxPos.x = MathUtils.clamp(maxPos.x / this.tileWidth, 0, maxX);
+		maxPos.y = MathUtils.clamp(maxPos.y / this.tileHeight, 0, maxY);
+		
+		/************************
+		 *   The above section is an attempt to restrict drawing, may not be that helpful, especially in zoomed out view
+		 */
+		
+		
+		for (int x = (int)minPos.x; x < (int)maxPos.x ; x++){
+			for (int y = (int)minPos.y; y < (int)maxPos.y; y++) {
 				if (tiles[x][y] != null && !tiles[x][y].hasParent()){
 					//For some reason using an Integer or int does not work.  have to cast it to string to find the match
 					// It makes no sense to me given that the hashmap key is set to be an Integer.

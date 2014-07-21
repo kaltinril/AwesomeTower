@@ -32,7 +32,7 @@ public class Tile {
 	//Null if child object
 	private TileStats tileStats;
 	
-	//FIXME Created to allow GameSave to load, otherwise got this bug
+	//Created to allow GameSave to load, otherwise got this bug
 	//ERROR: Couldn't Load from External Storage [awesomeTowerSave.txt]: Class cannot be created (missing no-arg constructor): com.twojeremys.awesometower.tileengine.Tile
 	public Tile(){
 		this.ID = -1; //Invalid

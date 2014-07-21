@@ -46,6 +46,8 @@ public class MainMenuScreen extends BaseScreen  {
 	
 	private TextField textField;
 	
+	private Dialog dialog;
+	
 	public MainMenuScreen() {
 		super(new AwesomeTower());
 	}
@@ -103,6 +105,8 @@ public class MainMenuScreen extends BaseScreen  {
 		    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 				if (Constants.DEBUG) {System.out.println("NewGameButtonUp");}
 				//FIXME this is creating a new dialog each time which is using up memory
+				// - I moved the Dialog to the class level, not sure if that helps? - kaltinril
+				
 				//  should change to show/hide concept so we can reuse the objects.
 				createNewGamePopup();
 			}
@@ -212,7 +216,7 @@ public class MainMenuScreen extends BaseScreen  {
 	private void createNewGamePopup(){
 		
 		//Create a dialog box
-		Dialog dialog = new Dialog("New Tower", skin, "default"){
+		dialog = new Dialog("New Tower", skin, "default"){
 			@Override
 		    protected void result (Object object) {
 		    	if ((Boolean)object == true){
@@ -236,6 +240,9 @@ public class MainMenuScreen extends BaseScreen  {
 		    	} else {
 		    		Gdx.input.setOnscreenKeyboardVisible(false);
 		    	}
+		    	
+		    	//Re-enable the "Exit app when back pressed"
+		    	Gdx.input.setCatchBackKey(false);
 		    }
 		};
 
@@ -263,10 +270,12 @@ public class MainMenuScreen extends BaseScreen  {
 		
 		//set it all up
 		dialog.setMovable(false);
-		dialog.key(Keys.ENTER, true).key(Keys.ESCAPE, false).key(Keys.BACK, false); //FIXME the back button on android is exiting the game not the dialog
+		dialog.key(Keys.ENTER, true).key(Keys.ESCAPE, false).key(Keys.BACK, false);
 		dialog.invalidateHierarchy();
 		dialog.invalidate();
 		dialog.layout();
+		//Disable the "Exit app when back pressed"
+		Gdx.input.setCatchBackKey(true);
 		dialog.show(stage);
 	}
 	

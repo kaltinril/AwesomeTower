@@ -19,9 +19,8 @@ public class GameSaveManager {
 			//Use temporary base64 encoding to obfuscate save data
 			saveData = Base64Coder.encodeString(saveData);
 
-			//Windows:	This will default to the User Directory
+			//Windows:	This will default to the Working Directory
 			//Android:	This will default to ............
-			//FIXME frigidplanet noticed .twr.twr, however all kaltinril saves and console messages do not show this double extension.
 	        FileHandle outHandle= Gdx.files.local(Constants.SAVE_FOLDER + saveFileName);
 	        
 	        //sometimes we don't have external storage...
@@ -63,7 +62,7 @@ public class GameSaveManager {
 	        //Gdx.files.external(saveFileName);	//Load file from external location
 	        String saveData = handle.readString();
 	        
-			//TODO ENHANCEMENT DECRYPT data before saving to file
+			//TODO ENHANCEMENT DECRYPT data before loading from file
 			
 			//Use temporary base64 decoding to de-obfuscate save data
 	        saveData = Base64Coder.decodeString(saveData);
