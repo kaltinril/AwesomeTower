@@ -53,28 +53,28 @@ tiles/yellowTile
   orig: 20, 20
   offset: 0, 0
   index: -1
-ui/Coin
+ui/clock
   rotate: false
   xy: 2, 46
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
-ui/Expense
+ui/coin
   rotate: false
   xy: 68, 46
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
-ui/Income
+ui/expense
   rotate: false
   xy: 134, 46
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
-ui/clock
+ui/income
   rotate: false
   xy: 200, 46
   size: 64, 64

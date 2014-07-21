@@ -43,6 +43,7 @@ import com.twojeremys.awesometower.Category;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.gamefile.GameState;
+import com.twojeremys.awesometower.screen.menu.StatusMenu;
 import com.twojeremys.awesometower.tileengine.TileMap;
 import com.twojeremys.awesometower.tileengine.TileProperties;
 
@@ -85,7 +86,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	// Tile engine and map
 	private TileMap tileMap;
-	private TextureAtlas tileAtlas;
+	private TextureAtlas gamescreenTexutureAtlas;
 	
 	// Stores the tile being used for placement
 	private int currentTile = 1;
@@ -106,21 +107,20 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private Table selectionTable;
 	private Container<Actor> categoryNameContainer;
 	private Container<Actor> selectionContainer;
-	//private float maxButtonSize = 0f;
-	//private float maxLabelSize = 0f;
+	private VerticalGroup categoryNameGroup;
 	private float maxRowSize = 0f;
 	
-	private Category selectedCategory;
+	//Used for the status menu
+	private StatusMenu statusMenu;
 	
-	//Attempt at adding scroll bars
+	//Skin to use for all widgets
 	private Skin skin;
 	
 	private boolean drawTableDebug;
 	
+	//Save, State, and Status information
 	private GameState gameState;
 	private String saveName;
-	
-	Actor rotatingActor;
 	
 	public GameScreen(Game game, GameState gameState, String saveName){
 		this(game);
@@ -186,15 +186,15 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		assets.finishLoading(); //FIXME if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
 
 		//Store this for later use in setting the menu
-		tileAtlas = (TextureAtlas) assets.get("gamescreen.atlas");
+		gamescreenTexutureAtlas = (TextureAtlas) assets.get("gamescreen.atlas");
 		
 		//Create an instance of TileMap based on the GameState.
 		if (gameState != null){
 			Gdx.app.debug(TAG, "Loading save....");
-			tileMap = new TileMap(tileAtlas, camera, gameState.getTiles());
+			tileMap = new TileMap(gamescreenTexutureAtlas, camera, gameState.getTiles());
 		}
 		else {
-			tileMap = new TileMap(tileAtlas, camera);
+			tileMap = new TileMap(gamescreenTexutureAtlas, camera);
 			gameState = new GameState();
 			gameState.setTiles(tileMap.getTiles());
 		}
@@ -223,7 +223,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         loadProperties();
         
         //Build the side menu
-        buildSideMenu(tileAtlas);
+        buildSideMenu(gamescreenTexutureAtlas);
+        
+        //Build the Status Menu
+        buildStatusMenu();
         
 		//Disable the "Exit app when back pressed"
 		Gdx.input.setCatchBackKey(true);
@@ -243,6 +246,14 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		deltaTime += delta; // Used only to create a delay for loading screen simulation
 		deltaSaveTime += delta; //used to keep track of time since last save
 	
+		//TODO ENHANCEMENT display some sort of time or ingame "virtual" time
+		//TODO EHHANCEMENT update expense, income, and population to come from the gameState
+		statusMenu.setClock(String.valueOf(deltaSaveTime));//.substring(0, 3));
+		statusMenu.setCoins(gameState.getGold());
+		statusMenu.setExpense(123);
+		statusMenu.setIncome(456);
+		statusMenu.setPopulation(String.valueOf(69));
+		
 		camera.update(); // Make sure the camera is updated, not really needed in this example
 		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
 	
@@ -364,6 +375,26 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    stage.getViewport().update(width, height, true);
 	}
 	
+	private void buildStatusMenu(){
+        //Create the Status Menu
+        statusMenu = new StatusMenu(gamescreenTexutureAtlas, skin);
+        
+        //Use a group so that the table will actually draw its background
+        VerticalGroup tempGroup = new VerticalGroup();
+        Table statusTable = statusMenu.getStatusTable();
+        
+        //Add the table to the group and pack it.
+        tempGroup.addActor(statusTable);
+        tempGroup.pack();
+        
+        //Draw at the top right
+        tempGroup.setX(Gdx.graphics.getWidth() - tempGroup.getWidth());
+        tempGroup.setY(Gdx.graphics.getHeight() - statusTable.getMinHeight());
+        
+        //Add the group to the stage
+        stage.addActor(tempGroup);
+	}
+	
 	private void buildSideMenu(TextureAtlas atlas) {
 		/**
          * TODO TASK Menu Testing
@@ -383,11 +414,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	     */
 	    
 	    //Holds the list of categories as a single vertical grouping
-	    VerticalGroup categoryNameGroup = new VerticalGroup();
+	    categoryNameGroup = new VerticalGroup();
 	    
 	    //Right justify the stuff in the group
 	    categoryNameGroup.right();
-
+	    
 	    //Add the categoryName group to the container
 	    categoryNameContainer.setActor(categoryNameGroup);
 	       
@@ -425,7 +456,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//Position container
 		categoryNameContainer.setX(Gdx.graphics.getWidth());
-		categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
+		categoryNameContainer.setY(categoryNameContainer.getMinHeight()/2);
 		
 		//Container draws right to left from x as long as you call the size method.
 		selectionContainer.setX(Gdx.graphics.getWidth() - categoryNameContainer.getMinWidth());
@@ -608,10 +639,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						// if the same tile is clicked it pulls you out of build mode
 						if (!buildMode) {
 							currentTile = tileProperty.getID();
-							selectedBuildTileSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							selectedBuildTileSprite = new Sprite(gamescreenTexutureAtlas.findRegion(tileProperty.getAtlasName()));
 							selectedBuildTileSprite.setCenter(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight() - selectedBuildTileSprite.getHeight());
 
-							prePurchaseSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							prePurchaseSprite = new Sprite(gamescreenTexutureAtlas.findRegion(tileProperty.getAtlasName()));
 							prePurchaseSprite.setPosition(-1000, -1000);
 							
 							toggleBuildMode();
@@ -619,10 +650,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 							toggleBuildMode();
 						} else {
 							currentTile = tileProperty.getID();
-							selectedBuildTileSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							selectedBuildTileSprite = new Sprite(gamescreenTexutureAtlas.findRegion(tileProperty.getAtlasName()));
 							selectedBuildTileSprite.setCenter(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight() - selectedBuildTileSprite.getHeight());
 
-							prePurchaseSprite = new Sprite(tileAtlas.findRegion(tileProperty.getAtlasName()));
+							prePurchaseSprite = new Sprite(gamescreenTexutureAtlas.findRegion(tileProperty.getAtlasName()));
 							prePurchaseSprite.setPosition(-1000, -1000);
 						}
 				    }
