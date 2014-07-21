@@ -11,13 +11,40 @@ public class GameState {
 	private Tile[][] tiles;
 	
 	//TODO ENHANCE add more information that needs to be retained
+	private int gold;
 
+	public GameState(){
+		//Starting gold
+		this.gold = 5000;
+	}
+	
 	public Tile[][] getTiles() {
 		return tiles;
 	}
 
 	public void setTiles(Tile[][] tiles) {
 		this.tiles = tiles;
+	}
+
+	
+	public int getGold() {
+		return gold;
+	}
+	
+
+	public boolean setGold(int gold) {
+		//Limit gold so you can't go negative
+		if (gold > 0){
+			this.gold = gold;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	public boolean takeGold(int takeAmount){
+		return setGold(this.gold - takeAmount);
 	}
 	
 	

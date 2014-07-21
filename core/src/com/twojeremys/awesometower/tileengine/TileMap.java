@@ -149,6 +149,10 @@ public class TileMap {
 	public HashMap<Integer, TileProperties> getTileProperties() {
 		return tileProperties;
 	}
+	
+	public TileProperties getTileProperty(int tileID){
+		return getTilePropertiesById(tileID);
+	}
 
 	public void setTileProperties(HashMap<Integer, TileProperties> tileProperties) {
 		this.tileProperties = tileProperties;

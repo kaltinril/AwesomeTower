@@ -865,10 +865,17 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				prePurchaseSprite.setPosition((int) tileTouchPos.x*tileMap.getTileWidth(), (int) tileTouchPos.y*tileMap.getTileHeight());
 			}
 			else if (count > 1){
-				if (prePurchaseSprite.getBoundingRectangle().contains(touchPos.x, touchPos.y)){
-					// Set the tile based on this position to tile 0
-					tileMap.setTile((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile);
-					prePurchaseSprite.setPosition(-1000, -1000);
+				if (gameState.getGold() > tileMap.getTileProperty(this.currentTile).getPurchaseCost()){
+					if (prePurchaseSprite.getBoundingRectangle().contains(touchPos.x, touchPos.y)){
+						// Set the tile based on this position to tile 0
+						tileMap.setTile((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile);
+						prePurchaseSprite.setPosition(-1000, -1000);
+						gameState.takeGold(tileMap.getTileProperty(this.currentTile).getPurchaseCost());
+					}
+				}else {
+					if (Constants.DEBUG){
+						System.out.println("Not enough gold to purchase Room.");
+					}
 				}
 			}
 		}
