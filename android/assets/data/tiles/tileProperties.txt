@@ -4,7 +4,7 @@
 		,tileSpanX:1
 		,tileSpanY:1
 		,blockable:true
-		,atlasName:redTile
+		,atlasName:tiles/redTile
 		,ID:1
 		,category:Commercial
 		,displayName:"Red Robin"
@@ -15,7 +15,7 @@
 		,tileSpanX:1
 		,tileSpanY:1
 		,blockable:true
-		,atlasName:yellowTile
+		,atlasName:tiles/yellowTile
 		,ID:2
 		,category:Residential
 		,displayName:"Super Apartment"
@@ -26,7 +26,7 @@
 		,tileSpanX:2
 		,tileSpanY:1
 		,blockable:true
-		,atlasName:wideGreenTile
+		,atlasName:tiles/wideGreenTile
 		,ID:3
 		,category:Transport
 		,displayName:"Stair"
@@ -37,7 +37,7 @@
 		,tileSpanX:1
 		,tileSpanY:2
 		,blockable:true
-		,atlasName:orangeTile
+		,atlasName:tiles/orangeTile
 		,ID:4
 		,category:Utility
 		,displayName:"Security"
@@ -48,7 +48,7 @@
 		,tileSpanX:5
 		,tileSpanY:1
 		,blockable:true
-		,atlasName:pinkTile
+		,atlasName:tiles/pinkTile
 		,ID:5
 		,category:Commercial
 		,displayName:"Pink Robin"
@@ -59,7 +59,7 @@
 		,tileSpanX:3
 		,tileSpanY:1
 		,blockable:true
-		,atlasName:purpleTile
+		,atlasName:tiles/purpleTile
 		,ID:6
 		,category:Residential
 		,displayName:"Condo1"
@@ -70,7 +70,7 @@
 		,tileSpanX:3
 		,tileSpanY:1
 		,blockable:true
-		,atlasName:roomLobby
+		,atlasName:tiles/roomLobby
 		,ID:7
 		,category:Lobby
 		,displayName:"Basic Lobby"

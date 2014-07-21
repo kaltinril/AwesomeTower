@@ -1,0 +1,90 @@
+
+gamescreen.png
+size: 348,110
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+tiles/orangeTile
+  rotate: false
+  xy: 328, 70
+  size: 20, 40
+  orig: 20, 40
+  offset: 0, 0
+  index: -1
+tiles/pinkTile
+  rotate: false
+  xy: 2, 24
+  size: 100, 20
+  orig: 100, 20
+  offset: 0, 0
+  index: -1
+tiles/purpleTile
+  rotate: false
+  xy: 2, 2
+  size: 60, 20
+  orig: 60, 20
+  offset: 0, 0
+  index: -1
+tiles/redTile
+  rotate: false
+  xy: 64, 2
+  size: 20, 20
+  orig: 20, 20
+  offset: 0, 0
+  index: -1
+tiles/roomLobby
+  rotate: false
+  xy: 104, 24
+  size: 60, 20
+  orig: 60, 20
+  offset: 0, 0
+  index: -1
+tiles/wideGreenTile
+  rotate: false
+  xy: 266, 53
+  size: 40, 20
+  orig: 40, 20
+  offset: 0, 0
+  index: -1
+tiles/yellowTile
+  rotate: false
+  xy: 166, 24
+  size: 20, 20
+  orig: 20, 20
+  offset: 0, 0
+  index: -1
+ui/Coin
+  rotate: false
+  xy: 2, 46
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+ui/Expense
+  rotate: false
+  xy: 68, 46
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+ui/Income
+  rotate: false
+  xy: 134, 46
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+ui/clock
+  rotate: false
+  xy: 200, 46
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+ui/population
+  rotate: false
+  xy: 266, 75
+  size: 60, 35
+  orig: 60, 35
+  offset: 0, 0
+  index: -1

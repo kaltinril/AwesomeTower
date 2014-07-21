@@ -182,11 +182,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 											
 		// Load all items needed for game asynchronously with the AssetManager
 		assets = new AssetManager();
-		assets.load("tiles.atlas", TextureAtlas.class); //load the tiles atlas
+		assets.load("gamescreen.atlas", TextureAtlas.class); //load the tiles atlas
 		assets.finishLoading(); //FIXME if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
 
 		//Store this for later use in setting the menu
-		tileAtlas = (TextureAtlas) assets.get("tiles.atlas");
+		tileAtlas = (TextureAtlas) assets.get("gamescreen.atlas");
 		
 		//Create an instance of TileMap based on the GameState.
 		if (gameState != null){
@@ -647,6 +647,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    t.row().space(Constants.CELL_SPACE).colspan(2);
 
 			//Create an image button with the image of the tile (room/Purchasable)
+		    System.out.println("TileProperty Name: " + tileProperty.getAtlasName());
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getAtlasName()));
 			ImageButton imgButton = new ImageButton(textureRegionDrawable);
 			

@@ -17,8 +17,9 @@ public class DesktopLauncher {
 			Settings settings = new Settings();
 			settings.maxWidth = 1024;
 			settings.maxHeight = 1024;
+			settings.combineSubdirectories = true;
 			settings.debug = drawDebugOutline;
-			TexturePacker.process(settings, "assets-raw/tiles", "../android/assets", "tiles");
+			TexturePacker.process(settings, "assets-raw/gamescreen", "../android/assets", "gamescreen");
 		}
 
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
