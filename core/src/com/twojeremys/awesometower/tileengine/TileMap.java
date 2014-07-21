@@ -10,7 +10,6 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.twojeremys.awesometower.Constants;
 
-//TODO TASK Save game state etc
 public class TileMap {
 	
 	private static final String TAG = TileMap.class.getSimpleName();
@@ -85,7 +84,7 @@ public class TileMap {
 		}
 	}
 
-	public void setTile(int x, int y, int tile){
+	public boolean setTile(int x, int y, int tile){
 		
 		//Make sure there are no collisions before we place the tile
 		//if there is then do nothing 
@@ -103,11 +102,12 @@ public class TileMap {
 			
 			//Set the Initial tile spot to the correct value
 			this.tiles[x][y] = parentTile;
-			
+			return true;
 		}
 		else{
 			//TODO TASK we should pop toast to inform the user of collision
 			System.out.println("Outside or Collision " + x + " " + y);
+			return false;
 		}
 	}
 	

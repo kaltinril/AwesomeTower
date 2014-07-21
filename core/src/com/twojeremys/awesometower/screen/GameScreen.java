@@ -50,7 +50,6 @@ import com.twojeremys.awesometower.tileengine.TileProperties;
 //TODO ENHANCEMENT
 //TODO DEBUG
 
-//TODO TASK build a menu to select items from
 public class GameScreen extends BaseScreen implements GestureListener, InputProcessor {
 	
 	private static final String TAG = GameScreen.class.getSimpleName();
@@ -225,6 +224,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         
         //Build the side menu
         buildSideMenu(tileAtlas);
+        
+		//Disable the "Exit app when back pressed"
+		Gdx.input.setCatchBackKey(true);
 	}
 
 	@Override
@@ -601,8 +603,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				    			+ ", button: " + button
 				    	+ "}");
 						
-						//TODO TASK Put code here to make SelectedObject look like it is "Hovering"
-				    	// By adding a shadow and/or increasing the image size slightly
 						
 						//This will allow you to switch between different tiles while in build mode
 						// if the same tile is clicked it pulls you out of build mode
@@ -832,11 +832,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     	
 		if (buildMode){
 			
-			//TODO TASK Need to allow a hover/sprite/temporary "shadow" copy of
-			//  the tile, it would be drawn separately from the tileMap.drawMap method.
-			//  This would allow tiles to be dragged around, and the screen to be moved
-			//  both in build mode without switching back and forth between modes
-			
 			// Convert screen input to camera position
 			Vector3 touchPos = new Vector3();
 			touchPos.x = x;	//only gets input from the first touch
@@ -947,7 +942,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//http://www.gamefromscratch.com/post/2013/10/24/LibGDX-Tutorial-5-Handling-Input-Touch-and-gestures.aspx
 		//https://github.com/libgdx/libgdx/wiki/Gesture-detection
-		//TODO TASK Need to convert this to an icon to be clicked on
+		
 		//Change to BUILD mode
 		if (keycode == Input.Keys.B){
 			toggleBuildMode();
@@ -995,16 +990,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		Gdx.app.debug(TAG, "Touch Up: " + button + " at x:" + screenX + " y:" + screenY);
 		
-		//TODO TASK Put code here to "place" SelectedObject (remove any shadow effects, etc)
-		
 		return true;
 	}
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
 		Gdx.app.debug(TAG, "Touch Dragged: at x:" + screenX + " y:" + screenY);
-		
-		//TODO TASK Put code here to move the SelectedObject
 		
 		return true;
 	}

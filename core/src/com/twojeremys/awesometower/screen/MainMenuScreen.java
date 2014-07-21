@@ -7,17 +7,13 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
-import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.ColorAction;
-import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -209,6 +205,9 @@ public class MainMenuScreen extends BaseScreen  {
         
 		// add the table onto the stage
 		stage.addActor(table);
+		
+		//Disable the "Exit app when back pressed"
+		Gdx.input.setCatchBackKey(true);
 	}
 
 	
@@ -240,9 +239,6 @@ public class MainMenuScreen extends BaseScreen  {
 		    	} else {
 		    		Gdx.input.setOnscreenKeyboardVisible(false);
 		    	}
-		    	
-		    	//Re-enable the "Exit app when back pressed"
-		    	Gdx.input.setCatchBackKey(false);
 		    }
 		};
 
@@ -274,8 +270,6 @@ public class MainMenuScreen extends BaseScreen  {
 		dialog.invalidateHierarchy();
 		dialog.invalidate();
 		dialog.layout();
-		//Disable the "Exit app when back pressed"
-		Gdx.input.setCatchBackKey(true);
 		dialog.show(stage);
 	}
 	
