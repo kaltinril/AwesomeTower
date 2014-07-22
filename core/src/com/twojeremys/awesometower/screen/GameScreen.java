@@ -124,6 +124,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private GameState gameState;
 	private String saveName;
 	
+	//Ground and Backdrop
+	private Sprite groundSprite;
+	
 	public GameScreen(Game game, GameState gameState, String saveName){
 		this(game);
 		
@@ -141,7 +144,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	@Override
 	public void show() {
-		
 		stage = new Stage();
 
 		// Get an instance of the SpriteBatch
@@ -176,17 +178,171 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		// Font
 		loadingFont = new BitmapFont(); // com.badlogic.gdx.graphics.g2d.BitmapFont; 
-		
 		loadingFont.setUseIntegerPositions(false);
-		
-		// --Color.RED from the GDX library instead of java
-		loadingFont.setColor(Color.RED); // com.badlogic.gdx.graphics.Color;
+		loadingFont.setColor(Color.RED);
 											
 		// Load all items needed for game asynchronously with the AssetManager
 		assets = new AssetManager();
+		assets.load("data/ground.png", Texture.class);
 		assets.load("gamescreen.atlas", TextureAtlas.class); //load the tiles atlas
-		assets.finishLoading(); //FIXME if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
+		//assets.finishLoading(); //FIXME if this is not set then the asset won't be loaded when we get to the next line (asynchronous is a problem with current design)
+        
+		//Disable the "Exit app when back pressed"
+		Gdx.input.setCatchBackKey(true);
+	}
 
+	@Override
+	public void render(float delta) {
+		update(delta);
+		
+		if (assetsLoaded) {
+			draw(delta);
+		} else {
+			drawLoading(delta);
+		}
+		
+		drawDebug();
+	}
+
+	//Add moving, currency changes, population changes, any game changing
+	private void update(float delta){
+		//Clear the screen to sky blue!! (as opposed to ocean blue :)
+		Gdx.gl.glClearColor(0.48f, 0.729f, 0.870f, 1.0f);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+	
+		deltaTime += delta; // Used only to create a delay for loading screen simulation
+		deltaSaveTime += delta; //used to keep track of time since last save
+		deltaGameDay += delta; //used to keep track of current day
+		
+		if (assetsLoaded){
+			gameState.addToElapsedTime(delta);
+			
+			if (deltaGameDay > Constants.DAY_LENGTH) {
+				
+				Gdx.app.debug(TAG, "game day updates now taking place!!!");
+				
+				//TODO make actual updates
+				
+				//leap day
+				deltaGameDay -= Constants.DAY_LENGTH;
+			}
+			
+			statusMenu.updateValues(gameState);
+			
+			camera.update(); // Make sure the camera is updated, not really needed in this example
+			batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
+			
+			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+		}
+	}
+	
+	//Add drawing (except debug)
+	private void draw(float delta){
+		// This is where our actual drawing and updating code will go for the game
+		batch.begin(); // start - send data to the graphics pipeline for loading/processing
+		tileMap.drawMap(batch);
+		//container.draw(batch, 1);
+		
+		if (buildMode){
+	        if (prePurchaseSprite != null){
+	        	prePurchaseSprite.draw(batch);
+	        }
+		}
+		batch.end(); // end - Draw all items batched into the pipeline
+
+		//Draw the gridline, can't be inside the batch above
+		if (buildMode){
+			renderGridOverlay();
+		}
+		
+		//Draw UI elements of menus
+        stage.draw();
+        
+        //All other overlay items draw in here
+        overlayBatch.begin();
+        if (buildMode){
+	        if (selectedBuildTileSprite != null){
+	        	
+	        	//TODO ENHANCE perhaps create a Table, that has a set location for this along with other stats (gold/etc)
+	        	
+	        	//Create a small boarder around the image
+	        	selectedBuildTileSprite.setColor(Color.BLACK);
+	        	selectedBuildTileSprite.setScale(1.1f);
+	        	selectedBuildTileSprite.draw(overlayBatch);
+	        	
+	        	//Draw the image
+	        	selectedBuildTileSprite.setColor(Color.WHITE);
+	        	selectedBuildTileSprite.setScale(1.0f);
+	        	selectedBuildTileSprite.draw(overlayBatch);
+	        }
+		}
+        overlayBatch.end();
+	}
+
+	private void drawLoading(float delta){
+		// Check the status of the assets loading
+		if (assets.update()) {
+			assetsLoaded = true;
+			loadingCircleTexture.dispose(); //remove the texture to free memory
+			afterAssetsLoaded();	//Load and create all objects needed for the game
+		} else {
+
+			// This is a temporary loading section, and will no longer be displayed once the assets are loaded
+			loadingCircleSprite.rotate(-6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
+	
+			overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
+			loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
+			loadingFont.draw(overlayBatch, "Loading...", loadingCircleSprite.getX(),
+					loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
+			overlayBatch.end(); // end - Draw all items batched into the pipeline
+		}
+	}
+	
+	//Add debug drawing
+	private void drawDebug(){
+		
+		//auto save if exceed interval setting
+		if (deltaSaveTime > Constants.SAVE_INTERVAL) {
+			deltaSaveTime = 0f;
+			GameSaveManager.saveState(gameState, saveName);
+		}
+		
+        if (Constants.DEBUG && drawTableDebug && assetsLoaded){
+        	Table.drawDebug(stage);
+        }
+	
+		if (Constants.DEBUG && assetsLoaded) {
+			if (deltaTime >= Constants.DEBUG_DISPLAY_INTERVAL) {
+				float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
+				float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
+				
+				deltaTime = 0f;
+				debugInfo.setLength(0);
+				debugInfo.append("fps: ");
+				debugInfo.append(Gdx.graphics.getFramesPerSecond());
+				debugInfo.append("\nmem: (java ");
+				debugInfo.append((int) javaHeapInBytes);
+				debugInfo.append("Mb, heap ");
+				debugInfo.append((int) nativeHeapInBytes);
+				debugInfo.append("Mb)");
+				debugInfo.append("\nzoom: ");
+				debugInfo.append((float) camera.zoom);
+				debugInfo.append("\nviewport: (w ");
+				debugInfo.append((int) camera.viewportWidth);
+				debugInfo.append(" ,h ");
+				debugInfo.append((int) camera.viewportHeight);
+				debugInfo.append(")");
+			}
+			
+			overlayBatch.begin();
+			loadingFont.drawMultiLine(overlayBatch, debugInfo, 4, 70);
+			loadingFont.setColor(Color.CYAN);	
+			overlayBatch.end();
+		}
+	}
+	
+	//Create all objects that require assets loaded
+	private void afterAssetsLoaded(){
 		//Store this for later use in setting the menu
 		gamescreenTexutureAtlas = (TextureAtlas) assets.get("gamescreen.atlas");
 		
@@ -229,150 +385,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         
         //Build the Status Menu
         buildStatusMenu();
-        
-		//Disable the "Exit app when back pressed"
-		Gdx.input.setCatchBackKey(true);
 	}
-
-	@Override
-	public void render(float delta) {
-		//delta = Gdx.graphics.getDeltaTime();
-		
-		//System.out.println("rendercalls:" + batch.totalRenderCalls);
-		
-		//Clear the screen black.
-		//Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
-		Gdx.gl.glClearColor(0.48f, 0.729f, 0.870f, 1.0f); //sky blue!! (as opposed to ocean blue :)
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 	
-		deltaTime += delta; // Used only to create a delay for loading screen simulation
-		deltaSaveTime += delta; //used to keep track of time since last save
-		deltaGameDay += delta; //used to keep track of current day
-		gameState.addToElapsedTime(delta);
 	
-		statusMenu.updateValues(gameState);
-		
-		camera.update(); // Make sure the camera is updated, not really needed in this example
-		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
 	
-		if (assetsLoaded) {
-			// This is where our actual drawing and updating code will go for the game
-			batch.begin(); // start - send data to the graphics pipeline for loading/processing
-			tileMap.drawMap(batch);
-			//container.draw(batch, 1);
-			
-			if (buildMode){
-		        if (prePurchaseSprite != null){
-		        	prePurchaseSprite.draw(batch);
-		        }
-			}
-			
-			batch.end(); // end - Draw all items batched into the pipeline
-	
-			//Draw the gridline
-			if (buildMode){
-				renderGridOverlay();
-			}
-	
-			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
-	        stage.draw();
-	        
-	        overlayBatch.begin();
-	        
-	        if (buildMode){
-		        if (selectedBuildTileSprite != null){
-		        	
-		        	//TODO ENHANCE perhaps create a Table, that has a set location for this along with other stats (gold/etc)
-		        	
-		        	//Create a small boarder around the image
-		        	selectedBuildTileSprite.setColor(Color.BLACK);
-		        	selectedBuildTileSprite.setScale(1.1f);
-		        	selectedBuildTileSprite.draw(overlayBatch);
-		        	
-		        	//Draw the image
-		        	selectedBuildTileSprite.setColor(Color.WHITE);
-		        	selectedBuildTileSprite.setScale(1.0f);
-		        	selectedBuildTileSprite.draw(overlayBatch);
-		        }
-
-			}
-	        
-	        overlayBatch.end();
-	        
-	        if (Constants.DEBUG && drawTableDebug){
-	        	Table.drawDebug(stage);
-	        }
-			
-		} else {
-			// Check the status of the assets loading
-			if (assets.update()) {
-				assetsLoaded = true;
-				loadingCircleTexture.dispose(); //remove the texture to free memory				
-			} else {
-	
-				// This is a temporary loading section, and will no longer be displayed once the assets are loaded
-				loadingCircleSprite.rotate(-6); // Rotate the image 6 degrees per frame (1 rotation per second approx)
-		
-				overlayBatch.begin(); // start - send data to the graphics pipeline for loading/processing
-				loadingCircleSprite.draw(overlayBatch); // Draw the loading circle sprite
-				loadingFont.draw(overlayBatch, "Loading...", loadingCircleSprite.getX(),
-						loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
-				overlayBatch.end(); // end - Draw all items batched into the pipeline
-			}
-		}
-		
-		if (deltaGameDay > Constants.DAY_LENGTH) {
-			
-			Gdx.app.debug(TAG, "game day updates now taking place!!!");
-			
-			//TODO make actual updates
-			
-			//leap day
-			deltaGameDay -= Constants.DAY_LENGTH;
-		}
-		
-		//auto save if exceed interval setting
-		if (deltaSaveTime > Constants.SAVE_INTERVAL) {
-			deltaSaveTime = 0f;
-			GameSaveManager.saveState(gameState, saveName);
-		}
-	
-		if (Constants.DEBUG) {
-	
-			if (deltaTime >= Constants.DEBUG_DISPLAY_INTERVAL) {
-				
-				float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
-				float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
-				
-				deltaTime = 0f;
-				debugInfo.setLength(0);
-				debugInfo.append("fps: ");
-				debugInfo.append(Gdx.graphics.getFramesPerSecond());
-				debugInfo.append("\nmem: (java ");
-				debugInfo.append((int) javaHeapInBytes);
-				debugInfo.append("Mb, heap ");
-				debugInfo.append((int) nativeHeapInBytes);
-				debugInfo.append("Mb)");
-				debugInfo.append("\nzoom: ");
-				debugInfo.append((float) camera.zoom);
-				debugInfo.append("\nviewport: (w ");
-				debugInfo.append((int) camera.viewportWidth);
-				debugInfo.append(" ,h ");
-				debugInfo.append((int) camera.viewportHeight);
-				debugInfo.append(")");
-			}
-			
-			overlayBatch.begin();
-			//loadingFont.setColor(Color.WHITE);
-			loadingFont.drawMultiLine(overlayBatch, debugInfo, 4, 70);
-			loadingFont.setColor(Color.CYAN);
-			//loadingFont.drawMultiLine(overlayBatch, debugInfo, 5, 36);
-			//loadingFont.drawMultiLine(overlayBatch, debugInfo, 4, 37);
-			//loadingFont.setColor(Color.WHITE);	
-			overlayBatch.end();
-		}
-	}
-
 	//Allow buttons on the stage to be correctly adjusted and positioned
 	public void resize (int width, int height) {
 	    // See below for what true means.
@@ -709,7 +725,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    t.row().space(Constants.CELL_SPACE).colspan(2);
 
 			//Create an image button with the image of the tile (room/Purchasable)
-		    Gdx.app.debug(TAG, "TileProperty Name: " + tileProperty.getAtlasName());
+		    //Gdx.app.debug(TAG, "TileProperty Name: " + tileProperty.getAtlasName());
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getAtlasName()));
 			ImageButton imgButton = new ImageButton(textureRegionDrawable);
 			

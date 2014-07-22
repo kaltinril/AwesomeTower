@@ -36,6 +36,10 @@ public class Constants {
 	public static final float ZOOM_MIN = 1f;
 	public static final float ZOOM_DEFAULT = 2f;	
 	
+	//Used for indication of ground level for everything
+	//This is the Y tile position indicating where ground is.
+	public static final int GROUND_LEVEL = 10;
+	
 	//Seconds per day
 	public static final float DAY_LENGTH = 30f;
 	
