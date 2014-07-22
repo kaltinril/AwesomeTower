@@ -240,6 +240,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private void draw(float delta){
 		// This is where our actual drawing and updating code will go for the game
 		batch.begin(); // start - send data to the graphics pipeline for loading/processing
+		groundSprite.draw(batch);
 		tileMap.drawMap(batch);
 		//container.draw(batch, 1);
 		
@@ -364,6 +365,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		Gdx.app.debug(TAG, "Width: " + Gdx.graphics.getWidth());
 		Gdx.app.debug(TAG, "Height: " + Gdx.graphics.getHeight());
 		
+		//Ground and skyline
+		groundSprite = new Sprite((Texture)assets.get("data/ground.png"));
+		groundSprite.setPosition(0, 0);
+		groundSprite.setSize(screenTileMapWidth, Constants.GROUND_LEVEL * tileMap.getTileHeight());
+		
 		//Grid lines
 		shapeRenderer = new ShapeRenderer();
 		
@@ -386,8 +392,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         //Build the Status Menu
         buildStatusMenu();
 	}
-	
-	
 	
 	//Allow buttons on the stage to be correctly adjusted and positioned
 	public void resize (int width, int height) {
@@ -891,8 +895,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	 - Pan - (Moving the camera)
 	 - Object/UI Selection (Tap)
 	*/
-	
-	
 	
 	@Override
 	//Not used
