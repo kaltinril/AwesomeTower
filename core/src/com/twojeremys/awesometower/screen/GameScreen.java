@@ -895,6 +895,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    			+ "xy: (" + Float.toString(tileTouchPos.x) + "," + Float.toString(tileTouchPos.y) + ")"
 	    	+ "}");
 			
+			//Single tab
 			if (count == 1){
 				
 				//Attempt to tint the sprite green or red depending on a tile collision.
@@ -913,9 +914,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				if (gameState.getGold() > tileMap.getTileProperty(this.currentTile).getPurchaseCost()){
 					if (prePurchaseSprite.getBoundingRectangle().contains(touchPos.x, touchPos.y)){
 						// Set the tile based on this position to tile 0
-						tileMap.setTile((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile);
-						prePurchaseSprite.setPosition(-1000, -1000);
-						gameState.takeGold(tileMap.getTileProperty(this.currentTile).getPurchaseCost());
+						boolean placedSuccess = tileMap.setTile((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile);
+						
+						if (placedSuccess){
+							prePurchaseSprite.setPosition(-1000, -1000);
+							gameState.takeGold(tileMap.getTileProperty(this.currentTile).getPurchaseCost());
+						}
 					}
 				}else {
 					if (Constants.DEBUG){

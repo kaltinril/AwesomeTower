@@ -87,8 +87,8 @@ public class TileMap {
 	public boolean setTile(int x, int y, int tile){
 		
 		//Make sure there are no collisions before we place the tile
-		//if there is then do nothing 
-		if (!hasCollision(x, y, tile)) {
+		//if there is then do nothing
+		if (!hasCollision(x, y, tile) && canPlace(x, y, tile)) {
 			
 			//Get tile properties so we know size of the tile we're working with
 			TileProperties tp = getTilePropertiesById(tile);
@@ -185,6 +185,53 @@ public class TileMap {
 		return false;
 	}
 
+	//Check to see if we can place the block, based on the TileProperty rules for that block
+	public boolean canPlace(int tileX, int tileY, int tile){
+		
+		//Get tile properties so we know size of the tile we're working with
+		TileProperties tp = getTilePropertiesById(tile);
+		
+		//Check tiles under placement position, count to see if it meets requirement
+		int countOfTiles = 0;
+		int checkDirection = -1;
+		//If below ground, must place against room above.
+		//TODO Figure out the ground level and store as constant to use everywhere
+		if (tileY < 10){
+			checkDirection = 1;
+		}
+			
+		for (int spanX = 0; spanX < tp.getTileSpanX(); spanX++){
+			if (tiles[tileX+spanX][tileY + checkDirection] != null){
+				countOfTiles++;
+			}
+		}
+		if (countOfTiles < tp.getRequiredTilesBelow()){
+			return false;
+		}
+		
+		//Check if a room is trying to be placed on a floor it is not allowed on
+		if (tp.getBlackListFloors() != null && tp.getBlackListFloors().length != 0){
+			for (int floor:tp.getBlackListFloors()){
+				if (tileY == floor){
+					return false;
+				}
+			}
+		}
+		
+		//Check if a room is allowed to be placed here, null indicates allowed all
+		if (tp.getWhiteListFloors() != null && tp.getWhiteListFloors().length != 0){
+			for (int floor:tp.getWhiteListFloors()){
+				if (tileY == floor){
+					return true;
+				}
+			}
+			//No floor found to match the white list
+			return false;
+		}
+		
+		return true;
+	}
+	
 	public void drawMap(SpriteBatch batch) {
 		
 		//TODO NOTE - This section may not be needed at all if the size of the full map does not increase

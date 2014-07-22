@@ -18,6 +18,17 @@ public class TileProperties {
 	private String displayName;			//The name shown in the UI
 	private int purchaseCost;			//The cost to purchase the item
 
+	//Placement restriction information
+	
+	//Number of tiles that need to be below this (horizontally)
+	// set to tileSpanX value to require all tiles below to be filled
+	private int requiredTilesBelow;
+	
+	//To allow restriction of placement to these floors
+	// If null allows all floors
+	private int[] whiteListFloors;
+	private int[] blackListFloors;
+	
 	public int getID() {
 		return ID;
 	}
@@ -81,5 +92,36 @@ public class TileProperties {
 	public void setPurchaseCost(int purchaseCost) {
 		this.purchaseCost = purchaseCost;
 	}
+
+	
+	public int[] getWhiteListFloors() {
+		return whiteListFloors;
+	}
+
+	public void setWhiteListFloors(int[] whiteListFloors) {
+		this.whiteListFloors = whiteListFloors;
+	}
+	
+	
+	
+	
+
+	public int[] getBlackListFloors() {
+		return blackListFloors;
+	}
+
+	public void setBlackListFloors(int[] blackListFloors) {
+		this.blackListFloors = blackListFloors;
+	}
+
+	public int getRequiredTilesBelow() {
+		return requiredTilesBelow;
+	}
+
+	public void setRequiredTilesBelow(int requiredTilesBelow) {
+		this.requiredTilesBelow = requiredTilesBelow;
+	}
+	
+
 	
 }

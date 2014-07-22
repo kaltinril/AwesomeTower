@@ -9,6 +9,9 @@
 		,category:Commercial
 		,displayName:"Red Robin"
 		,purchaseCost:200
+		,requiredTilesBelow:1
+		,blackListFloors:[]
+		,whiteListFloors:[]
 	},
 	2:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -20,6 +23,9 @@
 		,category:Residential
 		,displayName:"Super Apartment"
 		,purchaseCost:500
+		,requiredTilesBelow:1
+		,blackListFloors:[]
+		,whiteListFloors:[]
 	},
 	3:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -31,6 +37,9 @@
 		,category:Transport
 		,displayName:"Stair"
 		,purchaseCost:1000
+		,requiredTilesBelow:2
+		,blackListFloors:[]
+		,whiteListFloors:[]
 	},
 	4:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -42,6 +51,9 @@
 		,category:Utility
 		,displayName:"Security"
 		,purchaseCost:24700
+		,requiredTilesBelow:1
+		,blackListFloors:[]
+		,whiteListFloors:[]
 	},
 	5:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -53,6 +65,9 @@
 		,category:Commercial
 		,displayName:"Pink Robin"
 		,purchaseCost:10
+		,requiredTilesBelow:4
+		,blackListFloors:[]
+		,whiteListFloors:[]
 	},
 	6:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -64,6 +79,9 @@
 		,category:Residential
 		,displayName:"Condo1"
 		,purchaseCost:201
+		,requiredTilesBelow:3
+		,blackListFloors:[]
+		,whiteListFloors:[]
 	},
 	7:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -75,5 +93,8 @@
 		,category:Lobby
 		,displayName:"Basic Lobby"
 		,purchaseCost:250
+		,requiredTilesBelow:0
+		,blackListFloors:[]
+		,whiteListFloors:[10]
 	}
 }
