@@ -11,7 +11,11 @@ public class GameState {
 	private Tile[][] tiles;
 	
 	//TODO ENHANCE add more information that needs to be retained
-	private int gold;
+	private float gold;
+	private int population;
+	private int income;
+	private int expense;
+	private float elapsedTime;
 
 	public GameState(){
 		//Starting gold
@@ -27,12 +31,12 @@ public class GameState {
 	}
 
 	
-	public int getGold() {
+	public float getGold() {
 		return gold;
 	}
 	
 
-	public boolean setGold(int gold) {
+	public boolean setGold(float gold) {
 		//Limit gold so you can't go negative
 		if (gold > 0){
 			this.gold = gold;
@@ -43,9 +47,42 @@ public class GameState {
 		}
 	}
 	
-	public boolean takeGold(int takeAmount){
+	public boolean takeGold(float takeAmount){
 		return setGold(this.gold - takeAmount);
 	}
+
+	public int getPopulation() {
+		return population;
+	}
+
+	public void setPopulation(int population) {
+		this.population = population;
+	}
+
+	public int getIncome() {
+		return income;
+	}
+
+	public void setIncome(int income) {
+		this.income = income;
+	}
+
+	public int getExpense() {
+		return expense;
+	}
+
+	public void setExpense(int expense) {
+		this.expense = expense;
+	}
+
+	public float getElapsedTime() {
+		return elapsedTime;
+	}
+
+	public void setElapsedTime(float elapsedTime) {
+		this.elapsedTime = elapsedTime;
+	}
+	
 	
 	
 }

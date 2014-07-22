@@ -89,7 +89,7 @@ public class StatusMenu {
 		this.clockLabel.setText(clockValue);
 	}
 	
-	public void setCoins(int coinValue){
+	public void setCoins(float coinValue){
 		this.coinLabel.setText(String.valueOf(coinValue));
 	}
 	

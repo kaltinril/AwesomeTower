@@ -75,6 +75,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	// Store the time difference
 	private float deltaTime = 0;
 	private float deltaSaveTime = 0;
+	private float deltaGameDay = 0;
 
 	// Font
 	private BitmapFont loadingFont; // com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -238,7 +239,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		//delta = Gdx.graphics.getDeltaTime();
 		
 		//System.out.println("rendercalls:" + batch.totalRenderCalls);
-	
+		
 		//Clear the screen black.
 		//Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
 		Gdx.gl.glClearColor(0.48f, 0.729f, 0.870f, 1.0f); //sky blue!! (as opposed to ocean blue :)
@@ -246,6 +247,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 		deltaTime += delta; // Used only to create a delay for loading screen simulation
 		deltaSaveTime += delta; //used to keep track of time since last save
+		deltaGameDay += delta; //used to keep track of current day
 	
 		//TODO ENHANCEMENT display some sort of time or ingame "virtual" time
 		//TODO EHHANCEMENT update expense, income, and population to come from the gameState
@@ -300,10 +302,6 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 			}
 	        
-	        if (buildMode){
-	        	
-	        }
-	        
 	        overlayBatch.end();
 	        
 	        if (Constants.DEBUG && drawTableDebug){
@@ -326,6 +324,16 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						loadingCircleSprite.getY()); // Draw the words "Loading" at the given location with the fonts settings.
 				overlayBatch.end(); // end - Draw all items batched into the pipeline
 			}
+		}
+		
+		if (deltaGameDay > Constants.DAY_LENGTH) {
+			
+			Gdx.app.debug(TAG, "game day updates now taking place!!!");
+			
+			//TODO make actual updates
+			
+			//leap day
+			deltaGameDay -= Constants.DAY_LENGTH;
 		}
 		
 		//auto save if exceed interval setting
@@ -456,9 +464,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		selectionScroll.setScrollbarsOnTop(true);
 		selectionScroll.setupFadeScrollBars(.125f, .125f);
 		selectionScroll.setFadeScrollBars(true);
-		
-		//Add the scrollpane to the container
-		selectionContainer.setActor(selectionScroll);
+
 		selectionContainer.right(); //tells it to draw right to left
 		
 		selectionContainer.size(maxRowSize, Gdx.graphics.getHeight());
@@ -476,9 +482,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		selectionContainer.setY(Gdx.graphics.getHeight()/2);
 		
 		if (Constants.DEBUG){
-			System.out.println("getWidth" + categoryNameContainer.getWidth());
-			System.out.println("getMinWidth" + categoryNameContainer.getMinWidth());
-			System.out.println("getMaxWidth" + categoryNameContainer.getMaxWidth());
+			//Gdx.app.debug(TAG, "getWidth" + categoryNameContainer.getWidth());
+			//Gdx.app.debug(TAG, "getMinWidth" + categoryNameContainer.getMinWidth());
+			//Gdx.app.debug(TAG, "getMaxWidth" + categoryNameContainer.getMaxWidth());
 		}
 	}
 	
@@ -497,10 +503,22 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			InputListener categoryListener = new InputListener(){
 				@Override
 			    public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+					Gdx.app.debug(TAG, "category touchDown performed {"
+			    			+ "event: " + event.toString()
+			    			+ ", pointer: " + pointer
+			    			+ ", button: " + button
+			    			+ ", xy: (" + Float.toString(x) + "," + Float.toString(y) + ")"
+			    	+ "}");
 					return true;
 			    }
 				@Override
 			    public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+					Gdx.app.debug(TAG, "category touchUp performed {"
+			    			+ "event: " + event.toString()
+			    			+ ", pointer: " + pointer
+			    			+ ", button: " + button
+			    			+ ", xy: (" + Float.toString(x) + "," + Float.toString(y) + ")"
+			    	+ "}");
 					
 					if (selectionScroll.getChildren().size > 0 && selectionScroll.getChildren().peek() == c.getTable()) {
 						
@@ -519,6 +537,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						    public void run () {
 						        selectionScroll.removeActor(c.getTable());
 						        selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
+						        selectionContainer.removeActor(selectionScroll);
 						        //System.out.println("Shrunk POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
 						    }
 						})));
@@ -531,14 +550,18 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						
 						//Setup the position of the scroll as ontop of the container
 						//selectionScroll.setScale(0.0f);
-						//selectionScroll.set
 						
 						//System.out.println("Before Grow POS params:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
 						
 						//selectionScroll.setX(0);
 						selectionScroll.setWidget(c.getTable());
 						selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
-
+						
+						//If the container doesn't have any children then we need to add the scrollpane
+						if (!selectionContainer.hasChildren()) {
+							selectionContainer.setActor(selectionScroll);
+						}
+						
 						selectionContainer.size(c.getTableWidth(), Gdx.graphics.getHeight());
 						//System.out.println("Before Grow POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
 
@@ -691,7 +714,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		    t.row().space(Constants.CELL_SPACE).colspan(2);
 
 			//Create an image button with the image of the tile (room/Purchasable)
-		    System.out.println("TileProperty Name: " + tileProperty.getAtlasName());
+		    Gdx.app.debug(TAG, "TileProperty Name: " + tileProperty.getAtlasName());
 			TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(atlas.findRegion(tileProperty.getAtlasName()));
 			ImageButton imgButton = new ImageButton(textureRegionDrawable);
 			
@@ -899,7 +922,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			if (count == 1){
 				
 				//Attempt to tint the sprite green or red depending on a tile collision.
-				if (tileMap.hasCollision((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile)){
+				if (!tileMap.canPlace((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile)){
 					//Red Tinted (Slightly)
 					prePurchaseSprite.setColor(1.0f, 0.5f, 0.5f, 1.0f);
 				}else {

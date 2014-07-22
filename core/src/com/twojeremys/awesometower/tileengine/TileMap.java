@@ -106,7 +106,7 @@ public class TileMap {
 		}
 		else{
 			//TODO TASK we should pop toast to inform the user of collision
-			System.out.println("Outside or Collision " + x + " " + y);
+			Gdx.app.debug(TAG, "Outside or Collision " + x + " " + y);
 			return false;
 		}
 	}
@@ -158,15 +158,37 @@ public class TileMap {
 		this.tileProperties = tileProperties;
 	}
 	
+	/**
+	 * Check to see if the supplied tile and coordinates are colliding with another already placed tile
+	 * 
+	 * @param tileX
+	 * @param tileY
+	 * @param tile
+	 * @return boolean
+	 */
 	public boolean hasCollision(int tileX, int tileY, int tile) {
+		
+		//Get tile properties so we know size of the tile we're working with
+		TileProperties tp = getTilePropertiesById(tile);
 				
+		return hasCollision(tileX, tileY, tile, tp);
+	}
+	
+	/**
+	 * Check to see if the supplied tile and coordinates are colliding with another already placed tile
+	 * 
+	 * @param tileX
+	 * @param tileY
+	 * @param tile
+	 * @param tp
+	 * @return
+	 */
+	public boolean hasCollision(int tileX, int tileY, int tile, TileProperties tp) {
+		
 		//If the point is outside the bounds of the map return true
 		if (tileX < 0 || tileX >= maxX || tileY < 0 || tileY >= maxY) {
 			return true;
 		}
-		
-		//Get tile properties so we know size of the tile we're working with
-		TileProperties tp = getTilePropertiesById(tile);
 		
 		//if the tile will end up outside the bounds of the map return true
 		if (tileX + tp.getTileSpanX() > maxX || tileY + tp.getTileSpanY() > maxY) {
@@ -185,11 +207,23 @@ public class TileMap {
 		return false;
 	}
 
-	//Check to see if we can place the block, based on the TileProperty rules for that block
+	/**
+	 * Whether or not the given tile can be placed at the given coordinates.
+	 *  uses hasCollision() internally so does not need to be called.
+	 * 
+	 * @param tileX
+	 * @param tileY
+	 * @param tile
+	 * @return boolean
+	 */
 	public boolean canPlace(int tileX, int tileY, int tile){
 		
 		//Get tile properties so we know size of the tile we're working with
 		TileProperties tp = getTilePropertiesById(tile);
+				
+		if (hasCollision(tileX, tileY, tile, tp)) {
+			return false;
+		}
 		
 		//Check tiles under placement position, count to see if it meets requirement
 		int countOfTiles = 0;

@@ -35,4 +35,10 @@ public class Constants {
 	public static final float ZOOM_MAX = 5f;
 	public static final float ZOOM_MIN = 1f;
 	public static final float ZOOM_DEFAULT = 2f;	
+	
+	//Seconds per day
+	public static final float DAY_LENGTH = 30f;
+	
+	//Days per year
+	public static final int DAYS_PER_YEAR = 365;
 }

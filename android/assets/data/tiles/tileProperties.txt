@@ -12,6 +12,11 @@
 		,requiredTilesBelow:1
 		,blackListFloors:[]
 		,whiteListFloors:[]
+		,maxPatrons:15
+		,maxEmployees:3
+		,noiseFactor:3
+		,noiseTolerance:10
+		,incomeAmount:21
 	},
 	2:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -26,6 +31,11 @@
 		,requiredTilesBelow:1
 		,blackListFloors:[]
 		,whiteListFloors:[]
+		,maxResidents:5
+		,noiseFactor:1
+		,noiseTolerance:5
+		,incomeAmount:15
+		,saleAmount:0
 	},
 	3:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -68,6 +78,11 @@
 		,requiredTilesBelow:4
 		,blackListFloors:[]
 		,whiteListFloors:[]
+		,maxPatrons:10
+		,maxEmployees:3
+		,noiseFactor:1
+		,noiseTolerance:5
+		,incomeAmount:1
 	},
 	6:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -82,6 +97,11 @@
 		,requiredTilesBelow:3
 		,blackListFloors:[]
 		,whiteListFloors:[]
+		,maxResidents:3
+		,noiseFactor:1
+		,noiseTolerance:5
+		,incomeAmount:23
+		,saleAmount:0
 	},
 	7:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
