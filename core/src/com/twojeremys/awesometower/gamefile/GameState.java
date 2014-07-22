@@ -83,6 +83,9 @@ public class GameState {
 		this.elapsedTime = elapsedTime;
 	}
 	
+	public void addToElapsedTime(float elapsedTime){
+		this.elapsedTime += elapsedTime;
+	}
 	
 	
 }

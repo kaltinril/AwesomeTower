@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.gamefile.GameState;
 
 public class StatusMenu {
 
@@ -85,12 +86,16 @@ public class StatusMenu {
 		this.statusTable = statusTable;
 	}
 	
-	public void setClock(String clockValue){
-		this.clockLabel.setText(clockValue);
+	//Calculate the Days and years
+	public void setClock(float clockValue){
+		int daysValue = (int)(clockValue / Constants.DAY_LENGTH);
+		String daysClock = "D:" + (int)(daysValue % Constants.DAYS_PER_YEAR);
+		String yearsClock = "Y:" + (int)(daysValue / Constants.DAYS_PER_YEAR);
+		this.clockLabel.setText(daysClock + " " + yearsClock);
 	}
 	
 	public void setCoins(float coinValue){
-		this.coinLabel.setText(String.valueOf(coinValue));
+		this.coinLabel.setText(String.valueOf((int)coinValue));
 	}
 	
 	public void setExpense(int expenseValue){
@@ -101,9 +106,15 @@ public class StatusMenu {
 		this.incomeLabel.setText(String.valueOf(incomeValue));
 	}
 	
-	public void setPopulation(String populationValue){
-		this.populationLabel.setText(populationValue);
+	public void setPopulation(int populationValue){
+		this.populationLabel.setText(String.valueOf(populationValue));
 	}
 	
-	
+	public void updateValues(GameState gameState){
+		this.setClock(gameState.getElapsedTime());
+		this.setCoins(gameState.getGold());
+		this.setExpense(gameState.getExpense());
+		this.setIncome(gameState.getIncome());
+		this.setPopulation(gameState.getPopulation());
+	}
 }

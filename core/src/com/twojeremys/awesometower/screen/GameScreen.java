@@ -248,14 +248,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		deltaTime += delta; // Used only to create a delay for loading screen simulation
 		deltaSaveTime += delta; //used to keep track of time since last save
 		deltaGameDay += delta; //used to keep track of current day
+		gameState.addToElapsedTime(delta);
 	
-		//TODO ENHANCEMENT display some sort of time or ingame "virtual" time
-		//TODO EHHANCEMENT update expense, income, and population to come from the gameState
-		statusMenu.setClock(String.valueOf(deltaSaveTime));//.substring(0, 3));
-		statusMenu.setCoins(gameState.getGold());
-		statusMenu.setExpense(123);
-		statusMenu.setIncome(456);
-		statusMenu.setPopulation(String.valueOf(69));
+		statusMenu.updateValues(gameState);
 		
 		camera.update(); // Make sure the camera is updated, not really needed in this example
 		batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
