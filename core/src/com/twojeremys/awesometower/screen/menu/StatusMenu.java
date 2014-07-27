@@ -13,11 +13,15 @@ public class StatusMenu {
 
 	private Table statusTable;
 	
-	private Label clockLabel;
+	//private Label clockLabel;
 	private Label coinLabel;
 	private Label expenseLabel;
 	private Label incomeLabel;
 	private Label populationLabel;
+	
+	private Table clockTable;
+	private Label daysLabel;
+	private Label yearsLabel;
 	
 	public StatusMenu(TextureAtlas atlas, Skin skin){
 		
@@ -34,13 +38,27 @@ public class StatusMenu {
 
 		//TODO ENHANCEMENT make this data not static
 		//Load up the details for each item to be displayed
-		clockLabel = new Label("0", skin, "default");
+		//clockLabel = new Label("0", skin, "default");
+		clockTable = new Table().pad(Constants.TABLE_PAD);
+		
+		daysLabel = new Label("0", skin, "default");
+		yearsLabel = new Label("0", skin, "default");
+		
+		//FIXME doesn't align properly
+		daysLabel.setAlignment(Align.right);
+		yearsLabel.setAlignment(Align.right);
+		
+		clockTable.add(daysLabel);
+		clockTable.row();
+		clockTable.add(yearsLabel);
+		
+		
 		coinLabel = new Label("0", skin, "default");
 		expenseLabel = new Label("0", skin, "default");
 		incomeLabel = new Label("0", skin, "default");
 		populationLabel = new Label("0", skin, "default");
 		
-		clockLabel.setAlignment(Align.right);
+		//clockLabel.setAlignment(Align.right);
 		coinLabel.setAlignment(Align.right);
 		expenseLabel.setAlignment(Align.right);
 		incomeLabel.setAlignment(Align.right);
@@ -55,7 +73,8 @@ public class StatusMenu {
 
 		//Setting this once appears to force the table structure for the other rows.
 		statusTable.add(clockImage);
-		statusTable.add(clockLabel);
+		//statusTable.add(clockLabel);
+		statusTable.add(clockTable);
 		statusTable.row();
 		
 		statusTable.add(coinImage);
@@ -82,28 +101,33 @@ public class StatusMenu {
 		return statusTable;
 	}
 
-	public void setStatusTable(Table statusTable) {
-		this.statusTable = statusTable;
-	}
+//	public void setStatusTable(Table statusTable) {
+//		this.statusTable = statusTable;
+//	}
 	
 	//Calculate the Days and years
 	public void setClock(float clockValue){
 		int daysValue = (int)(clockValue / Constants.DAY_LENGTH);
-		String daysClock = "D:" + (int)(daysValue % Constants.DAYS_PER_YEAR);
-		String yearsClock = "Y:" + (int)(daysValue / Constants.DAYS_PER_YEAR);
-		this.clockLabel.setText(daysClock + " " + yearsClock);
+		String daysClock = "D: " + (int)(daysValue % Constants.DAYS_PER_YEAR);
+		String yearsClock = "Y: " + (int)(daysValue / Constants.DAYS_PER_YEAR);
+		//this.clockLabel.setText(daysClock + " " + yearsClock);
+		this.daysLabel.setText(daysClock);
+		this.yearsLabel.setText(yearsClock);
 	}
 	
 	public void setCoins(float coinValue){
-		this.coinLabel.setText(String.valueOf((int)coinValue));
+		String text = String.valueOf(coinValue / 1000) + "k";
+		this.coinLabel.setText(text);
 	}
 	
-	public void setExpense(int expenseValue){
-		this.expenseLabel.setText(String.valueOf(expenseValue));
+	public void setExpense(float expenseValue){
+		String text = String.valueOf(expenseValue / 1000) + "k";
+		this.expenseLabel.setText(text);
 	}
 	
-	public void setIncome(int incomeValue){
-		this.incomeLabel.setText(String.valueOf(incomeValue));
+	public void setIncome(float incomeValue){
+		String text = String.valueOf(incomeValue / 1000) + "k";
+		this.incomeLabel.setText(text);
 	}
 	
 	public void setPopulation(int populationValue){

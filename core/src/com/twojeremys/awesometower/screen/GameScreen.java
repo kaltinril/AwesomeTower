@@ -222,6 +222,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				Gdx.app.debug(TAG, "game day updates now taking place!!!");
 				
 				//TODO make actual updates
+				// What are we updating again?
 				
 				//leap day
 				deltaGameDay -= Constants.DAY_LENGTH;
@@ -369,6 +370,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		groundSprite = new Sprite((Texture)assets.get("data/ground.png"));
 		groundSprite.setPosition(0, 0);
 		groundSprite.setSize(screenTileMapWidth, Constants.GROUND_LEVEL * tileMap.getTileHeight());
+		//groundSprite.setPosition(-Gdx.graphics.getWidth(), -camera.position.y);
+		//groundSprite.setSize(camera.viewportWidth, Constants.GROUND_LEVEL * tileMap.getTileHeight());
 		
 		//Grid lines
 		shapeRenderer = new ShapeRenderer();
