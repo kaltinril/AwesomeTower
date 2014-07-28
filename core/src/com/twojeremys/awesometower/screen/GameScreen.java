@@ -241,7 +241,31 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	private void draw(float delta){
 		// This is where our actual drawing and updating code will go for the game
 		batch.begin(); // start - send data to the graphics pipeline for loading/processing
-		groundSprite.draw(batch);
+
+		//figure out how many [WIDTHS] to the left from X=0 we need to start
+		//figure out how many [WIDTHS] to the right until we are off the screen
+		//figure out how many [HEIGHTS] to move until we are off the screen down
+
+		//Find number of pixels WIDE from center of camera.
+		float edgeToTileMapX = ((camera.viewportWidth/2) * camera.zoom);
+		int maxTimesX = (int)Math.ceil((tileMap.getMapPixelWidth() + edgeToTileMapX + edgeToTileMapX) / groundSprite.getWidth());
+		int minTimesX = -(int)Math.ceil(edgeToTileMapX / groundSprite.getWidth());
+
+		float edgeToTileMapY = ((camera.viewportHeight/2) * camera.zoom);
+		int maxTimesY = -(int)Math.ceil((edgeToTileMapY + (Constants.GROUND_LEVEL * tileMap.getTileHeight())) / groundSprite.getHeight());
+		
+		int differneceOfHeight = (int)groundSprite.getHeight() - (Constants.GROUND_LEVEL * tileMap.getTileHeight());
+		
+		//System.out.println("maxTimesY "+maxTimesY);
+		
+		for(int x=minTimesX;x<maxTimesX;x++){
+			for (int y=0;y>maxTimesY;y--){
+				groundSprite.setPosition(x*groundSprite.getWidth() + (5*x), ((y*groundSprite.getHeight()) - differneceOfHeight) + (5*y));
+				groundSprite.draw(batch);
+			}
+		}
+
+		
 		tileMap.drawMap(batch);
 		//container.draw(batch, 1);
 		
@@ -368,10 +392,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//Ground and skyline
 		groundSprite = new Sprite((Texture)assets.get("data/ground.png"));
-		groundSprite.setPosition(0, 0);
-		groundSprite.setSize(screenTileMapWidth, Constants.GROUND_LEVEL * tileMap.getTileHeight());
-		//groundSprite.setPosition(-Gdx.graphics.getWidth(), -camera.position.y);
-		//groundSprite.setSize(camera.viewportWidth, Constants.GROUND_LEVEL * tileMap.getTileHeight());
+		groundSprite.setSize(groundSprite.getWidth()/2,groundSprite.getHeight()/2);
 		
 		//Grid lines
 		shapeRenderer = new ShapeRenderer();

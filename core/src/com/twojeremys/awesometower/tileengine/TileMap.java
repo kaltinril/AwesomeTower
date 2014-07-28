@@ -280,8 +280,8 @@ public class TileMap {
 		//Create a buffer so that wide tiles (pink robbin) are still drawn
 		// - to see why this is used set the bufferWidth to 0, place a pink robbin room
 		// - Zoom all the way in, and pan around
-		int bufferWidth = 6;
-		int bufferHeight = 2;
+		int bufferWidth = 0;
+		int bufferHeight = 0;
 		
 		//Bottom Left (plus 6 tiles, to accommodate wider and taller tiles
 		Vector3 minPos = new Vector3(-(tileWidth*bufferWidth), Gdx.graphics.getHeight() + (tileHeight*bufferHeight), 0);
