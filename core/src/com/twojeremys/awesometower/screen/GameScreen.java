@@ -39,12 +39,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ActorGestureListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Category;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.gamefile.GameState;
 import com.twojeremys.awesometower.screen.menu.StatusMenu;
+import com.twojeremys.awesometower.tileengine.Tile;
 import com.twojeremys.awesometower.tileengine.TileMap;
 import com.twojeremys.awesometower.tileengine.TileProperties;
 
@@ -217,12 +219,19 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		if (assetsLoaded){
 			gameState.addToElapsedTime(delta);
 			
+			//FIXME calculating changes this way means they don't happen the second the day changes.
+			//Perhaps check the day before and after gameState.addToElapsedTime, and if the Day changes after
+			//then go into this section?
 			if (deltaGameDay > Constants.DAY_LENGTH) {
 				
 				Gdx.app.debug(TAG, "game day updates now taking place!!!");
 				
 				//TODO make actual updates
 				// What are we updating again?
+				
+				//This may or may not need to happen faster than once a game day?
+				calculateEBIDA(tileMap.getPlacedTiles());
+				applyIncomeChanges();
 				
 				//leap day
 				deltaGameDay -= Constants.DAY_LENGTH;
@@ -242,32 +251,29 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		// This is where our actual drawing and updating code will go for the game
 		batch.begin(); // start - send data to the graphics pipeline for loading/processing
 
-		//figure out how many [WIDTHS] to the left from X=0 we need to start
 		//figure out how many [WIDTHS] to the right until we are off the screen
-		//figure out how many [HEIGHTS] to move until we are off the screen down
-
+		//figure out how many [WIDTHS] to the left from X=0 we need to start
 		//Find number of pixels WIDE from center of camera.
 		float edgeToTileMapX = ((camera.viewportWidth/2) * camera.zoom);
 		int maxTimesX = (int)Math.ceil((tileMap.getMapPixelWidth() + edgeToTileMapX + edgeToTileMapX) / groundSprite.getWidth());
 		int minTimesX = -(int)Math.ceil(edgeToTileMapX / groundSprite.getWidth());
 
+		//figure out how many [HEIGHTS] to move until we are off the screen down
 		float edgeToTileMapY = ((camera.viewportHeight/2) * camera.zoom);
 		int maxTimesY = -(int)Math.ceil((edgeToTileMapY + (Constants.GROUND_LEVEL * tileMap.getTileHeight())) / groundSprite.getHeight());
 		
+		//How far to move the ground sprite down by, so it doesn't go above ground level
 		int differneceOfHeight = (int)groundSprite.getHeight() - (Constants.GROUND_LEVEL * tileMap.getTileHeight());
 		
-		//System.out.println("maxTimesY "+maxTimesY);
-		
+		//Draw all the required ground tile copies to fill the entire camera zoomed out
 		for(int x=minTimesX;x<maxTimesX;x++){
 			for (int y=0;y>maxTimesY;y--){
-				groundSprite.setPosition(x*groundSprite.getWidth() + (5*x), ((y*groundSprite.getHeight()) - differneceOfHeight) + (5*y));
+				groundSprite.setPosition(x*groundSprite.getWidth(), ((y*groundSprite.getHeight()) - differneceOfHeight));
 				groundSprite.draw(batch);
 			}
 		}
-
 		
 		tileMap.drawMap(batch);
-		//container.draw(batch, 1);
 		
 		if (buildMode){
 	        if (prePurchaseSprite != null){
@@ -415,6 +421,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         
         //Build the Status Menu
         buildStatusMenu();
+        
+        //Get the correct amounts setup
+        calculateEBIDA(tileMap.getPlacedTiles());
 	}
 	
 	//Allow buttons on the stage to be correctly adjusted and positioned
@@ -422,6 +431,30 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    // See below for what true means.
 	    stage.getViewport().update(width, height, true);
 	}
+	
+	private void calculateEBIDA(Array<Tile> placedTiles){
+		
+		float totalIncome=0;
+		float totalExpense=0; //Doesn't appear to be an expense yet?
+		
+		Gdx.app.debug(TAG,"Total Placed Tiles: "+ placedTiles.size);
+		
+		for(Tile tile:placedTiles){
+			totalIncome += tileMap.getTileProperty(tile.getID()).getIncomeAmount();
+			//totalExpense += tileMap.getTileProperty(tile.getID()).get
+		}
+		
+		Gdx.app.debug(TAG,"Income is now: "+ totalIncome);
+		
+		gameState.setIncome((int)totalIncome);
+	}
+	
+	//Perhaps this needs to be in gameState.Update(); ??
+	private void applyIncomeChanges(){
+		gameState.giveGold(gameState.getIncome());
+	}
+
+	
 	
 	private void buildStatusMenu(){
         //Create the Status Menu

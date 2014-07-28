@@ -110,23 +110,40 @@ public class StatusMenu {
 		int daysValue = (int)(clockValue / Constants.DAY_LENGTH);
 		String daysClock = "D: " + (int)(daysValue % Constants.DAYS_PER_YEAR);
 		String yearsClock = "Y: " + (int)(daysValue / Constants.DAYS_PER_YEAR);
-		//this.clockLabel.setText(daysClock + " " + yearsClock);
+
 		this.daysLabel.setText(daysClock);
 		this.yearsLabel.setText(yearsClock);
 	}
 	
 	public void setCoins(float coinValue){
-		String text = String.valueOf(coinValue / 1000) + "k";
+		String text;
+		if (coinValue > 10000){
+			text = String.valueOf((int)Math.floor(coinValue / 1000)) + "k";
+		}else{
+			text = String.valueOf(coinValue);
+		}
+		
 		this.coinLabel.setText(text);
 	}
 	
 	public void setExpense(float expenseValue){
-		String text = String.valueOf(expenseValue / 1000) + "k";
+		String text;
+		if (expenseValue > 10000){
+			text = String.valueOf((int)Math.floor(expenseValue / 1000)) + "k";
+		}else{
+			text = String.valueOf(expenseValue);
+		}
+		
 		this.expenseLabel.setText(text);
 	}
 	
 	public void setIncome(float incomeValue){
-		String text = String.valueOf(incomeValue / 1000) + "k";
+		String text;
+		if (incomeValue > 10000){
+			text = String.valueOf((int)Math.floor(incomeValue / 1000)) + "k";
+		}else{
+			text = String.valueOf(incomeValue);
+		}
 		this.incomeLabel.setText(text);
 	}
 	

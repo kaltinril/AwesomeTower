@@ -51,6 +51,10 @@ public class GameState {
 		return setGold(this.gold - takeAmount);
 	}
 
+	public void giveGold(float giveAmount){
+		this.setGold(this.getGold() + giveAmount);
+	}
+	
 	public int getPopulation() {
 		return population;
 	}

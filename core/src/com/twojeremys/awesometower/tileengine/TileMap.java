@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.twojeremys.awesometower.Constants;
 
 public class TileMap {
@@ -15,6 +16,8 @@ public class TileMap {
 	private static final String TAG = TileMap.class.getSimpleName();
 
 	private Tile[][] tiles;
+	
+	private Array<Tile> placedTiles;
 	
 	//Holds a map of all the tile properties we use; loads from file in GameScreen.java
 	private HashMap<Integer, TileProperties> tileProperties;
@@ -47,6 +50,8 @@ public class TileMap {
 		//set the hash to new object (will be overridden later)
 		this.tileProperties = new HashMap<Integer, TileProperties>();
 		
+		this.placedTiles= new Array<Tile>(false, 0);
+		
 		//TODO DEBUG Remove when done testing screen fills
 		if (Constants.DEBUG) {
 			
@@ -56,13 +61,20 @@ public class TileMap {
 			this.tiles[maxX-1][0] = new Tile(1);
 			this.tiles[0][maxY-1] = new Tile(1);
 		}
+		
+		populatePlacedArray();
 	}
+	
 	private void calculateMaxTiles(){
 		if (tiles != null){
 			this.maxX = tiles.length;
 			this.maxY = tiles[0].length;
 			Gdx.app.debug(TAG, "maxX: " + this.maxX + " maxY: " + this.maxY);
 		}
+	}
+	
+	public Array<Tile> getPlacedTiles(){
+		return placedTiles;
 	}
 	
 	//This returns the room clicked on, regardless of which PART of that room is clicked on
@@ -102,12 +114,26 @@ public class TileMap {
 			
 			//Set the Initial tile spot to the correct value
 			this.tiles[x][y] = parentTile;
+			placedTiles.add(parentTile);
 			return true;
 		}
 		else{
 			//TODO TASK we should pop toast to inform the user of collision
 			Gdx.app.debug(TAG, "Outside or Collision " + x + " " + y);
 			return false;
+		}
+	}
+	
+	//Called after game load, or if setTiles is called
+	private void populatePlacedArray(){
+		placedTiles.clear();
+		
+		for(int x=0;x<maxX;x++){
+			for (int y=0;y<maxY;y++){
+				if (tiles[x][y] != null && !tiles[x][y].hasParent()){
+					placedTiles.add(tiles[x][y]);
+				}
+			}
 		}
 	}
 	
@@ -144,6 +170,7 @@ public class TileMap {
 
 	public void setTiles(Tile[][] tiles) {
 		this.tiles = tiles;
+		populatePlacedArray();
 	}
 	
 	public HashMap<Integer, TileProperties> getTileProperties() {
