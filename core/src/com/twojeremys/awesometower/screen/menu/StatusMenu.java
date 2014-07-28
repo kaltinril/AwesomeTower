@@ -100,10 +100,6 @@ public class StatusMenu {
 	public Table getStatusTable() {
 		return statusTable;
 	}
-
-//	public void setStatusTable(Table statusTable) {
-//		this.statusTable = statusTable;
-//	}
 	
 	//Calculate the Days and years
 	public void setClock(float clockValue){
@@ -152,7 +148,7 @@ public class StatusMenu {
 	}
 	
 	public void updateValues(GameState gameState){
-		this.setClock(gameState.getElapsedTime());
+		this.setClock(gameState.getElapsedSeconds());
 		this.setCoins(gameState.getGold());
 		this.setExpense(gameState.getExpense());
 		this.setIncome(gameState.getIncome());

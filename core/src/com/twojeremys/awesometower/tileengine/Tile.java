@@ -35,18 +35,17 @@ public class Tile {
 	//Created to allow GameSave to load, otherwise got this bug
 	//ERROR: Couldn't Load from External Storage [awesomeTowerSave.txt]: Class cannot be created (missing no-arg constructor): com.twojeremys.awesometower.tileengine.Tile
 	public Tile(){
-		this.ID = -1; //Invalid
-		this.parentTile = null;
+		this(-1);
 	}
 	
 	public Tile(int iD){
-		this.ID = iD;
-		this.parentTile = null;
+		this(iD, null);
 	}
 	
 	public Tile(int iD, Tile parentTile){
 		this.ID = iD;
 		this.parentTile = parentTile;
+		this.tileStats = new TileStats();
 	}
 
 	public int getID() {

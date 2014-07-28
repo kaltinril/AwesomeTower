@@ -34,7 +34,7 @@ public class Constants {
 	
 	public static final float ZOOM_MAX = 5f;
 	public static final float ZOOM_MIN = 1f;
-	public static final float ZOOM_DEFAULT = 2f;	
+	public static final float ZOOM_DEFAULT = 2f;
 	
 	//Used for indication of ground level for everything
 	//This is the Y tile position indicating where ground is.
@@ -45,4 +45,10 @@ public class Constants {
 	
 	//Days per year
 	public static final int DAYS_PER_YEAR = 365;
+	
+	//Minimum (constant) wage
+	public static final float EMPLOYEE_MINIMUM_WAGE = 10.0f;
+	
+	//How much money to start a new game with
+	public static final float STARTING_GOLD = 25000;
 }

@@ -43,12 +43,14 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Category;
 import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.Person;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.gamefile.GameState;
 import com.twojeremys.awesometower.screen.menu.StatusMenu;
 import com.twojeremys.awesometower.tileengine.Tile;
 import com.twojeremys.awesometower.tileengine.TileMap;
 import com.twojeremys.awesometower.tileengine.TileProperties;
+import com.twojeremys.awesometower.tileengine.TileStats;
 
 //TODO TASK
 //TODO ENHANCEMENT
@@ -203,7 +205,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			drawLoading(delta);
 		}
 		
-		drawDebug();
+		if (Constants.DEBUG){
+			drawDebug();
+		}
 	}
 
 	//Add moving, currency changes, population changes, any game changing
@@ -217,11 +221,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		deltaGameDay += delta; //used to keep track of current day
 		
 		if (assetsLoaded){
-			gameState.addToElapsedTime(delta);
+			gameState.addToElapsedSeconds(delta);
 			
-			//FIXME calculating changes this way means they don't happen the second the day changes.
-			//Perhaps check the day before and after gameState.addToElapsedTime, and if the Day changes after
-			//then go into this section?
 			if (deltaGameDay > Constants.DAY_LENGTH) {
 				
 				Gdx.app.debug(TAG, "game day updates now taking place!!!");
@@ -243,6 +244,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			batch.setProjectionMatrix(camera.combined); // Tell the batch processing to use a specific camera
 			
 			stage.act(Math.min(Gdx.graphics.getDeltaTime(), 1 / 30f));
+		}
+		
+		//auto save if exceed interval setting
+		if (deltaSaveTime > Constants.SAVE_INTERVAL) {
+			deltaSaveTime = 0f;
+			GameSaveManager.saveState(gameState, saveName);
 		}
 	}
 	
@@ -332,18 +339,11 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 	//Add debug drawing
 	private void drawDebug(){
-		
-		//auto save if exceed interval setting
-		if (deltaSaveTime > Constants.SAVE_INTERVAL) {
-			deltaSaveTime = 0f;
-			GameSaveManager.saveState(gameState, saveName);
-		}
-		
-        if (Constants.DEBUG && drawTableDebug && assetsLoaded){
+        if (drawTableDebug && assetsLoaded){
         	Table.drawDebug(stage);
         }
 	
-		if (Constants.DEBUG && assetsLoaded) {
+		if (assetsLoaded) {
 			if (deltaTime >= Constants.DEBUG_DISPLAY_INTERVAL) {
 				float javaHeapInBytes = Gdx.app.getJavaHeap() / Constants.ONE_MEGABYTE;
 				float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
@@ -389,6 +389,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 			gameState.setTiles(tileMap.getTiles());
 		}
 		
+		deltaGameDay = gameState.getElapsedSeconds() % Constants.DAY_LENGTH;
+		
 		//Get the actual full Pixel height for the combined tile space, minus 1
 		screenTileMapHeight = tileMap.getMapPixelHeight();
 		screenTileMapWidth = tileMap.getMapPixelWidth();
@@ -432,6 +434,13 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	    stage.getViewport().update(width, height, true);
 	}
 	
+	
+
+//	7:02 PM - frigidplanet: revenue = patrons * income;
+//	7:02 PM - frigidplanet: expenses = employees * constant_pay_rate;
+//	7:02 PM - frigidplanet: patrons varies based on another formula that isn't written
+//	7:03 PM - frigidplanet: exployees could either be static or adjust based on economics.  probably easier to have it be static for now.
+
 	private void calculateEBIDA(Array<Tile> placedTiles){
 		
 		float totalIncome=0;
@@ -440,21 +449,55 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		Gdx.app.debug(TAG,"Total Placed Tiles: "+ placedTiles.size);
 		
 		for(Tile tile:placedTiles){
-			totalIncome += tileMap.getTileProperty(tile.getID()).getIncomeAmount();
-			//totalExpense += tileMap.getTileProperty(tile.getID()).get
+			//TODO REMOVE Hack for 0 patrons right now, need to get patrons/visitors moving into places and visiting places
+			if (Constants.DEBUG){
+				//tile.setTileStats(new TileStats());
+				//tile.getTileStats().addVisitor(new Person());
+				//tile.getTileStats().addVisitor(new Person());
+				//tile.getTileStats().addVisitor(new Person());
+				//tile.getTileStats().addVisitor(new Person());
+				tile.getTileStats().addVisitor(new Person());
+			}
+			
+			TileProperties tp = tileMap.getTileProperty(tile.getID());
+			TileStats ts = tile.getTileStats();
+			
+			if (tp.getCategory() == Category.Commercial){
+				totalIncome += (tp.getIncomeAmount() * ts.getVisitorsCount()); //Based on the number of customers
+			}else if(tp.getCategory() == Category.Residential) {
+				totalIncome += tp.getIncomeAmount(); //Set amount of monthly income from property, not based on residence
+				
+				if (ts.getOccupantsCount() < tp.getMaxResidents()){
+					//ADD MORE RESIDENTS !!
+					
+					//Ideas
+					//1. create randomized sub set of people (Visitors) who will check to see if they want to move in or become employees
+					//2. create time interval delay before people show up
+					//3. create conditional occupancy (if noise + dirt + etc is valid, create persons and assign)
+					//4. At placement time of room, just have them move in
+					//5. Create % move in value, and based on desirability, a % of the % is used to create Persons.
+					
+					//Determine Desirability
+					// - 
+				}
+			}
+			
+			//TODO ENHANCEMENT if we want, we can create an economics class to manage employment etc	
+			totalExpense += (tp.getMaxEmployees() * Constants.EMPLOYEE_MINIMUM_WAGE);
 		}
 		
 		Gdx.app.debug(TAG,"Income is now: "+ totalIncome);
+		Gdx.app.debug(TAG,"Expense is now: "+ totalExpense);
 		
 		gameState.setIncome((int)totalIncome);
+		gameState.setExpense((int)totalExpense);
 	}
 	
 	//Perhaps this needs to be in gameState.Update(); ??
 	private void applyIncomeChanges(){
 		gameState.giveGold(gameState.getIncome());
+		gameState.takeGold(gameState.getExpense());
 	}
-
-	
 	
 	private void buildStatusMenu(){
         //Create the Status Menu

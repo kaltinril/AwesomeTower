@@ -1,5 +1,8 @@
 package com.twojeremys.awesometower.gamefile;
 
+import com.badlogic.gdx.utils.Array;
+import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.Person;
 import com.twojeremys.awesometower.tileengine.Tile;
 
 //Create a class to contain references to only the data needed to save and restart games.
@@ -15,11 +18,13 @@ public class GameState {
 	private int population;
 	private int income;
 	private int expense;
-	private float elapsedTime;
+	private float elapsedSeconds;
+	
+	private Array<Person> people;
 
 	public GameState(){
-		//Starting gold
-		this.gold = 5000;
+		this.gold = Constants.STARTING_GOLD;	//Starting gold
+		this.people = new Array<Person>(false, 0);
 	}
 	
 	public Tile[][] getTiles() {
@@ -29,13 +34,11 @@ public class GameState {
 	public void setTiles(Tile[][] tiles) {
 		this.tiles = tiles;
 	}
-
 	
 	public float getGold() {
 		return gold;
 	}
 	
-
 	public boolean setGold(float gold) {
 		//Limit gold so you can't go negative
 		if (gold > 0){
@@ -79,16 +82,16 @@ public class GameState {
 		this.expense = expense;
 	}
 
-	public float getElapsedTime() {
-		return elapsedTime;
+	public float getElapsedSeconds() {
+		return elapsedSeconds;
 	}
 
-	public void setElapsedTime(float elapsedTime) {
-		this.elapsedTime = elapsedTime;
+	public void setElapsedSeconds(float elapsedSeconds) {
+		this.elapsedSeconds = elapsedSeconds;
 	}
 	
-	public void addToElapsedTime(float elapsedTime){
-		this.elapsedTime += elapsedTime;
+	public void addToElapsedSeconds(float elapsedSeconds){
+		this.elapsedSeconds += elapsedSeconds;
 	}
 	
 	

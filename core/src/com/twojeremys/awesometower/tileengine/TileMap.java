@@ -115,12 +115,49 @@ public class TileMap {
 			//Set the Initial tile spot to the correct value
 			this.tiles[x][y] = parentTile;
 			placedTiles.add(parentTile);
+			
+			updateNoiseLevel(x, y, tp);
 			return true;
 		}
 		else{
 			//TODO TASK we should pop toast to inform the user of collision
 			Gdx.app.debug(TAG, "Outside or Collision " + x + " " + y);
 			return false;
+		}
+	}
+	
+	//Add noise to each tile surrounding the tile placed
+	//This will propagate outwards in a square (Not circular) pattern
+	private void updateNoiseLevel(int x, int y, TileProperties tp){
+		
+		Gdx.app.debug("Noise","Placed tile at: x=" + x + " y=" + y + " StartAmount=" + tp.getNoiseFactor()/2);
+		
+		//Half the noise each "layer" of tiles we move out (HowFarAway)
+		for(float noiseLevel=tp.getNoiseFactor()/2, howFarAway = 0;noiseLevel>1;noiseLevel /= 2){
+			howFarAway++;
+
+			//Top row and Bottom Row
+			for (int xtemp = x-(int)howFarAway;xtemp<=x+(int)howFarAway;xtemp++){
+				Gdx.app.debug("Noise","X loop");
+				AddNoiseOnTile(xtemp, y+(int)howFarAway, noiseLevel);
+				AddNoiseOnTile(xtemp, y-(int)howFarAway, noiseLevel);
+			}
+			
+			//Left Side and Right side (Minus top and bottom of sides)
+			for (int ytemp = y-(int)howFarAway+1;ytemp<=y+(int)howFarAway-1;ytemp++){
+				Gdx.app.debug("Noise","Y loop");
+				AddNoiseOnTile(x-(int)howFarAway, ytemp, noiseLevel);
+				AddNoiseOnTile(x+(int)howFarAway, ytemp, noiseLevel);
+			}
+		}
+	}
+	
+	//Add the noise without null exception errors
+	private void AddNoiseOnTile(int x, int y, float noiseAmount){
+		Tile TempTile = this.getTile(x, y);
+		if (TempTile != null){
+			TempTile.getTileStats().addNoise(noiseAmount);
+			Gdx.app.debug("Noise","Added to x=" + x + " y=" + y + " amount=" + noiseAmount);
 		}
 	}
 	
@@ -342,11 +379,14 @@ public class TileMap {
 						//Get a reference to the tile property to pull out more information from it
 						TileProperties tp = getTilePropertiesById(tiles[x][y].getID());
 						
+						TileStats ts = tiles[x][y].getTileStats();
+						
 						//Draw this tile to the designated width and height based on tilespan and tilewidth/height
 						batch.draw(atlas.findRegion(tp.getAtlasName()), 
 							x*tileWidth, y*tileHeight, //Position
 							0, 0, //Origin Offset
 							tp.getTileSpanX() * tileWidth, tp.getTileSpanY() * tileHeight, //Width and Height to stretch to
+							//1-(ts.getCurrentNoiseLevel() / tp.getNoiseTolerance()), 1-(ts.getCurrentNoiseLevel() / tp.getNoiseTolerance()),
 							1, 1,   //Scale, Could use this for "floating" affect
 							0		//rotation
 						);
