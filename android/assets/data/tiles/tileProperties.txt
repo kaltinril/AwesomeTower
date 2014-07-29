@@ -60,10 +60,11 @@
 		,ID:4
 		,category:Utility
 		,displayName:"Security"
-		,purchaseCost:24700
+		,purchaseCost:2470
 		,requiredTilesBelow:1
 		,blackListFloors:[]
 		,whiteListFloors:[]
+		,noiseFactor:10
 	},
 	5:{
 		class:com.twojeremys.awesometower.tileengine.TileProperties
@@ -98,7 +99,7 @@
 		,blackListFloors:[]
 		,whiteListFloors:[]
 		,maxResidents:3
-		,noiseFactor:1
+		,noiseFactor:10
 		,noiseTolerance:5
 		,incomeAmount:23
 		,saleAmount:0

@@ -7,8 +7,11 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.ObjectMap.Entry;
 import com.twojeremys.awesometower.Constants;
 
 public class TileMap {
@@ -81,16 +84,20 @@ public class TileMap {
 	// Meaning if a tile is a "Child" return the parent instead.
 	// If the tile is empty, return null
 	public Tile getTile(int tileX, int tileY){
-		Tile possibleChildTile = tiles[tileX][tileY];
-		
-		if (possibleChildTile != null) {
-			
-			if (possibleChildTile.hasParent()){
-				return possibleChildTile.getParentTile();
+		if (pointsWithinBounds(tileX, tileY)){
+			Tile possibleChildTile = tiles[tileX][tileY];
+
+			if (possibleChildTile != null) {
+				
+				if (possibleChildTile.hasParent()){
+					return possibleChildTile.getParentTile();
+				} else {
+					return possibleChildTile; //This means that it IS the parent
+				}
+				
 			} else {
-				return possibleChildTile; //This means that it IS the parent
+				return null;
 			}
-			
 		} else {
 			return null;
 		}
@@ -116,7 +123,7 @@ public class TileMap {
 			this.tiles[x][y] = parentTile;
 			placedTiles.add(parentTile);
 			
-			updateNoiseLevel(x, y, tp);
+			updateNoiseLevel(x, y, tp, true);
 			return true;
 		}
 		else{
@@ -126,40 +133,137 @@ public class TileMap {
 		}
 	}
 	
-	//Add noise to each tile surrounding the tile placed
-	//This will propagate outwards in a square (Not circular) pattern
-	private void updateNoiseLevel(int x, int y, TileProperties tp){
-		
-		Gdx.app.debug("Noise","Placed tile at: x=" + x + " y=" + y + " StartAmount=" + tp.getNoiseFactor()/2);
-		
-		//Half the noise each "layer" of tiles we move out (HowFarAway)
-		for(float noiseLevel=tp.getNoiseFactor()/2, howFarAway = 0;noiseLevel>1;noiseLevel /= 2){
-			howFarAway++;
-
-			//Top row and Bottom Row
-			for (int xtemp = x-(int)howFarAway;xtemp<=x+(int)howFarAway;xtemp++){
-				Gdx.app.debug("Noise","X loop");
-				AddNoiseOnTile(xtemp, y+(int)howFarAway, noiseLevel);
-				AddNoiseOnTile(xtemp, y-(int)howFarAway, noiseLevel);
-			}
+	public boolean removeTile(int x, int y){
+		if (pointsWithinBounds(x, y)){
+			Tile tile = tiles[x][y];
 			
-			//Left Side and Right side (Minus top and bottom of sides)
-			for (int ytemp = y-(int)howFarAway+1;ytemp<=y+(int)howFarAway-1;ytemp++){
-				Gdx.app.debug("Noise","Y loop");
-				AddNoiseOnTile(x-(int)howFarAway, ytemp, noiseLevel);
-				AddNoiseOnTile(x+(int)howFarAway, ytemp, noiseLevel);
+			if (tile != null){
+				TileProperties tp = getTilePropertiesById(tile.getID());
+				
+				//Remove noise this tile generates
+				updateNoiseLevel(x, y, tp, false);
+				
+				//remove references to the tile
+				for (int spanX=0; spanX < tp.getTileSpanX(); spanX++)
+					for (int spanY=0; spanY < tp.getTileSpanY(); spanY++)
+						this.tiles[x+spanX][y+spanY] = null; //TODO ENHANCE change to "buy this space" tile/room
+			}
+		}
+		
+		return false;
+	}
+	
+
+	private void updateNoiseLevel(int x, int y, TileProperties tp, boolean addNoise){
+
+		int maxAffectable = (2 * (tp.getTileSpanX()+2)) +  (2 * tp.getTileSpanY()); 
+		ArrayMap<Tile, Vector2> affectedTiles = new ArrayMap<Tile, Vector2>(false, maxAffectable);
+		
+		//Check tiles directly above this tile
+		//Check tiles directly below this tile
+		for (int offset = 0; offset<tp.getTileSpanX(); offset++){
+			updateNoiseOnTile(x+offset, y-1, tp.getNoiseFactor()/2, addNoise, affectedTiles);
+			updateNoiseOnTile(x+offset, y+tp.getTileSpanY(), tp.getNoiseFactor()/2, addNoise, affectedTiles);
+		}
+
+		//Check tiles directly to the left of this tile
+		//Check tiles directly to the right of this tile
+		for (int offset = 0; offset<tp.getTileSpanY(); offset++){
+			updateNoiseOnTile(x-1, y+offset, tp.getNoiseFactor()/2, addNoise, affectedTiles);
+			updateNoiseOnTile(x+tp.getTileSpanX(), y+offset, tp.getNoiseFactor()/2, addNoise, affectedTiles);
+		}
+		
+		//Check 4 corners
+		updateNoiseOnTile(x-1, y-1, tp.getNoiseFactor()/4, addNoise, affectedTiles); //bottom left corner
+		updateNoiseOnTile(x-1, y+tp.getTileSpanY(), tp.getNoiseFactor()/4, addNoise, affectedTiles); //Top Left Corner
+		updateNoiseOnTile(x+tp.getTileSpanX(), y-1, tp.getNoiseFactor()/4, addNoise, affectedTiles); //Bottom Right Corner
+		updateNoiseOnTile(x+tp.getTileSpanX(), y+tp.getTileSpanY(), tp.getNoiseFactor()/4, addNoise, affectedTiles); //Top Right Corner
+		
+		//Add up all the noise from tiles that affect this tile.
+		for(Entry<Tile, Vector2> tempTile:affectedTiles){
+
+			//The tile is directly above/below/left/right of the tile
+			if ((tempTile.value.x >= x) && (tempTile.value.x < x+tp.getTileSpanX()) 
+					|| (tempTile.value.y >= y && tempTile.value.y < y+tp.getTileSpanY())){
+				//Take half the noise level into account
+				updateNoiseOnTile(x, y, this.getTilePropertiesById(tempTile.key.getID()).getNoiseFactor()/2, addNoise);
+			} else {
+				//Take 1/4 of the noise level into account
+				updateNoiseOnTile(x, y, this.getTilePropertiesById(tempTile.key.getID()).getNoiseFactor()/4, addNoise);
 			}
 		}
 	}
 	
+	
 	//Add the noise without null exception errors
-	private void AddNoiseOnTile(int x, int y, float noiseAmount){
-		Tile TempTile = this.getTile(x, y);
-		if (TempTile != null){
-			TempTile.getTileStats().addNoise(noiseAmount);
+	private void updateNoiseOnTile(int x, int y, float noiseAmount, boolean addNoise, ArrayMap<Tile, Vector2> affectedTiles){
+		Tile tempTile = this.getTile(x, y);
+		if (tempTile != null && !affectedTiles.containsKey(tempTile)){
+			affectedTiles.put(tempTile, new Vector2(x,y));
+			if (addNoise){
+				tempTile.getTileStats().addNoise(noiseAmount);
+			} else {
+				tempTile.getTileStats().removeNoise(noiseAmount);
+			}
 			Gdx.app.debug("Noise","Added to x=" + x + " y=" + y + " amount=" + noiseAmount);
 		}
 	}
+	
+	//Add the noise without null exception errors
+	private void updateNoiseOnTile(int x, int y, float noiseAmount, boolean addNoise){
+		Tile tempTile = this.getTile(x, y);
+		if (tempTile != null){
+			if (addNoise){
+				tempTile.getTileStats().addNoise(noiseAmount);
+			} else {
+				tempTile.getTileStats().removeNoise(noiseAmount);
+			}
+			Gdx.app.debug("Noise","Added to x=" + x + " y=" + y + " amount=" + noiseAmount);
+		}
+	}
+	
+	
+	//Add noise to each tile surrounding the tile placed
+	//This will propagate outwards in a square (Not circular) pattern
+	//addNoise = TRUE means you've just placed tile
+	//addNoise - FALSE means you've just sold a tile
+//	private void updateNoiseLevel(int x, int y, TileProperties tp, boolean addNoise){
+//		
+//		Gdx.app.debug("Noise","Placed tile at: x=" + x + " y=" + y + " StartAmount=" + tp.getNoiseFactor()/2);
+//		
+//		//Half the noise each "layer" of tiles we move out (HowFarAway)
+//		for(float noiseLevel=tp.getNoiseFactor()/2, howFarAway = 0;noiseLevel>1;noiseLevel /= 2){
+//			howFarAway++;
+//
+//			//Top row and Bottom Row
+//			for (int xtemp = x-(int)howFarAway;xtemp<=x+(int)howFarAway + (tp.getTileSpanX() - 1);xtemp++){
+//				Gdx.app.debug("Noise","X loop");
+//				updateNoiseOnTile(xtemp, y+(int)howFarAway + (tp.getTileSpanY() - 1), noiseLevel, addNoise);
+//				updateNoiseOnTile(xtemp, y-(int)howFarAway, noiseLevel, addNoise);
+//			}
+//			
+//			//Left Side and Right side (Minus top and bottom of sides)
+//			for (int ytemp = y-(int)howFarAway+1;ytemp<=y+(int)howFarAway-1 + (tp.getTileSpanY() - 1);ytemp++){
+//				Gdx.app.debug("Noise","Y loop");
+//				updateNoiseOnTile(x-(int)howFarAway, ytemp, noiseLevel, addNoise);
+//				updateNoiseOnTile(x+(int)howFarAway + (tp.getTileSpanX() - 1), ytemp, noiseLevel, addNoise);
+//			}
+//		}
+//	}
+
+	
+	//Add the noise without null exception errors
+//	private void updateNoiseOnTile(int x, int y, float noiseAmount, boolean addNoise){
+//		Tile TempTile = this.getTile(x, y);
+//		if (TempTile != null){
+//			if (addNoise){
+//				TempTile.getTileStats().addNoise(noiseAmount);
+//			} else {
+//				TempTile.getTileStats().removeNoise(noiseAmount);
+//			}
+//			Gdx.app.debug("Noise","Added to x=" + x + " y=" + y + " amount=" + noiseAmount);
+//		}
+//	}
 	
 	//Called after game load, or if setTiles is called
 	private void populatePlacedArray(){
@@ -249,8 +353,7 @@ public class TileMap {
 	 */
 	public boolean hasCollision(int tileX, int tileY, int tile, TileProperties tp) {
 		
-		//If the point is outside the bounds of the map return true
-		if (tileX < 0 || tileX >= maxX || tileY < 0 || tileY >= maxY) {
+		if (pointsOutsideBounds(tileX, tileY)){
 			return true;
 		}
 		
@@ -271,6 +374,21 @@ public class TileMap {
 		return false;
 	}
 
+	private boolean pointsWithinBounds(int tileX, int tileY) {
+		//If the point is outside the bounds of the map return true
+		if (tileX < 0 || tileX >= maxX || tileY < 0 || tileY >= maxY) {
+			return false;
+		}else{
+			return true;
+		}
+	}
+	
+	private boolean pointsOutsideBounds(int tileX, int tileY){
+		return !pointsWithinBounds(tileX, tileY);
+	}
+
+	
+	
 	/**
 	 * Whether or not the given tile can be placed at the given coordinates.
 	 *  uses hasCollision() internally so does not need to be called.

@@ -50,5 +50,5 @@ public class Constants {
 	public static final float EMPLOYEE_MINIMUM_WAGE = 10.0f;
 	
 	//How much money to start a new game with
-	public static final float STARTING_GOLD = 25000;
+	public static final float STARTING_GOLD = 250000;
 }

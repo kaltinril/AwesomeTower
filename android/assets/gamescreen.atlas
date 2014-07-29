@@ -1,12 +1,12 @@
 
 gamescreen.png
-size: 348,110
+size: 612,110
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
 tiles/orangeTile
   rotate: false
-  xy: 328, 70
+  xy: 592, 70
   size: 20, 40
   orig: 20, 40
   offset: 0, 0
@@ -41,7 +41,7 @@ tiles/roomLobby
   index: -1
 tiles/wideGreenTile
   rotate: false
-  xy: 266, 53
+  xy: 530, 53
   size: 40, 20
   orig: 40, 20
   offset: 0, 0
@@ -67,24 +67,52 @@ ui/coin
   orig: 64, 64
   offset: 0, 0
   index: -1
-ui/expense
+ui/customer
   rotate: false
   xy: 134, 46
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
-ui/income
+ui/employee
   rotate: false
   xy: 200, 46
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
+ui/expense
+  rotate: false
+  xy: 266, 46
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+ui/income
+  rotate: false
+  xy: 332, 46
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+ui/noise
+  rotate: false
+  xy: 398, 46
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
 ui/population
   rotate: false
-  xy: 266, 75
+  xy: 530, 75
   size: 60, 35
   orig: 60, 35
+  offset: 0, 0
+  index: -1
+ui/star
+  rotate: false
+  xy: 464, 46
+  size: 64, 64
+  orig: 64, 64
   offset: 0, 0
   index: -1

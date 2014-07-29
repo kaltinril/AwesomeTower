@@ -46,6 +46,7 @@ import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.Person;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.gamefile.GameState;
+import com.twojeremys.awesometower.screen.menu.RoomStatusMenu;
 import com.twojeremys.awesometower.screen.menu.StatusMenu;
 import com.twojeremys.awesometower.tileengine.Tile;
 import com.twojeremys.awesometower.tileengine.TileMap;
@@ -118,6 +119,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	
 	//Used for the status menu
 	private StatusMenu statusMenu;
+	private RoomStatusMenu roomStatusMenu;
+	private VerticalGroup roomGroup;
 	
 	//Skin to use for all widgets
 	private Skin skin;
@@ -424,6 +427,9 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         //Build the Status Menu
         buildStatusMenu();
         
+        //Build the Room statistics display hover view menu thingy
+        buildRoomStatusMenu();
+        
         //Get the correct amounts setup
         calculateEBIDA(tileMap.getPlacedTiles());
 	}
@@ -529,6 +535,18 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         
         //Add the group to the stage
         stage.addActor(tempGroup);
+	}
+	
+	private void buildRoomStatusMenu(){
+		roomStatusMenu = new RoomStatusMenu(gamescreenTexutureAtlas, skin);
+		roomGroup = new VerticalGroup();
+		//Table roomTable = roomStatusMenu.getStatusTable();
+		
+		//roomGroup.addActor(roomTable);
+		//roomGroup.pack();
+		
+		roomGroup.setPosition(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
+		stage.addActor(roomGroup);
 	}
 	
 	private void buildSideMenu(TextureAtlas atlas) {
@@ -637,36 +655,18 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 					
 					if (selectionScroll.getChildren().size > 0 && selectionScroll.getChildren().peek() == c.getTable()) {
 						
-						//System.out.println("Before Shrink POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
-						
 						//shrink and move the scrollpane
 						selectionScroll.addAction(
-								Actions.sequence(
-										Actions.parallel(
-													Actions.fadeOut(0.25f)
-													//Actions.scaleTo(0, 0, 0.25f)
-													//Actions.moveBy(selectionScroll.getWidth(), 0, 0.5f)
-													//Actions.moveTo(0, selectionScroll.getY(), 1f)
-												)
+								Actions.sequence(Actions.fadeOut(0.25f)
 									    , Actions.run(new Runnable() {
 						    public void run () {
 						        selectionScroll.removeActor(c.getTable());
 						        selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
 						        selectionContainer.removeActor(selectionScroll);
-						        //System.out.println("Shrunk POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
 						    }
 						})));
-						//selectionScroll.removeActor(c.getTable());
-						//selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
-						//selectionContainer.size(0, Gdx.graphics.getHeight());
-						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
-						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
+
 					} else {
-						
-						//Setup the position of the scroll as ontop of the container
-						//selectionScroll.setScale(0.0f);
-						
-						//System.out.println("Before Grow POS params:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
 						
 						//selectionScroll.setX(0);
 						selectionScroll.setWidget(c.getTable());
@@ -678,40 +678,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 						}
 						
 						selectionContainer.size(c.getTableWidth(), Gdx.graphics.getHeight());
-						//System.out.println("Before Grow POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
-
-						//selectionScroll.setPosition(-categoryNameContainer.getMinWidth(), selectionScroll.getY());
 						
-						//System.out.println(-categoryNameContainer.getMinWidth());
-						
-						//shrink and move the scrollpane
-						selectionScroll.addAction(
-								Actions.sequence(
-										Actions.parallel(
-													Actions.fadeIn(0.25f)
-													//Actions.scaleTo(1, 1, 0.25f) 
-													//Actions.moveTo(-categoryNameContainer.getMinWidth(), selectionScroll.getY(), 1f)
-												)
-									    , Actions.run(new Runnable() {
-						    public void run () {
-						        //selectionScroll.removeActor(c.getTable());
-						        //selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
-						        //System.out.println("After Grow POS:  " + selectionScroll.getX() + " - " + selectionScroll.getY());
-						    }
-						})));
-						
-						
-						//selectionContainer.clearActions();
-						//selectionContainer.addAction(Actions.moveTo(Gdx.graphics.getWidth() - selectionContainer.getMinWidth(), Gdx.graphics.getHeight()/2, 0.5f));
-						
-						//selectionScroll.setWidget(c.getTable());
-						//selectionScroll.setScrollPercentY(0);	//Reset to the top of the scroll pane
-						//selectionContainer.size(c.getTableWidth(), Gdx.graphics.getHeight());
-						
-						//categoryNameContainer.setX(Gdx.graphics.getWidth() - selectionContainer.getMinWidth());
-						//categoryNameContainer.setY(Gdx.graphics.getHeight()/2);
+						//Fade the scroll pane out
+						selectionScroll.addAction(Actions.fadeIn(0.25f));
 					}
-
 			    }
 		    };
 		    
@@ -1010,26 +980,23 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
     			+ ", xy: (" + Float.toString(x) + "," + Float.toString(y) + ")"
     	+ "}");
     	
+    	// Convert screen input to camera position
+		Vector3 touchPos = new Vector3();
+		touchPos.x = x;	//only gets input from the first touch
+		touchPos.y = y;	//only gets input from the first touch
+		touchPos.z = 0;
+		
+		// This will convert the screen coordinates passed in to "camera" coordinate system.
+		camera.unproject(touchPos);
+		
+		//Convert to TileX and TileY coordinates by dividing by the width/height
+		// For a 20x20 tile, this converts 20 to 1, 40 to 2, 60 to 3.
+		Vector2 tileTouchPos = new Vector2(touchPos.x / tileMap.getTileWidth(), touchPos.y / tileMap.getTileHeight());
     	
+		Gdx.app.debug(TAG, "Tap performed (unproject) {"
+    			+ "xy: (" + Float.toString(tileTouchPos.x) + "," + Float.toString(tileTouchPos.y) + ")"	+ "}");
+		
 		if (buildMode){
-			
-			// Convert screen input to camera position
-			Vector3 touchPos = new Vector3();
-			touchPos.x = x;	//only gets input from the first touch
-			touchPos.y = y;	//only gets input from the first touch
-			touchPos.z = 0;
-			
-			// This will convert the screen coordinates passed in to "camera" coordinate system.
-			camera.unproject(touchPos);
-			
-			//Convert to TileX and TileY coordinates by dividing by the width/height
-			// For a 20x20 tile, this converts 20 to 1, 40 to 2, 60 to 3.
-			Vector2 tileTouchPos = new Vector2(touchPos.x / tileMap.getTileWidth(), touchPos.y / tileMap.getTileHeight());
-
-
-			Gdx.app.debug(TAG, "Tap performed (unproject) {"
-	    			+ "xy: (" + Float.toString(tileTouchPos.x) + "," + Float.toString(tileTouchPos.y) + ")"
-	    	+ "}");
 			
 			//Single tab
 			if (count == 1){
@@ -1061,6 +1028,22 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 					if (Constants.DEBUG){
 						System.out.println("Not enough gold to purchase Room.");
 					}
+				}
+			}
+		}else{
+			//Not build mode
+			Tile workingTile = tileMap.getTile((int)tileTouchPos.x, (int)tileTouchPos.y);
+			if (workingTile != null){
+				roomGroup.addActor(roomStatusMenu.getStatusTable());
+				roomGroup.pack();
+				roomGroup.setPosition(Gdx.graphics.getWidth()/2 - (roomGroup.getMinWidth() / 2), Gdx.graphics.getHeight()/2 - (roomGroup.getMinHeight()/2));
+				
+				roomStatusMenu.updateValues(workingTile);
+			}
+			else
+			{
+				if (roomGroup != null && roomStatusMenu!= null && roomStatusMenu.getStatusTable() != null){
+					roomGroup.removeActor(roomStatusMenu.getStatusTable());
 				}
 			}
 		}

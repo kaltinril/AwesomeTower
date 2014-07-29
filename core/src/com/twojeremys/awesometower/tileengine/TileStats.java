@@ -62,5 +62,11 @@ public class TileStats {
 	}
 
 	
+	public float getDesirability() {
+		return desirability;
+	}
+
+
+	
 	
 }
