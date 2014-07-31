@@ -159,25 +159,28 @@ public class TileMap {
 		int maxAffectable = (2 * (tp.getTileSpanX()+2)) +  (2 * tp.getTileSpanY()); 
 		ArrayMap<Tile, Vector2> affectedTiles = new ArrayMap<Tile, Vector2>(false, maxAffectable);
 		
+		float halfNoise = tp.getNoiseFactor()/2;
+		float quarterNoise = tp.getNoiseFactor()/4;
+		
 		//Check tiles directly above this tile
 		//Check tiles directly below this tile
 		for (int offset = 0; offset<tp.getTileSpanX(); offset++){
-			updateNoiseOnTile(x+offset, y-1, tp.getNoiseFactor()/2, addNoise, affectedTiles);
-			updateNoiseOnTile(x+offset, y+tp.getTileSpanY(), tp.getNoiseFactor()/2, addNoise, affectedTiles);
+			updateNoiseOnTile(x+offset, y-1, halfNoise, addNoise, affectedTiles);
+			updateNoiseOnTile(x+offset, y+tp.getTileSpanY(), halfNoise, addNoise, affectedTiles);
 		}
 
 		//Check tiles directly to the left of this tile
 		//Check tiles directly to the right of this tile
 		for (int offset = 0; offset<tp.getTileSpanY(); offset++){
-			updateNoiseOnTile(x-1, y+offset, tp.getNoiseFactor()/2, addNoise, affectedTiles);
-			updateNoiseOnTile(x+tp.getTileSpanX(), y+offset, tp.getNoiseFactor()/2, addNoise, affectedTiles);
+			updateNoiseOnTile(x-1, y+offset, halfNoise, addNoise, affectedTiles);
+			updateNoiseOnTile(x+tp.getTileSpanX(), y+offset, halfNoise, addNoise, affectedTiles);
 		}
 		
 		//Check 4 corners
-		updateNoiseOnTile(x-1, y-1, tp.getNoiseFactor()/4, addNoise, affectedTiles); //bottom left corner
-		updateNoiseOnTile(x-1, y+tp.getTileSpanY(), tp.getNoiseFactor()/4, addNoise, affectedTiles); //Top Left Corner
-		updateNoiseOnTile(x+tp.getTileSpanX(), y-1, tp.getNoiseFactor()/4, addNoise, affectedTiles); //Bottom Right Corner
-		updateNoiseOnTile(x+tp.getTileSpanX(), y+tp.getTileSpanY(), tp.getNoiseFactor()/4, addNoise, affectedTiles); //Top Right Corner
+		updateNoiseOnTile(x-1, y-1, quarterNoise, addNoise, affectedTiles); //bottom left corner
+		updateNoiseOnTile(x-1, y+tp.getTileSpanY(), quarterNoise, addNoise, affectedTiles); //Top Left Corner
+		updateNoiseOnTile(x+tp.getTileSpanX(), y-1, quarterNoise, addNoise, affectedTiles); //Bottom Right Corner
+		updateNoiseOnTile(x+tp.getTileSpanX(), y+tp.getTileSpanY(), quarterNoise, addNoise, affectedTiles); //Top Right Corner
 		
 		//Add up all the noise from tiles that affect this tile.
 		for(Entry<Tile, Vector2> tempTile:affectedTiles){
