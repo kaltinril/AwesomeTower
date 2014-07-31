@@ -1,5 +1,8 @@
 package com.twojeremys.awesometower.screen.menu;
 
+import java.text.MessageFormat;
+import java.text.NumberFormat;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -87,8 +90,11 @@ public class RoomStatusMenu {
 	}
 
 	public void setDesirability(float desirability) {
-		String text = String.valueOf(desirability);
-		this.desireabilityLabel.setText(text);
+		
+		NumberFormat percentFormat = NumberFormat.getPercentInstance();
+		percentFormat.setMaximumFractionDigits(1);
+		String result = percentFormat.format(desirability);
+		this.desireabilityLabel.setText(result);
 	}
 
 	public void setNoise(float currentNoiseLevel) {

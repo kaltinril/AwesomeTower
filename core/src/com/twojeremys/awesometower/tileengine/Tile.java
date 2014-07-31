@@ -45,7 +45,7 @@ public class Tile {
 	public Tile(int iD, Tile parentTile){
 		this.ID = iD;
 		this.parentTile = parentTile;
-		this.tileStats = new TileStats();
+		this.tileStats = new TileStats(iD);
 	}
 
 	public int getID() {
