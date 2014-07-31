@@ -52,10 +52,6 @@ public class Tile {
 		return ID;
 	}
 
-	public void setID(int iD) {
-		ID = iD;
-	}
-
 	public Tile getParentTile() {
 		return parentTile;
 	}
