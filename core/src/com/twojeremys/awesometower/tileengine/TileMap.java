@@ -1,7 +1,5 @@
 package com.twojeremys.awesometower.tileengine;
 
-import java.util.HashMap;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +11,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.ObjectMap.Entry;
 import com.twojeremys.awesometower.Constants;
+import com.twojeremys.awesometower.TileProperties;
 
 public class TileMap {
 	
@@ -21,9 +20,6 @@ public class TileMap {
 	private Tile[][] tiles;
 	
 	private Array<Tile> placedTiles;
-	
-	//Holds a map of all the tile properties we use; loads from file in GameScreen.java
-	private HashMap<Integer, TileProperty> tileProperties;
 	
 	//The texture atlas, duh!
 	private TextureAtlas atlas;
@@ -49,9 +45,6 @@ public class TileMap {
 		this.cam = cam;
 		
 		calculateMaxTiles();
-		
-		//set the hash to new object (will be overridden later)
-		this.tileProperties = new HashMap<Integer, TileProperty>();
 		
 		this.placedTiles= new Array<Tile>(false, 0);
 		
@@ -103,21 +96,21 @@ public class TileMap {
 		}
 	}
 
-	public boolean setTile(int x, int y, int tile){
+	public boolean setTile(int x, int y, int tileId){
 		
 		//Make sure there are no collisions before we place the tile
 		//if there is then do nothing
-		if (!hasCollision(x, y, tile) && canPlace(x, y, tile)) {
+		if (!hasCollision(x, y, tileId) && canPlace(x, y, tileId)) {
 			
 			//Get tile properties so we know size of the tile we're working with
-			TileProperty tp = getTilePropertiesById(tile);
+			TileProperty tp = TileProperties.getInstance().getPropertyById(tileId);
 			
-			Tile parentTile = new Tile(tile);
+			Tile parentTile = new Tile(tileId);
 			
 			//Set the child tiles to reference the parent for collision detection
 			for (int spanX=0; spanX < tp.getTileSpanX(); spanX++)
 				for (int spanY=0; spanY < tp.getTileSpanY(); spanY++)
-					this.tiles[x+spanX][y+spanY] = new Tile(tile, parentTile);
+					this.tiles[x+spanX][y+spanY] = new Tile(tileId, parentTile);
 			
 			//Set the Initial tile spot to the correct value
 			this.tiles[x][y] = parentTile;
@@ -138,7 +131,7 @@ public class TileMap {
 			Tile tile = tiles[x][y];
 			
 			if (tile != null){
-				TileProperty tp = getTilePropertiesById(tile.getID());
+				TileProperty tp = TileProperties.getInstance().getPropertyById(tile.getID());
 				
 				//Remove noise this tile generates
 				updateNoiseLevel(x, y, tp, false);
@@ -189,10 +182,11 @@ public class TileMap {
 			if ((tempTile.value.x >= x) && (tempTile.value.x < x+tp.getTileSpanX()) 
 					|| (tempTile.value.y >= y && tempTile.value.y < y+tp.getTileSpanY())){
 				//Take half the noise level into account
-				updateNoiseOnTile(x, y, this.getTilePropertiesById(tempTile.key.getID()).getNoiseFactor()/2, addNoise);
+				
+				updateNoiseOnTile(x, y, TileProperties.getInstance().getPropertyById(tempTile.key.getID()).getNoiseFactor()/2, addNoise);
 			} else {
 				//Take 1/4 of the noise level into account
-				updateNoiseOnTile(x, y, this.getTilePropertiesById(tempTile.key.getID()).getNoiseFactor()/4, addNoise);
+				updateNoiseOnTile(x, y, TileProperties.getInstance().getPropertyById(tempTile.key.getID()).getNoiseFactor()/4, addNoise);
 			}
 		}
 	}
@@ -317,18 +311,6 @@ public class TileMap {
 		populatePlacedArray();
 	}
 	
-	public HashMap<Integer, TileProperty> getTileProperties() {
-		return tileProperties;
-	}
-	
-	public TileProperty getTileProperty(int tileID){
-		return getTilePropertiesById(tileID);
-	}
-
-	public void setTileProperties(HashMap<Integer, TileProperty> tileProperties) {
-		this.tileProperties = tileProperties;
-	}
-	
 	/**
 	 * Check to see if the supplied tile and coordinates are colliding with another already placed tile
 	 * 
@@ -337,12 +319,12 @@ public class TileMap {
 	 * @param tile
 	 * @return boolean
 	 */
-	public boolean hasCollision(int tileX, int tileY, int tile) {
+	public boolean hasCollision(int tileX, int tileY, int tileId) {
 		
 		//Get tile properties so we know size of the tile we're working with
-		TileProperty tp = getTilePropertiesById(tile);
+		TileProperty tp = TileProperties.getInstance().getPropertyById(tileId);
 				
-		return hasCollision(tileX, tileY, tile, tp);
+		return hasCollision(tileX, tileY, tileId, tp);
 	}
 	
 	/**
@@ -354,7 +336,7 @@ public class TileMap {
 	 * @param tp
 	 * @return
 	 */
-	public boolean hasCollision(int tileX, int tileY, int tile, TileProperty tp) {
+	public boolean hasCollision(int tileX, int tileY, int tileId, TileProperty tp) {
 		
 		if (pointsOutsideBounds(tileX, tileY)){
 			return true;
@@ -401,12 +383,12 @@ public class TileMap {
 	 * @param tile
 	 * @return boolean
 	 */
-	public boolean canPlace(int tileX, int tileY, int tile){
+	public boolean canPlace(int tileX, int tileY, int tileId){
 		
 		//Get tile properties so we know size of the tile we're working with
-		TileProperty tp = getTilePropertiesById(tile);
+		TileProperty tp = TileProperties.getInstance().getPropertyById(tileId);
 				
-		if (hasCollision(tileX, tileY, tile, tp)) {
+		if (hasCollision(tileX, tileY, tileId, tp)) {
 			return false;
 		}
 		
@@ -493,12 +475,15 @@ public class TileMap {
 		for (int x = (int)minPos.x; x < (int)maxPos.x ; x++){
 			for (int y = (int)minPos.y; y < (int)maxPos.y; y++) {
 				if (tiles[x][y] != null && !tiles[x][y].hasParent()){
+					
+					int tileId = tiles[x][y].getID();
+					
 					//For some reason using an Integer or int does not work.  have to cast it to string to find the match
 					// It makes no sense to me given that the hashmap key is set to be an Integer.
-					if (tileProperties.containsKey(String.valueOf(tiles[x][y].getID()))) {
+					if (TileProperties.getInstance().containsProperty(tileId)) {
 						
 						//Get a reference to the tile property to pull out more information from it
-						TileProperty tp = getTilePropertiesById(tiles[x][y].getID());
+						TileProperty tp = TileProperties.getInstance().getPropertyById(tileId);
 						
 						TileStats ts = tiles[x][y].getTileStats();
 						
@@ -516,15 +501,10 @@ public class TileMap {
 			}
 		}
 	}
-	
-	private TileProperty getTilePropertiesById(int tile) {
-		return tileProperties.get(String.valueOf(tile));
-	}
 
 	//Not sure if this is needed, but added it.
 	public void dispose(){
 		tiles = null;
-		tileProperties = null;
 		
 		if (atlas!=null) 
 			atlas.dispose();

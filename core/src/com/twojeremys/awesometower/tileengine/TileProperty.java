@@ -187,4 +187,23 @@ public class TileProperty {
 		this.purchaseCost = purchaseCost;
 	}
 	
+	@Override
+	public String toString() {
+		StringBuilder info = new StringBuilder();
+		
+		info.append("TileProperty{");
+		
+		info.append("id:").append(ID).append(",");
+		info.append("atlasName:").append(atlasName).append(",");
+		info.append("tileSpanX:").append(tileSpanX).append(",");
+		info.append("tileSpanY:").append(tileSpanY).append(",");
+		info.append("blockable:").append(blockable).append(",");
+		info.append("category:").append(category).append(",");
+		//TODO finish adding the stuffs
+		
+		info.append("}");
+		
+		return info.toString();
+	}
+	
 }

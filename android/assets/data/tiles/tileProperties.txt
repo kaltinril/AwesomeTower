@@ -1,6 +1,6 @@
 {
 	1:{
-		class:com.twojeremys.awesometower.tileengine.TileProperties
+		class:com.twojeremys.awesometower.tileengine.TileProperty
 		,tileSpanX:1
 		,tileSpanY:1
 		,blockable:true
@@ -19,7 +19,7 @@
 		,incomeAmount:21
 	},
 	2:{
-		class:com.twojeremys.awesometower.tileengine.TileProperties
+		class:com.twojeremys.awesometower.tileengine.TileProperty
 		,tileSpanX:1
 		,tileSpanY:1
 		,blockable:true
@@ -38,7 +38,7 @@
 		,saleAmount:0
 	},
 	3:{
-		class:com.twojeremys.awesometower.tileengine.TileProperties
+		class:com.twojeremys.awesometower.tileengine.TileProperty
 		,tileSpanX:2
 		,tileSpanY:1
 		,blockable:true
@@ -52,7 +52,7 @@
 		,whiteListFloors:[]
 	},
 	4:{
-		class:com.twojeremys.awesometower.tileengine.TileProperties
+		class:com.twojeremys.awesometower.tileengine.TileProperty
 		,tileSpanX:1
 		,tileSpanY:2
 		,blockable:true
@@ -67,7 +67,7 @@
 		,noiseFactor:10
 	},
 	5:{
-		class:com.twojeremys.awesometower.tileengine.TileProperties
+		class:com.twojeremys.awesometower.tileengine.TileProperty
 		,tileSpanX:5
 		,tileSpanY:1
 		,blockable:true
@@ -86,7 +86,7 @@
 		,incomeAmount:1
 	},
 	6:{
-		class:com.twojeremys.awesometower.tileengine.TileProperties
+		class:com.twojeremys.awesometower.tileengine.TileProperty
 		,tileSpanX:3
 		,tileSpanY:1
 		,blockable:true
@@ -105,7 +105,7 @@
 		,saleAmount:0
 	},
 	7:{
-		class:com.twojeremys.awesometower.tileengine.TileProperties
+		class:com.twojeremys.awesometower.tileengine.TileProperty
 		,tileSpanX:3
 		,tileSpanY:1
 		,blockable:true

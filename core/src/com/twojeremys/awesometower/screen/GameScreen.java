@@ -1,5 +1,8 @@
 package com.twojeremys.awesometower.screen;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -44,6 +47,7 @@ import com.badlogic.gdx.utils.Json;
 import com.twojeremys.awesometower.Category;
 import com.twojeremys.awesometower.Constants;
 import com.twojeremys.awesometower.Person;
+import com.twojeremys.awesometower.TileProperties;
 import com.twojeremys.awesometower.gamefile.GameSaveManager;
 import com.twojeremys.awesometower.gamefile.GameState;
 import com.twojeremys.awesometower.screen.menu.RoomStatusMenu;
@@ -465,8 +469,12 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				tile.getTileStats().addVisitor(new Person());
 			}
 			
-			TileProperty tp = tileMap.getTileProperty(tile.getID());
+			//Gdx.app.debug(TAG, String.valueOf(tile.getID()));
+			
+			TileProperty tp = TileProperties.getInstance().getPropertyById(tile.getID());
 			TileStats ts = tile.getTileStats();
+			
+			//Gdx.app.debug(TAG, tp.toString());
 			
 			if (tp.getCategory() == Category.Commercial){
 				totalIncome += (tp.getIncomeAmount() * ts.getVisitorsCount()); //Based on the number of customers
@@ -698,7 +706,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	private void buildSelectionMenu(TextureAtlas atlas) {
 		
-		for(final TileProperty tileProperty:tileMap.getTileProperties().values()){
+		for(final TileProperty tileProperty:TileProperties.getInstance().getAllProperties().values()){
 			
 			//System.out.println("property=" + tileProperty.getDisplayName());
 			
@@ -870,10 +878,10 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
         //https://github.com/libgdx/libgdx/wiki/File-handling
         //https://github.com/libgdx/libgdx/wiki/Reading-&-writing-JSON
         FileHandle handle = Gdx.files.internal("data/tiles/tileProperties.txt");	//Load file from internal assets
-        tileMap.setTileProperties(json.fromJson(tileMap.getTileProperties().getClass(), handle)); //Convert data into its class
+        TileProperties.getInstance().addProperties(json.fromJson(HashMap.class, handle)); //Convert data into its class
    	
-    	//for(Entry<Integer, TileProperties> tpr : tileMap.getTileProperties().entrySet())
-        //	System.out.println("Key: " + tpr.getKey() + " ID: " + tpr.getValue().getID() + ", Name: " + tpr.getValue().getName());
+    	//for(Entry<Integer, TileProperty> tpr : TileProperties.getInstance().getAllProperties().entrySet())
+        //	System.out.println("Key: " + tpr.getKey() + " Value: " + tpr.getValue().toString());
 	}
 
 	//TODO ENHANCEMENT Maybe this should be moved into the tilemap draw, since it uses so many private variables from the tilemap.
@@ -1014,14 +1022,14 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				prePurchaseSprite.setPosition((int) tileTouchPos.x*tileMap.getTileWidth(), (int) tileTouchPos.y*tileMap.getTileHeight());
 			}
 			else if (count > 1){
-				if (gameState.getGold() > tileMap.getTileProperty(this.currentTile).getPurchaseCost()){
+				if (gameState.getGold() > TileProperties.getInstance().getPropertyById(this.currentTile).getPurchaseCost()){
 					if (prePurchaseSprite.getBoundingRectangle().contains(touchPos.x, touchPos.y)){
 						// Set the tile based on this position to tile 0
 						boolean placedSuccess = tileMap.setTile((int) tileTouchPos.x, (int) tileTouchPos.y, this.currentTile);
 						
 						if (placedSuccess){
 							prePurchaseSprite.setPosition(-1000, -1000);
-							gameState.takeGold(tileMap.getTileProperty(this.currentTile).getPurchaseCost());
+							gameState.takeGold(TileProperties.getInstance().getPropertyById(this.currentTile).getPurchaseCost());
 						}
 					}
 				}else {
