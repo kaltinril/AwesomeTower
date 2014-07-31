@@ -50,7 +50,7 @@ import com.twojeremys.awesometower.screen.menu.RoomStatusMenu;
 import com.twojeremys.awesometower.screen.menu.StatusMenu;
 import com.twojeremys.awesometower.tileengine.Tile;
 import com.twojeremys.awesometower.tileengine.TileMap;
-import com.twojeremys.awesometower.tileengine.TileProperties;
+import com.twojeremys.awesometower.tileengine.TileProperty;
 import com.twojeremys.awesometower.tileengine.TileStats;
 
 //TODO TASK
@@ -465,7 +465,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				tile.getTileStats().addVisitor(new Person());
 			}
 			
-			TileProperties tp = tileMap.getTileProperty(tile.getID());
+			TileProperty tp = tileMap.getTileProperty(tile.getID());
 			TileStats ts = tile.getTileStats();
 			
 			if (tp.getCategory() == Category.Commercial){
@@ -698,7 +698,7 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 
 	private void buildSelectionMenu(TextureAtlas atlas) {
 		
-		for(final TileProperties tileProperty:tileMap.getTileProperties().values()){
+		for(final TileProperty tileProperty:tileMap.getTileProperties().values()){
 			
 			//System.out.println("property=" + tileProperty.getDisplayName());
 			

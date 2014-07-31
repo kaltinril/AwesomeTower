@@ -23,7 +23,7 @@ public class TileMap {
 	private Array<Tile> placedTiles;
 	
 	//Holds a map of all the tile properties we use; loads from file in GameScreen.java
-	private HashMap<Integer, TileProperties> tileProperties;
+	private HashMap<Integer, TileProperty> tileProperties;
 	
 	//The texture atlas, duh!
 	private TextureAtlas atlas;
@@ -51,7 +51,7 @@ public class TileMap {
 		calculateMaxTiles();
 		
 		//set the hash to new object (will be overridden later)
-		this.tileProperties = new HashMap<Integer, TileProperties>();
+		this.tileProperties = new HashMap<Integer, TileProperty>();
 		
 		this.placedTiles= new Array<Tile>(false, 0);
 		
@@ -110,7 +110,7 @@ public class TileMap {
 		if (!hasCollision(x, y, tile) && canPlace(x, y, tile)) {
 			
 			//Get tile properties so we know size of the tile we're working with
-			TileProperties tp = getTilePropertiesById(tile);
+			TileProperty tp = getTilePropertiesById(tile);
 			
 			Tile parentTile = new Tile(tile);
 			
@@ -138,7 +138,7 @@ public class TileMap {
 			Tile tile = tiles[x][y];
 			
 			if (tile != null){
-				TileProperties tp = getTilePropertiesById(tile.getID());
+				TileProperty tp = getTilePropertiesById(tile.getID());
 				
 				//Remove noise this tile generates
 				updateNoiseLevel(x, y, tp, false);
@@ -154,7 +154,7 @@ public class TileMap {
 	}
 	
 
-	private void updateNoiseLevel(int x, int y, TileProperties tp, boolean addNoise){
+	private void updateNoiseLevel(int x, int y, TileProperty tp, boolean addNoise){
 
 		int maxAffectable = (2 * (tp.getTileSpanX()+2)) +  (2 * tp.getTileSpanY()); 
 		ArrayMap<Tile, Vector2> affectedTiles = new ArrayMap<Tile, Vector2>(false, maxAffectable);
@@ -317,15 +317,15 @@ public class TileMap {
 		populatePlacedArray();
 	}
 	
-	public HashMap<Integer, TileProperties> getTileProperties() {
+	public HashMap<Integer, TileProperty> getTileProperties() {
 		return tileProperties;
 	}
 	
-	public TileProperties getTileProperty(int tileID){
+	public TileProperty getTileProperty(int tileID){
 		return getTilePropertiesById(tileID);
 	}
 
-	public void setTileProperties(HashMap<Integer, TileProperties> tileProperties) {
+	public void setTileProperties(HashMap<Integer, TileProperty> tileProperties) {
 		this.tileProperties = tileProperties;
 	}
 	
@@ -340,7 +340,7 @@ public class TileMap {
 	public boolean hasCollision(int tileX, int tileY, int tile) {
 		
 		//Get tile properties so we know size of the tile we're working with
-		TileProperties tp = getTilePropertiesById(tile);
+		TileProperty tp = getTilePropertiesById(tile);
 				
 		return hasCollision(tileX, tileY, tile, tp);
 	}
@@ -354,7 +354,7 @@ public class TileMap {
 	 * @param tp
 	 * @return
 	 */
-	public boolean hasCollision(int tileX, int tileY, int tile, TileProperties tp) {
+	public boolean hasCollision(int tileX, int tileY, int tile, TileProperty tp) {
 		
 		if (pointsOutsideBounds(tileX, tileY)){
 			return true;
@@ -404,7 +404,7 @@ public class TileMap {
 	public boolean canPlace(int tileX, int tileY, int tile){
 		
 		//Get tile properties so we know size of the tile we're working with
-		TileProperties tp = getTilePropertiesById(tile);
+		TileProperty tp = getTilePropertiesById(tile);
 				
 		if (hasCollision(tileX, tileY, tile, tp)) {
 			return false;
@@ -498,7 +498,7 @@ public class TileMap {
 					if (tileProperties.containsKey(String.valueOf(tiles[x][y].getID()))) {
 						
 						//Get a reference to the tile property to pull out more information from it
-						TileProperties tp = getTilePropertiesById(tiles[x][y].getID());
+						TileProperty tp = getTilePropertiesById(tiles[x][y].getID());
 						
 						TileStats ts = tiles[x][y].getTileStats();
 						
@@ -517,7 +517,7 @@ public class TileMap {
 		}
 	}
 	
-	private TileProperties getTilePropertiesById(int tile) {
+	private TileProperty getTilePropertiesById(int tile) {
 		return tileProperties.get(String.valueOf(tile));
 	}
 

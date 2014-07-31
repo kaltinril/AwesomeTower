@@ -7,7 +7,7 @@ import com.twojeremys.awesometower.Category;
 //NOTE: all KEYs in the file must exist in the class.
 //NOTE: Adding new variables to the class does not break existing files (Backwards compatible), just stores NULL.
 
-public class TileProperties {
+public class TileProperty {
 	
 	private int ID;     				//The Numeric lookup value for this tile
 	private String atlasName; 			//Name from the Atlas file
