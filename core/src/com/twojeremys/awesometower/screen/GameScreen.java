@@ -151,6 +151,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		assetsLoaded = false;
 		if (Constants.DEBUG)
 			debugInfo = new StringBuilder();
+        else
+            debugInfo = null;   //Added NULL to fix Error:(154, 2) Gradle: error: variable debugInfo might not have been initialized
 	}
 
 	@Override
@@ -347,7 +349,8 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 	//Add debug drawing
 	private void drawDebug(){
         if (drawTableDebug && assetsLoaded){
-        	Table.drawDebug(stage);
+        	//Table.drawDebug(stage);
+            stage.setDebugAll(true);
         }
 	
 		if (assetsLoaded) {
@@ -356,21 +359,21 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 				float nativeHeapInBytes = Gdx.app.getNativeHeap() / Constants.ONE_MEGABYTE;
 				
 				deltaTime = 0f;
-				debugInfo.setLength(0);
-				debugInfo.append("fps: ");
-				debugInfo.append(Gdx.graphics.getFramesPerSecond());
-				debugInfo.append("\nmem: (java ");
-				debugInfo.append((int) javaHeapInBytes);
-				debugInfo.append("Mb, heap ");
-				debugInfo.append((int) nativeHeapInBytes);
-				debugInfo.append("Mb)");
-				debugInfo.append("\nzoom: ");
-				debugInfo.append((float) camera.zoom);
-				debugInfo.append("\nviewport: (w ");
-				debugInfo.append((int) camera.viewportWidth);
-				debugInfo.append(" ,h ");
-				debugInfo.append((int) camera.viewportHeight);
-				debugInfo.append(")");
+                debugInfo.setLength(0);
+                debugInfo.append("fps: ");
+                debugInfo.append(Gdx.graphics.getFramesPerSecond());
+                debugInfo.append("\nmem: (java ");
+                debugInfo.append((int) javaHeapInBytes);
+                debugInfo.append("Mb, heap ");
+                debugInfo.append((int) nativeHeapInBytes);
+                debugInfo.append("Mb)");
+                debugInfo.append("\nzoom: ");
+                debugInfo.append((float) camera.zoom);
+                debugInfo.append("\nviewport: (w ");
+                debugInfo.append((int) camera.viewportWidth);
+                debugInfo.append(" ,h ");
+                debugInfo.append((int) camera.viewportHeight);
+                debugInfo.append(")");
 			}
 			
 			overlayBatch.begin();
@@ -633,13 +636,18 @@ public class GameScreen extends BaseScreen implements GestureListener, InputProc
 		
 		//Setup a Table to use the scroll pane background for the menu
 		Table backgroundTable = new Table();
-		backgroundTable.debug();
+        if (Constants.DEBUG)
+            backgroundTable.debug();
+
 	    backgroundTable.background(skin.getDrawable("default-pane"));
 		
 		//Loop through the category enum and build the buttons and tables
 		for (final Category c : Category.values()) {
-			
-			c.setTable(new Table().pad(Constants.TABLE_PAD).debug());
+
+            if (Constants.DEBUG)
+			    c.setTable(new Table().pad(Constants.TABLE_PAD).debug());
+            else
+                c.setTable(new Table().pad(Constants.TABLE_PAD));
 			
 			InputListener categoryListener = new InputListener(){
 				@Override
