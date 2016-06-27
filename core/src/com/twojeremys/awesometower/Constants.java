@@ -3,7 +3,7 @@ package com.twojeremys.awesometower;
 public class Constants {
 
 	//toggles debug information
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	public static final float DEBUG_DISPLAY_INTERVAL = 3f;
 	
 	//Used to calculate debug display information
